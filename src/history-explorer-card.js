@@ -53,7 +53,8 @@ var endTime;
 
 var stateColors = { 
 
-		'Multiple' : 'rgb(213, 142, 142)',
+		'binary_sensor.multiple' : 'rgb(213, 142, 142)',
+		'person.multiple' : '#e5ad23',
 
 		'on' : "#cd3e3e", 
 		'off' : "#dddddd", 
@@ -397,7 +398,9 @@ function buildChartData(result)
 
 					// Fill line chart buffer
 
-					if( activeRange.dataClusterSize > 0 ) {
+					const enableClustering = g.entities[j].decimation == undefined || g.entities[j].decimation;
+
+					if( enableClustering && activeRange.dataClusterSize > 0 ) {
 
 						let last_time = moment(result[id][0].last_changed);
 
@@ -424,6 +427,8 @@ function buildChartData(result)
 
 					// Fill timeline chart buffer
 
+					const enableClustering = g.entities[j].decimation == undefined || g.entities[j].decimation;
+
 					let merged = 0;
 					let mt0, mt1;
 
@@ -432,7 +437,7 @@ function buildChartData(result)
 						let t0 = result[id][i].last_changed;
 						let t1 = ( i < n-1 ) ? result[id][i+1].last_changed : endTime;
 
-						if( moment(t1).diff(moment(t0)) >= activeRange.dataClusterSize ) {
+						if( !enableClustering || moment(t1).diff(moment(t0)) >= activeRange.dataClusterSize ) {
 							if( merged > 0 ) {
 								t0 = mt0;
 								t1 = mt1;
@@ -452,7 +457,7 @@ function buildChartData(result)
 							var e = [];
 							e.push(t0);
 							e.push(t1);
-							e.push(( merged > 1 ) ? 'Multiple' : result[id][i].state);
+							e.push(( merged > 1 ) ? 'multiple' : result[id][i].state);
 							s.push(e);
 						}
 
@@ -509,6 +514,7 @@ function newGraph(canvas, graphtype, datasets)
 				label: d.name,
 				steppedLine: d.stepped,
 				cubicInterpolationMode: 'monotone',
+				domain: d.domain,
 				entity_id: d.entity_id,
 				unit: d.unit,
 				data: { }
@@ -524,7 +530,11 @@ function newGraph(canvas, graphtype, datasets)
 
 		for( let d of datasets ) {
 			datastructure.labels.push(d.name);
-			datastructure.datasets.push({ "data": [ ] });
+			datastructure.datasets.push({ 
+				domain: d.domain,
+				entity_id: d.entity_id,
+				data: [ ] 
+			});
 		}
 
 	}
@@ -601,8 +611,9 @@ function newGraph(canvas, graphtype, datasets)
 				}
 			},
 			elements: {
-		        colorFunction: function(text, data, dataset, index) {
-					return getStateColor(data[2]);
+		        colorFunction: function(text, data, datasets, index) {
+					let domain = datasets[index].domain;
+					return getStateColor(( data[2] == 'multiple' ) ? domain + "." + data[2] : data[2]);
 		        },
 		        showText: true,
 				font: 'normal 13px "Helvetica Neue", Helvetica, Arial, sans-serif',
@@ -788,6 +799,11 @@ var _this = null;
 var contentValid = false;
 var iid = 0;
 
+function getDomainForEntity(entity)
+{
+	return entity.substr(0, entity.indexOf("."));
+}
+
 function createContent()
 {
 	// Initialize the content if it's not there yet.
@@ -808,9 +824,16 @@ function createContent()
 
 			let datasets = [];
 			for( let d of g.graph.entities ) {
-				const name = ( d.name === undefined ) ? _hass.states[d.entity].attributes.friendly_name : d.name;
-				const unit = ( d.unit === undefined ) ? _hass.states[d.entity].attributes.unit_of_measurement : d.unit;
-				datasets.push({ "name": name, "bColor": d.color, "fillColor": d.fill, "stepped": d.stepped || false, "width": d.width || 2.0, "unit": unit, "entity_id": d.entity });
+				datasets.push({
+					"name": ( d.name === undefined ) ? _hass.states[d.entity].attributes.friendly_name : d.name,
+					"bColor": d.color, 
+					"fillColor": d.fill, 
+					"stepped": d.stepped || false, 
+					"width": d.width || 2.0,
+					"unit": ( d.unit === undefined ) ? _hass.states[d.entity].attributes.unit_of_measurement : d.unit,
+					"domain": getDomainForEntity(d.entity),
+					"entity_id" : d.entity
+				});
 			}
 
 			const chart = newGraph(canvas, g.graph.type, datasets);

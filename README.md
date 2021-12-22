@@ -20,9 +20,13 @@ Like in the native HA history panel, you can hover over the chart line or state 
 
 The card will automatically reduce the data shown in the charts and remove details that would not be visible or useful at a given time range. For example, if you view a per-hour history, nothing will be removed and you will be able to explore the raw data, point by point. If you view an entire week at once, there's no need to show data that changed every few seconds, you couldn't even see it. The card will simplify the curves and make the experience a lot faster that way. 
 
-This feature can be turned off in the options if you want.
+This feature can be turned off in the options if you want, either globally or by entity.
 
-Right now, data decimation only works on numerical sensors.
+![screen](./images/screenshots/history-panel-line-decimation.png)
+
+Decimation works on state timelines by merging very small state changes into 'multiple' sections when they can't be seen individually anymore. Zoom into the timeline and the details will appear. The color used for the multiple sections can be adjusted per graph.
+
+![screen](./images/screenshots/history-panel-timeline-multiple.png)
 
 ## Install and configuration
 
