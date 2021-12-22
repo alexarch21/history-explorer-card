@@ -53,6 +53,8 @@ var endTime;
 
 var stateColors = { 
 
+		'Multiple' : 'rgb(213, 142, 142)',
+
 		'on' : "#cd3e3e", 
 		'off' : "#dddddd", 
 
@@ -422,9 +424,27 @@ function buildChartData(result)
 
 					// Fill timeline chart buffer
 
+					let merged = 0;
+					let mt0, mt1;
+
 					for( let i = 0; i < n; i++ ) {
+
 						let t0 = result[id][i].last_changed;
 						let t1 = ( i < n-1 ) ? result[id][i+1].last_changed : endTime;
+
+						if( moment(t1).diff(moment(t0)) >= activeRange.dataClusterSize ) {
+							if( merged > 0 ) {
+								t0 = mt0;
+								t1 = mt1;
+								i--;
+							}
+						} else {
+							if( !merged ) mt0 = t0;
+							mt1 = t1;
+							merged++;
+							continue;
+						}
+
 						if( moment(t1) >= m_start ) {
 							if( moment(t1) > m_end ) t1 = endTime;
 							if( moment(t0) > m_end ) break;
@@ -432,9 +452,12 @@ function buildChartData(result)
 							var e = [];
 							e.push(t0);
 							e.push(t1);
-							e.push(result[id][i].state);
+							e.push(( merged > 1 ) ? 'Multiple' : result[id][i].state);
 							s.push(e);
 						}
+
+						merged = 0;
+
 					}
 
 				}
@@ -701,8 +724,7 @@ function pointerDown(event)
 		panstate.mx = event.clientX;
 		panstate.tc = startTime;
 
-//		if( !isMobile )
-//			event.target?.setPointerCapture(event.PointerId);		// Doesn't work on mobile !
+		event.target?.setPointerCapture(event.pointerId);
 
 		state.updateCanvas = pconfig.lockAllGraphs ? null : event.target;
 
