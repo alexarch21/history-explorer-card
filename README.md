@@ -33,7 +33,7 @@ Decimation works on state timelines by merging very small state changes into 'mu
 Only manual install is supported right now: 
 
  1. Download the history-explorer-card.js file and copy it into your config/www folder
- 2. Add a resource reference to it. On the HA UI, navigate to Configuration -> Dashboards -> Resources
+ 2. Add a resource reference to it. On the HA UI, navigate to Configuration -> Dashboards -> Resources. Visit the [Registering resources](https://developers.home-assistant.io/docs/frontend/custom-ui/registering-resources) page on the Home Assistant support site for more information.
  3. Click on the + Add Resource button
  4. Add /local/history-explorer-card.js into the URL field and make sure the resource type field says Javascript Module
  5. Hit create
