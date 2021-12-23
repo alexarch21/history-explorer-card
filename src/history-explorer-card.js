@@ -25,6 +25,7 @@ var pconfig = {};
 	pconfig.lockAllGraphs        = false;
 	pconfig.enableDynamicModify	 = true;
 	pconfig.enableDataClustering = true;
+	pconfig.nextDefaultColor	 = 0;
 
 var loader = {};
 	loader.startTime 	= 0;
@@ -52,6 +53,28 @@ var endTime;
 
 
 // --------------------------------------------------------------------------------------
+// Default colors for line graphs
+// --------------------------------------------------------------------------------------
+
+var defaultColors = [
+
+	{ 'color': '#3e95cd', 'fill': 'rgba(151,187,205,0.15)' },
+	{ 'color': '#95cd3e', 'fill': 'rgba(187,205,151,0.15)' },
+	{ 'color': '#cd3e3e', 'fill': 'rgba(205,151,151,0.15)' },
+	{ 'color': '#3ecd95', 'fill': 'rgba(151,205,187,0.15)' },
+	{ 'color': '#cd953e', 'fill': 'rgba(205,187,151,0.15)' },
+
+];
+
+function getNextDefaultColor()
+{
+	let i = pconfig.nextDefaultColor++;
+	pconfig.nextDefaultColor = pconfig.nextDefaultColor % defaultColors.length;
+	return defaultColors[i];
+}
+
+
+// --------------------------------------------------------------------------------------
 // Predefined state colors for timeline history
 // --------------------------------------------------------------------------------------
 
@@ -70,7 +93,11 @@ var stateColors = {
 		'Eco' : '#44739e', 
 		'Confort - 2' : '#984ea3', 
 		'Confort - 1' : '#00d2d5', 
-		'Confort' : '#ff7f00'
+		'Confort' : '#ff7f00',
+
+		'WCDMA' : '#44739e', 
+		'LTE' : '#984ea3',
+
 };
 
 var stateColorsDark = { 
@@ -887,7 +914,13 @@ function addEntitySelected(event)
 
 	const type = ( _hass.states[entity_id].attributes?.unit_of_measurement == undefined ) ? 'timeline' : 'line';
 
-	let entities = [{ "entity": entity_id, "color": "#550000", "fill": "#00000000" }];
+	let entities = [{ "entity": entity_id, "color": "#000000", "fill": "#00000000" }];
+
+	if( type == 'line' ) {
+		const c = getNextDefaultColor();
+		entities[0].color = c.color;
+		entities[0].fill = c.fill;
+	}
 
 	// Add to an existing timeline graph if possible (if it's the last in the list)
 	if( type == 'timeline' && graphs.length > 0 && graphs[graphs.length-1].type == 'timeline' ) {

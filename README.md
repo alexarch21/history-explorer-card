@@ -40,6 +40,19 @@ Only manual install is supported right now:
 
 You can now add the card to your dashboard as usual.
 
+### Interactive configuration
+
+The entities visible on the history explorer card can be defined in the card configuration or they can be added or removed on the fly through the card UI without changing the configuration. Both modes can be combined. The entities defined in the YAML will be displayed first and will always be visible when the dashboard is opened. Dynamically added entities will be displayed next. You can manage your dynamically configured entities like this:
+
+![screen](./images/screenshots/history-panel-otf-entities.png)
+
+If you want to manage all your entities dynamically, you will need to supply an empty YAML. You can still add global configuration settings.
+
+```yaml
+type: custom:history-explorer-card
+graphs:
+```
+
 ### YAML configuration
 
 Here's a basic example configuration:
