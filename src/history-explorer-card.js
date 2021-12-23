@@ -19,9 +19,11 @@ var i18n = {};
 var pconfig = {};
 	pconfig.graphLabelColor 	 = '#333';
 	pconfig.graphGridColor       = '#00000000';
+	pconfig.lineGraphHeight		 = 250;
 	pconfig.customStateColors	 = {};
 	pconfig.graphConfig			 = [];
 	pconfig.lockAllGraphs        = false;
+	pconfig.enableDynamicModify	 = true;
 	pconfig.enableDataClustering = true;
 
 var loader = {};
@@ -42,6 +44,8 @@ var activeRange = {};
 	activeRange.currentTimeRangeIndex = 0;
 
 var graphs = [];
+
+var g_id = 0;
 
 var startTime;
 var endTime;
@@ -268,6 +272,17 @@ function mapEndTimeToCacheSlot(t)
 	return -1;
 }
 
+function findCacheEntityIndex(c_id, entity)
+{
+	if( !cache[c_id].valid ) return -1;
+
+	for( let i = 0; i < cache[c_id].entities.length; i++ ) {
+		if( cache[c_id].entities[i] == entity ) return i;
+	}
+
+	return -1;
+}
+
 function generateGraphDataFromCache()
 {
 	let c0 = mapStartTimeToCacheSlot(startTime);
@@ -278,21 +293,40 @@ function generateGraphDataFromCache()
 //		console.log(`merge from ${c0} to ${c1}`);
 
 		// Build partial data
+		// The result data for the charts is expected in order of the charts entities, but the cache might not hold data 
+		// for all the entities or it might be in a different order. So for every chart entity, search the cache for a match.
+		// If no match found, then add en empty record into the result, so to keep the indices in sync for buildChartData().
 		let result = [];
 		for( let i = c0; i <= c1; i++ ) {
-			for( let j = 0; j < cache[i].data.length; j++ ) {
-				if( result[j] == undefined ) result[j] = [];
-				result[j] = result[j].concat(cache[i].data[j]);
+			let j = 0;
+			for( let g of graphs ) {
+				for( let e of g.entities ) {
+					if( result[j] == undefined ) result[j] = [];
+					const k = findCacheEntityIndex(i, e.entity);
+					if( k >= 0 ) 
+						result[j] = result[j].concat(cache[i].data[k]);
+					j++;
+				}
 			}
 		}
 
-		// 
-		if( c0 > 0 && cache[c0-1].valid && cache[c0-1].data.length == result.length ) {
-			for( let j = 0; j < result.length; j++ ) {
-				let n = cache[c0-1].data[j].length;
-				if( n > 0 ) 
-					result[j].unshift({ "last_changed": cache[c0].start, "state": cache[c0-1].data[j][n-1].state });
+		// Add the very last state from the cache slot just before the requested one, if possible.
+		// This is to ensure that the charts have one data point just before the start of their own data
+		// This avoids interpolation issues at the chart start and disappearing states at the beginning of timelines.
+		if( c0 > 0 && cache[c0-1].valid ) {
+			let j = 0;
+			for( let g of graphs ) {
+				for( let e of g.entities ) {
+					const k = findCacheEntityIndex(c0-1, e.entity);
+					if( k >= 0 ) {
+						let n = cache[c0-1].data[k].length;
+						if( n > 0 ) 
+							result[j].unshift({ "last_changed": cache[c0].start, "state": cache[c0-1].data[k][n-1].state });
+					}
+					j++;
+				}
 			}
+
 		}
 
 		buildChartData(result);
@@ -352,6 +386,14 @@ function loaderCallback(result)
 
 		}
 
+	}
+
+	// 
+	for( let i = loader.startIndex; i <= loader.endIndex; i++ ) {
+		cache[i].entities = [];
+		for( let j of result ) {
+			cache[i].entities.push(j[0].entity_id);
+		}
 	}
 
 	generateGraphDataFromCache();
@@ -419,7 +461,7 @@ function buildChartData(result)
 						}
 					}
 					
-					if( !state.drag && m_now > m_end && moment(s[s.length-1].x) < m_end ) {
+					if( !state.drag && m_now > m_end && s.length > 0 && moment(s[s.length-1].x) < m_end ) {
 						s.push({ x: m_end, y: result[id][n-1].state});
 					}
 
@@ -693,6 +735,14 @@ function updateHistory()
 		generateGraphDataFromCache();
 }
 
+function updateHistoryWithClearCache()
+{
+	if( !state.loading ) {
+		cache.length = 0;
+		updateHistory();
+	}
+}
+
 function updateAxes()
 {
 	for( let g of graphs ) {
@@ -804,6 +854,103 @@ function getDomainForEntity(entity)
 	return entity.substr(0, entity.indexOf("."));
 }
 
+function removeGraph(event)
+{
+	if( state.loading ) return;		// TODO: remove after mapping the DB retrieval results to graph entitiy names ?
+
+	const id = event.target.id.substr(event.target.id.indexOf("-") + 1);
+
+	for( let i = 0; i < graphs.length; i++ ) {
+		if( graphs[i].id == id ) {
+			graphs[i].canvas.parentNode.remove();
+			graphs.splice(i, 1);
+			break;
+		}
+	}
+
+	updateHistoryWithClearCache();
+}
+
+function addEntitySelected(event)
+{
+	if( state.loading ) return;
+
+	let inputfield =_this.querySelector('#b7'); 
+
+	const entity_id = inputfield.value;
+	inputfield.value = "";
+
+	if( _hass.states[entity_id] == undefined ) {
+		// TODO: let the user know
+		return;
+	}
+
+	const type = ( _hass.states[entity_id].attributes?.unit_of_measurement == undefined ) ? 'timeline' : 'line';
+
+	let entities = [{ "entity": entity_id, "color": "#550000", "fill": "#00000000" }];
+
+	// Add to an existing timeline graph if possible (if it's the last in the list)
+	if( type == 'timeline' && graphs.length > 0 && graphs[graphs.length-1].type == 'timeline' ) {
+
+		// Add the new entity to the previous ones
+		entities = graphs[graphs.length-1].entities.concat(entities);
+		
+		// Delete the old graph, will be regenerated below including the new entity
+		graphs[graphs.length-1].canvas.parentNode.remove();
+		graphs.length--;
+
+	}	
+	
+	const h = ( type == 'line' ) ? pconfig.lineGraphHeight : Math.max(entities.length * 50, 130);
+
+	let html = '';
+	html += `<div sytle='height:${h}px'>`;
+	html += `<canvas id="graph${g_id}" height="${h}px" style='touch-action:pan-y'></canvas>`;
+	html += `<button id='bc-${g_id}' style="position:absolute;right:20px;margin-top:${-h+5}px;">x</button>`;
+	html += `</div>`;
+
+	let e = document.createElement('div');
+	e.innerHTML = html;
+
+	let gl = _this.querySelector('#graphlist');
+	gl.appendChild(e);
+
+	_this.querySelector(`#bc-${g_id}`).addEventListener('click', removeGraph);
+
+	addGraphToCanvas(g_id++, type, entities);
+
+	updateHistoryWithClearCache();
+}
+
+function addGraphToCanvas(gid, type, entities)
+{
+	const canvas = _this.querySelector(`#graph${gid}`);
+
+	let datasets = [];
+	for( let d of entities ) {
+		datasets.push({
+			"name": ( d.name === undefined ) ? _hass.states[d.entity].attributes.friendly_name : d.name,
+			"bColor": d.color, 
+			"fillColor": d.fill, 
+			"stepped": d.stepped || false, 
+			"width": d.width || 2.0,
+			"unit": ( d.unit === undefined ) ? _hass.states[d.entity].attributes.unit_of_measurement : d.unit,
+			"domain": getDomainForEntity(d.entity),
+			"entity_id" : d.entity
+		});
+	}
+
+	const chart = newGraph(canvas, type, datasets);
+
+	let w = chart.chartArea.right - chart.chartArea.left;
+
+	graphs.push({ "id": gid, "type": type, "canvas": canvas, "width": w, "chart": chart , "entities": entities });
+
+	canvas.addEventListener('pointerdown', pointerDown);
+	canvas.addEventListener('pointermove', pointerMove);
+	canvas.addEventListener('pointerup', pointerUp);
+}
+
 function createContent()
 {
 	// Initialize the content if it's not there yet.
@@ -819,33 +966,7 @@ function createContent()
 		graphs = [];
 
 		for( let g of pconfig.graphConfig ) {
-
-			const canvas = _this.querySelector(`#graph${g.id}`);
-
-			let datasets = [];
-			for( let d of g.graph.entities ) {
-				datasets.push({
-					"name": ( d.name === undefined ) ? _hass.states[d.entity].attributes.friendly_name : d.name,
-					"bColor": d.color, 
-					"fillColor": d.fill, 
-					"stepped": d.stepped || false, 
-					"width": d.width || 2.0,
-					"unit": ( d.unit === undefined ) ? _hass.states[d.entity].attributes.unit_of_measurement : d.unit,
-					"domain": getDomainForEntity(d.entity),
-					"entity_id" : d.entity
-				});
-			}
-
-			const chart = newGraph(canvas, g.graph.type, datasets);
-
-			let w = chart.chartArea.right - chart.chartArea.left;
-
-			graphs.push({ "id": g.id, "type": g.graph.type, "canvas": canvas, "width": w, "chart": chart , "entities": g.graph.entities });
-
-			canvas.addEventListener('pointerdown', pointerDown);
-			canvas.addEventListener('pointermove', pointerMove);
-			canvas.addEventListener('pointerup', pointerUp);
-
+			addGraphToCanvas(g.id, g.graph.type, g.graph.entities);
 		}
 
 		/// 
@@ -858,6 +979,21 @@ function createContent()
 
 		ui.dateSelector = _this.querySelector('#bx');
 		ui.rangeSelector = _this.querySelector('#b3');
+
+		if( pconfig.enableDynamicModify ) {
+
+			_this.querySelector('#b8').addEventListener('click', addEntitySelected);
+
+			let datalist = _this.querySelector('#b6');
+
+			for( let e in _hass.states ) {
+				const domain = e.substr(0, e.indexOf("."));
+				let o = document.createElement('option');
+				o.innerHTML = e;
+				datalist.appendChild(o);
+			}
+
+		}
 
 		setTimeRange(4, false);
 
@@ -948,15 +1084,17 @@ class HistoryExplorerCard extends HTMLElement
 
 		this.config = config;
 
-		if( !config.graphs || !config.graphs.length ) throw new Error('No graphs defined !');
+		g_id = 0;
 
 		pconfig.graphConfig = [];
-		for( let i = 0; i < config.graphs.length; i++ ) {
-			if( !config.graphs[i].entities || !config.graphs[i].entities.length ) throw new Error('No entities defined for graph !');
-			for( let e of config.graphs[i].entities ) {
-				if( !e.entity ) throw new Error(`Invalid entity ${e.entity}`);
+
+		if( config.graphs ) {
+			for( let i = 0; i < config.graphs.length; i++ ) {
+				for( let e of config.graphs[i].entities ) {
+					if( !e.entity ) throw new Error(`Invalid entity ${e.entity}`);
+				}
+				pconfig.graphConfig.push({ graph: config.graphs[i], id:g_id++ });
 			}
-			pconfig.graphConfig.push({ graph: config.graphs[i], id:i});
 		}
 
 		if( config.stateColors ) 
@@ -999,19 +1137,30 @@ class HistoryExplorerCard extends HTMLElement
 				</div>
 			</div>
 			<br>
-			<div class='card-content'>
+			<div id='graphlist' class='card-content'>
 		`;
 
 		for( let g of pconfig.graphConfig ) {
 			if( g.id > 0 ) html += '<br>';
 			if( g.graph.title !== undefined ) html += `<div style='text-align:center;'>${g.graph.title}</div>`;
-			const h = ( g.graph.type == 'line' ) ? 250 : g.graph.entities.length * 50;
+			const h = ( g.graph.type == 'line' ) ? pconfig.lineGraphHeight : g.graph.entities.length * 50;
 			html += `<div sytle='height:${h}px'>`;
-			html += `<canvas id="graph${g.id}" width="1300px" height="${h}px" style='touch-action:pan-y'></canvas>`;
+			html += `<canvas id="graph${g.id}" height="${h}px" style='touch-action:pan-y'></canvas>`;
 			html += `</div>`;
 		}
 
-		html += `</div> </ha-card>`;
+		if( pconfig.enableDynamicModify ) {
+			html += 
+				`</div> 
+				<div style="background-color:${bgcol};margin-left:20px;display:inline-block;padding-left:10px;padding-right:10px;">
+					<datalist id="b6"></datalist>
+					<input id="b7" autoComplete="on" list="b6" size=40 placeholder="Type to search for an entity to add"/>
+					<button id="b8" style="border:0px solid black;color:inherit;background-color:#00000000;height:34px;margin-left:5px;">+</button>
+				</div>
+				<br><br>
+				</ha-card>
+			`;
+		}
 
 		this.innerHTML = html;
 
