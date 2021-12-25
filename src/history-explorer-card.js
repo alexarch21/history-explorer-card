@@ -1,6 +1,6 @@
 
 import "./moment.min.js";
-import "./Chart.min.js";
+import "./Chart.js";
 import "./timeline.js";
 
 var isMobile = ( navigator.appVersion.indexOf("Mobi") > -1 );
@@ -81,7 +81,11 @@ function getNextDefaultColor()
 var stateColors = { 
 
     'binary_sensor.multiple' : 'rgb(213, 142, 142)',
+    'sensor.multiple' : 'rgb(213, 142, 142)',
     'person.multiple' : '#e5ad23',
+
+    'unknown' : "#888888",
+    'unavailable' : "#aaaaaa",
 
     'on' : "#cd3e3e", 
     'off' : "#dddddd", 
@@ -664,11 +668,13 @@ function newGraph(canvas, graphtype, datasets)
                             label += ' ' + data.datasets[item.datasetIndex].unit || '';
                             return label;
                         } else {
-                            let d = data.datasets[item.datasetIndex].data[item.index];
+                            const d = data.datasets[item.datasetIndex].data[item.index];
                             return [d[2], moment(d[0]).format(i18n.styleDateTimeTooltip), moment(d[1]).format(i18n.styleDateTimeTooltip)];
                         }
                     }
-                }
+                },
+                yAlign: ( graphtype == 'line' ) ? undefined : 'nocenter',
+                caretPadding: 8
             },
             hover: {
                 mode: 'nearest'
@@ -935,7 +941,7 @@ function addEntitySelected(event)
 
     }
 
-    const h = ( type == 'line' ) ? pconfig.lineGraphHeight : Math.max(entities.length * 50, 130);
+    const h = ( type == 'line' ) ? pconfig.lineGraphHeight : Math.max(entities.length * 45, 130);
 
     let html = '';
     html += `<div sytle='height:${h}px'>`;
@@ -1177,7 +1183,7 @@ class HistoryExplorerCard extends HTMLElement
         for( let g of pconfig.graphConfig ) {
             if( g.id > 0 ) html += '<br>';
             if( g.graph.title !== undefined ) html += `<div style='text-align:center;'>${g.graph.title}</div>`;
-            const h = ( g.graph.type == 'line' ) ? pconfig.lineGraphHeight : g.graph.entities.length * 50;
+            const h = ( g.graph.type == 'line' ) ? pconfig.lineGraphHeight : Math.max(g.graph.entities.length * 45, 130);
             html += `<div sytle='height:${h}px'>`;
             html += `<canvas id="graph${g.id}" height="${h}px" style='touch-action:pan-y'></canvas>`;
             html += `</div>`;
