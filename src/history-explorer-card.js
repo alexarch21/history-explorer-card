@@ -186,11 +186,11 @@ function setTimeRange(index, update)
     index = ( index < 0 ) ? 0 : ( index > 10 ) ? 10 : index;
 
     switch( index ) {
-        case 0: activeRange.timeRangeHours = 1; activeRange.tickStepSize = 5; activeRange.dataClusterSize = 0 * minute; break;
-        case 1: activeRange.timeRangeHours = 2; activeRange.tickStepSize = 10; activeRange.dataClusterSize = 0 * minute; break;
-        case 2: activeRange.timeRangeHours = 6; activeRange.tickStepSize = 30; activeRange.dataClusterSize = 0 * minute; break;
-        case 3: activeRange.timeRangeHours = 12; activeRange.tickStepSize = 60; activeRange.dataClusterSize = 0 * minute; break;
-        case 4:	activeRange.timeRangeHours = 24*1; activeRange.tickStepSize = 2; activeRange.dataClusterSize = 0 * minute; break;
+        case 0: activeRange.timeRangeHours = 1; activeRange.tickStepSize = 5; activeRange.dataClusterSize = 0; break;
+        case 1: activeRange.timeRangeHours = 2; activeRange.tickStepSize = 10; activeRange.dataClusterSize = 0; break;
+        case 2: activeRange.timeRangeHours = 6; activeRange.tickStepSize = 30; activeRange.dataClusterSize = 0; break;
+        case 3: activeRange.timeRangeHours = 12; activeRange.tickStepSize = 60; activeRange.dataClusterSize = 0; break;
+        case 4:	activeRange.timeRangeHours = 24*1; activeRange.tickStepSize = 2; activeRange.dataClusterSize = 0; break;
         case 5:	activeRange.timeRangeHours = 24*2; activeRange.tickStepSize = 2; activeRange.dataClusterSize = 2 * minute; break;
         case 6:	activeRange.timeRangeHours = 24*3; activeRange.tickStepSize = 6; activeRange.dataClusterSize = 5 * minute; break;
         case 7:	activeRange.timeRangeHours = 24*4; activeRange.tickStepSize = 6; activeRange.dataClusterSize = 10 * minute; break;
@@ -505,25 +505,44 @@ function buildChartData(result)
 
                     let merged = 0;
                     let mt0, mt1;
+                    let state;
 
                     for( let i = 0; i < n; i++ ) {
 
+                        // Start and end timecode of current state block
                         let t0 = result[id][i].last_changed;
                         let t1 = ( i < n-1 ) ? result[id][i+1].last_changed : endTime;
 
+                        // Not currently merging small blocks ?
+                        if( !merged ) {
+
+                            // State of the current block
+                            state = result[id][i].state;
+
+                            // Skip noop state changes (can happen at cache slot boundaries)
+                            while( i < n-1 && result[id][i].state == result[id][i+1].state ) {
+                                ++i;
+                                t1 = ( i < n-1 ) ? result[id][i+1].last_changed : endTime;
+                            }
+
+                        }
+
                         if( !enableClustering || moment(t1).diff(moment(t0)) >= activeRange.dataClusterSize ) {
+                            // Larger than merge limit, finish a potential current merge before proceeding with new block
                             if( merged > 0 ) {
                                 t0 = mt0;
                                 t1 = mt1;
                                 i--;
                             }
                         } else {
-                            if( !merged ) mt0 = t0;
+                            // Below merge limit, start merge (keep the first state for possible single block merges) or extend current one
+                            if( !merged ) { mt0 = t0; state = result[id][i].state; }
                             mt1 = t1;
                             merged++;
                             continue;
                         }
 
+                        // Add the current block to the graph
                         if( moment(t1) >= m_start ) {
                             if( moment(t1) > m_end ) t1 = endTime;
                             if( moment(t0) > m_end ) break;
@@ -531,10 +550,11 @@ function buildChartData(result)
                             var e = [];
                             e.push(t0);
                             e.push(t1);
-                            e.push(( merged > 1 ) ? 'multiple' : result[id][i].state);
+                            e.push(( merged > 1 ) ? 'multiple' : state);
                             s.push(e);
                         }
 
+                        // Merging always stops when a block was added
                         merged = 0;
 
                     }
