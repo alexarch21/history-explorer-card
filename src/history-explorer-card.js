@@ -8,6 +8,7 @@ var isMobile = ( navigator.appVersion.indexOf("Mobi") > -1 );
 var ui = {};
     ui.dateSelector  = null;
     ui.rangeSelector = null;
+    ui.zoomButton    = null;
     ui.darkMode      = false;
 
 var i18n = {};
@@ -35,14 +36,15 @@ var loader = {};
 
 var state = {};
     state.drag          = false;
+    state.selecting     = false;
     state.updateCanvas  = null;
     state.loading       = false;
+    state.zoomMode      = false;
 
 var activeRange = {};
     activeRange.timeRangeHours  = 24;
     activeRange.tickStepSize    = 1;
     activeRange.dataClusterSize = 0;
-    activeRange.currentTimeRangeIndex = 0;
 
 var graphs = [];
 
@@ -130,11 +132,25 @@ function getStateColor(value)
 // UI element handlers
 // --------------------------------------------------------------------------------------
 
+function today()
+{
+    if( !state.loading ) {
+
+        if( activeRange.timeRangeHours < 24 ) setTimeRange(24, false);
+
+        startTime = moment().subtract(1, 'day').format('YYYY-MM-DDTHH[:00:00]');
+        endTime = moment(startTime).add(activeRange.timeRangeHours, "hour");
+
+        updateHistory();
+
+    }
+}
+
 function subDay()
 {
     if( !state.loading ) {
 
-        if( activeRange.currentTimeRangeIndex < 4 ) setTimeRange(4, false);
+        if( activeRange.timeRangeHours < 24 ) setTimeRange(24, false);
 
         let t0 = moment(startTime).subtract(1, "day");
         let t1 = moment(t0).add(activeRange.timeRangeHours, "hour");
@@ -150,7 +166,7 @@ function addDay()
 {
     if( !state.loading ) {
 
-        if( activeRange.currentTimeRangeIndex < 4 ) setTimeRange(4, false);
+        if( activeRange.timeRangeHours < 24 ) setTimeRange(24, false);
 
         let t0 = moment(startTime).add(1, "day");
         let t1 = moment(t0).add(activeRange.timeRangeHours, "hour");
@@ -162,48 +178,59 @@ function addDay()
     }
 }
 
+function toggleZoom()
+{
+    state.zoomMode = !state.zoomMode;
+    ui.zoomButton.style.backgroundColor = state.zoomMode ? ui.darkMode ? '#ffffff3a' : '#0000003a' : '#0000';
+
+    if( panstate.overlay ) {
+        panstate.overlay.remove();
+        panstate.overlay = null;
+    }
+}
+
 function decZoom()
 {
-    setTimeRange(activeRange.currentTimeRangeIndex+1, true);
+    const ranges = [1, 2, 6, 12, 24, 48, 72, 96, 120, 144, 168];
+       
+    let i = ranges.findIndex(e => e >= activeRange.timeRangeHours);
+    if( i >= 0 ) {
+        if( ranges[i] > activeRange.timeRangeHours ) i--;
+        if( i < ranges.length-1 ) 
+            setTimeRange(ranges[i+1], true);
+    }
 }
 
 function incZoom()
 {
-    setTimeRange(activeRange.currentTimeRangeIndex-1, true);
+    const ranges = [1, 2, 6, 12, 24, 48, 72, 96, 120, 144, 168];
+    const i = ranges.findIndex(e => e >= activeRange.timeRangeHours);
+    if( i > 0 ) 
+        setTimeRange(ranges[i-1], true);
 }
 
 function timeRangeSelected(event)
 {
-    setTimeRange(event.target.selectedIndex, true);
+    setTimeRange(event.target.value, true);
 }
 
-function setTimeRange(index, update)
+function setTimeRange(range, update, t_center = null)
 {
     if( state.loading ) return;
 
+    const stepSizes = { '1': 5, '2': 10, '3': 15, '4': 30, '5': 30, '6': 30, '7': 30, '8': 30, '9': 30, '10': 60, '11': 60, '12':60, '24': 2, '48': 2, '72': 6, '96': 6, '120':12, '144':12, '168':24 };
+
+    activeRange.tickStepSize = stepSizes[range];
+
+    const dataClusterSizes = { '48': 2, '72': 5, '96': 10, '120': 30, '144': 30, '168': 60 };
     const minute = 60000;
 
-    index = ( index < 0 ) ? 0 : ( index > 10 ) ? 10 : index;
-
-    switch( index ) {
-        case 0: activeRange.timeRangeHours = 1; activeRange.tickStepSize = 5; activeRange.dataClusterSize = 0; break;
-        case 1: activeRange.timeRangeHours = 2; activeRange.tickStepSize = 10; activeRange.dataClusterSize = 0; break;
-        case 2: activeRange.timeRangeHours = 6; activeRange.tickStepSize = 30; activeRange.dataClusterSize = 0; break;
-        case 3: activeRange.timeRangeHours = 12; activeRange.tickStepSize = 60; activeRange.dataClusterSize = 0; break;
-        case 4:	activeRange.timeRangeHours = 24*1; activeRange.tickStepSize = 2; activeRange.dataClusterSize = 0; break;
-        case 5:	activeRange.timeRangeHours = 24*2; activeRange.tickStepSize = 2; activeRange.dataClusterSize = 2 * minute; break;
-        case 6:	activeRange.timeRangeHours = 24*3; activeRange.tickStepSize = 6; activeRange.dataClusterSize = 5 * minute; break;
-        case 7:	activeRange.timeRangeHours = 24*4; activeRange.tickStepSize = 6; activeRange.dataClusterSize = 10 * minute; break;
-        case 8:	activeRange.timeRangeHours = 24*5; activeRange.tickStepSize = 12; activeRange.dataClusterSize = 30 * minute; break;
-        case 9:	activeRange.timeRangeHours = 24*6; activeRange.tickStepSize = 12; activeRange.dataClusterSize = 30 * minute; break;
-        case 10:activeRange.timeRangeHours = 24*7; activeRange.tickStepSize = 24; activeRange.dataClusterSize = 60 * minute; break;
-    }
+    activeRange.dataClusterSize = ( range >= 48 ) ? dataClusterSizes[range] * minute : 0;
 
     if( !pconfig.enableDataClustering ) activeRange.dataClusterSize = 0;
 
-    activeRange.currentTimeRangeIndex = index;
-
-    ui.rangeSelector.value = activeRange.timeRangeHours;
+    activeRange.timeRangeHours = range;
+    ui.rangeSelector.value = range;
 
     for( let g of graphs ) {
         g.chart.options.scales.xAxes[0].time.unit = ( activeRange.timeRangeHours < 24 ) ? 'minute' : 'hour';
@@ -213,7 +240,14 @@ function setTimeRange(index, update)
 
     if( update ) {
 
-        if( activeRange.timeRangeHours > 24 ) {
+        if( t_center ) {
+
+            let t1 = moment(t_center).add(activeRange.timeRangeHours / 2, "hour");
+            let t0 = moment(t1).subtract(activeRange.timeRangeHours, "hour");
+            startTime = t0.format("YYYY-MM-DDTHH:mm:ss");
+            endTime = t1.format("YYYY-MM-DDTHH:mm:ss");
+
+        } else if( activeRange.timeRangeHours > 24 ) {
 
             let t1 = moment(endTime);
             let t0 = moment(t1).subtract(activeRange.timeRangeHours, "hour");
@@ -817,6 +851,16 @@ var panstate = {};
     panstate.mx = 0;
     panstate.tc = 0;
     panstate.g 	= null;
+    panstate.overlay = null;
+    panstate.st0 = null;
+    panstate.st1 = null;
+
+function PixelPositionToTimecode(x)
+{
+    const f = (x - panstate.g.chart.chartArea.left) / (panstate.g.chart.chartArea.right - panstate.g.chart.chartArea.left);
+
+    return moment(startTime) + moment(endTime).diff(startTime) * f;
+}
 
 function pointerDown(event)
 {
@@ -834,14 +878,44 @@ function pointerDown(event)
 
     if( panstate.g ) {
 
-        state.drag = true;
-
         panstate.mx = event.clientX;
-        panstate.tc = startTime;
 
         event.target?.setPointerCapture(event.pointerId);
 
-        state.updateCanvas = pconfig.lockAllGraphs ? null : event.target;
+        if( !state.zoomMode ) {            
+
+            state.drag = true;
+
+            panstate.tc = startTime;
+
+            state.updateCanvas = pconfig.lockAllGraphs ? null : event.target;
+
+        } else {
+
+            const x0 = panstate.mx - panstate.g.canvas.getBoundingClientRect().left;
+
+            if( x0 > panstate.g.chart.chartArea.left && x0 < panstate.g.chart.chartArea.right ) {
+
+                if( !panstate.overlay ) {
+
+                    let e = document.createElement('canvas');
+                    e.style = 'position:absolute;pointer-events:none;';
+                    e.width = panstate.g.canvas.width;
+                    e.height = panstate.g.canvas.height;
+
+                    panstate.g.canvas.parentNode.insertBefore(e, panstate.g.canvas);
+
+                    panstate.overlay = e;
+
+                }
+
+                panstate.st0 = PixelPositionToTimecode(x0);
+
+                state.selecting = true;
+
+            }
+
+        }
 
     }
 }
@@ -872,6 +946,21 @@ function pointerMove(event)
                 updateAxes();
 
         }
+
+    } else if( state.selecting && panstate.overlay ) {
+
+        let ctx = panstate.overlay.getContext('2d');
+        ctx.clearRect(0, 0, panstate.overlay.width, panstate.overlay.height);
+
+        const rect = panstate.overlay.getBoundingClientRect();
+        const x0 = panstate.mx - rect.left;
+        const x1 = Math.max(Math.min(event.clientX - rect.left, panstate.g.chart.chartArea.right), panstate.g.chart.chartArea.left);        
+
+        ctx.fillStyle = ui.darkMode ? '#ffffff20' : '#00000020';
+        ctx.fillRect(x0, panstate.g.chart.chartArea.top, x1-x0, panstate.g.chart.chartArea.bottom - panstate.g.chart.chartArea.top);
+
+        panstate.st1 = PixelPositionToTimecode(x1);
+
     }
 }
 
@@ -887,6 +976,72 @@ function pointerUp(event)
         panstate.g.chart.options.scales.yAxes[0].ticks.max = undefined;
 
         updateHistory();
+
+    }
+
+    if( state.selecting ) {
+
+        state.selecting = false;
+
+        panstate.g.chart.options.tooltips.enabled = true;
+
+        panstate.overlay.remove();
+        panstate.overlay = null;
+
+        if( panstate.st1 < panstate.st0 ) [panstate.st1, panstate.st0] = [panstate.st0, panstate.st1];
+
+        const tm = (moment(panstate.st1) + moment(panstate.st0)) / 2;
+
+        let d = Math.ceil(moment.duration(panstate.st1 - panstate.st0).asMinutes() / 60.0);
+        
+        if( d < 12 ) {
+
+            if( d < 1 ) d = 1;
+
+            setTimeRange(d, true, tm);
+
+        } else {
+
+            d = Math.ceil(d / 24.0);
+
+            if( d < 1 ) setTimeRange(12, true, tm); else
+            if( d < 2 ) setTimeRange(24, true, tm); else
+            if( d < 3 ) setTimeRange(48, true, tm); else
+            if( d < 4 ) setTimeRange(72, true, tm); else
+            if( d < 5 ) setTimeRange(96, true, tm); else
+            if( d < 6 ) setTimeRange(120, true, tm); else
+            if( d < 7 ) setTimeRange(144, true, tm); else setTimeRange(189, true, tm);
+
+        }
+
+        toggleZoom();
+
+    }
+
+    panstate.g = null;
+}
+
+function pointerCancel(event)
+{
+    if( state.drag ) {
+
+        state.drag = false;
+        state.updateCanvas = null;
+
+        panstate.g.chart.options.tooltips.enabled = true;
+        panstate.g.chart.options.scales.yAxes[0].ticks.min = undefined;
+        panstate.g.chart.options.scales.yAxes[0].ticks.max = undefined;
+
+    }
+
+    if( state.selecting ) {
+
+        state.selecting = false;
+
+        panstate.g.chart.options.tooltips.enabled = true;
+
+        panstate.overlay.remove();
+        panstate.overlay = null;
 
     }
 
@@ -1009,6 +1164,7 @@ function addGraphToCanvas(gid, type, entities)
     canvas.addEventListener('pointerdown', pointerDown);
     canvas.addEventListener('pointermove', pointerMove);
     canvas.addEventListener('pointerup', pointerUp);
+    canvas.addEventListener('pointercancel', pointerCancel);
 }
 
 function createContent()
@@ -1032,13 +1188,16 @@ function createContent()
         /// 
         _this.querySelector('#b1').addEventListener('click', subDay, false);
         _this.querySelector('#b2').addEventListener('click', addDay, false);
+        _this.querySelector('#bx').addEventListener('click', today, false);
 
+        _this.querySelector('#bz').addEventListener('click', toggleZoom, false);
         _this.querySelector('#b4').addEventListener('click', decZoom, false);
         _this.querySelector('#b5').addEventListener('click', incZoom, false);
         _this.querySelector('#b3').addEventListener('change', timeRangeSelected);
 
         ui.dateSelector = _this.querySelector('#bx');
         ui.rangeSelector = _this.querySelector('#b3');
+        ui.zoomButton = _this.querySelector('#bz');
 
         if( pconfig.enableDynamicModify ) {
 
@@ -1055,12 +1214,7 @@ function createContent()
 
         }
 
-        setTimeRange(4, false);
-
-        startTime = moment().subtract(1, 'day').format('YYYY-MM-DDTHH[:00:00]');
-        endTime = moment(startTime).add(activeRange.timeRangeHours, "hour");
-
-        updateHistory();
+        today();
 
     }
 }
@@ -1173,18 +1327,27 @@ class HistoryExplorerCard extends HTMLElement
         let html = `
             <ha-card id="maincard" header="${header}">
             <div style="margin-left:0px;width:100%">
-                <div style="background-color:${bgcol};margin-left:20px;display:inline-block;padding-left:10px;padding-right:10px;">
+                <div style="background-color:${bgcol};margin-left:10px;display:inline-block;padding-left:10px;padding-right:10px;">
                     <button id="b1" style="border:0px solid black;color:inherit;background-color:#00000000;height:30px"><</button>
                     <button id="bx" style="border:0px solid black;color:inherit;background-color:#00000000;height:30px"></button>
                     <button id="b2" style="border:0px solid black;color:inherit;background-color:#00000000;height:30px">></button>
                 </div>
-                <div style="background-color:${bgcol};float:right;margin-right:20px;display:inline-block;padding-left:10px;padding-right:10px;">
+                <div style="background-color:${bgcol};float:right;margin-right:10px;display:inline-block;padding-left:10px;padding-right:10px;">
+                    <button id="bz" style="border:0px solid black;color:inherit;background-color:#00000000"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="24" height="24" viewBox="0 0 24 24" style="vertical-align:middle;"><path fill="var(--primary-text-color)" d="M15.5,14L20.5,19L19,20.5L14,15.5V14.71L13.73,14.43C12.59,15.41 11.11,16 9.5,16A6.5,6.5 0 0,1 3,9.5A6.5,6.5 0 0,1 9.5,3A6.5,6.5 0 0,1 16,9.5C16,11.11 15.41,12.59 14.43,13.73L14.71,14H15.5M9.5,14C12,14 14,12 14,9.5C14,7 12,5 9.5,5C7,5 5,7 5,9.5C5,12 7,14 9.5,14M12,10H10V12H9V10H7V9H9V7H10V9H12V10Z" /></svg></button>
                     <button id="b4" style="border:0px solid black;color:inherit;background-color:#00000000;height:30px">-</button>
                     <select id="b3" style="border:0px solid black;color:inherit;background-color:#00000000;height:30px">
-                        <option value="1">1 Hour</option>
-                        <option value="2">2 Hours</option>
-                        <option value="6">6 Hours</option>
-                        <option value="12">12 Hours</option>
+                        <option value="1">1 H</option>
+                        <option value="2">2 H</option>
+                        <option value="3" hidden>3 H</option>
+                        <option value="4" hidden>4 H</option>
+                        <option value="5" hidden>5 H</option>
+                        <option value="6">6 H</option>
+                        <option value="7" hidden>7 H</option>
+                        <option value="8" hidden>8 H</option>
+                        <option value="9" hidden>9 H</option>
+                        <option value="10" hidden>10 H</option>
+                        <option value="11" hidden>11 H</option>
+                        <option value="12">12 H</option>
                         <option value="24">1 Day</option>
                         <option value="48">2 Days</option>
                         <option value="72">3 Days</option>
