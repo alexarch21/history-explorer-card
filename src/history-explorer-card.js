@@ -27,6 +27,7 @@ var pconfig = {};
     pconfig.enableDynamicModify  = true;
     pconfig.enableDataClustering = true;
     pconfig.nextDefaultColor     = 0;
+    pconfig.entities             = [];
 
 var loader = {};
     loader.startTime    = 0;
@@ -1065,19 +1066,24 @@ function getDomainForEntity(entity)
 
 function removeGraph(event)
 {
-    if( state.loading ) return;		// TODO: remove after mapping the DB retrieval results to graph entitiy names ?
-
     const id = event.target.id.substr(event.target.id.indexOf("-") + 1);
 
     for( let i = 0; i < graphs.length; i++ ) {
         if( graphs[i].id == id ) {
             graphs[i].canvas.parentNode.remove();
+            for( let e of graphs[i].entities ) {
+                const j = pconfig.entities.indexOf(e.entity);
+                if( j >= 0 ) pconfig.entities.splice(j, 1);
+            }
             graphs.splice(i, 1);
             break;
         }
     }
 
     updateHistoryWithClearCache();
+
+    window.localStorage.removeItem('history-explorer-card');
+    window.localStorage.setItem('history-explorer-card', JSON.stringify(pconfig.entities));
 }
 
 function addEntitySelected(event)
@@ -1093,6 +1099,18 @@ function addEntitySelected(event)
         // TODO: let the user know
         return;
     }
+
+    addEntityGraph(entity_id);
+
+    updateHistoryWithClearCache();
+
+    pconfig.entities.push(entity_id);
+    window.localStorage.setItem('history-explorer-card', JSON.stringify(pconfig.entities));
+}
+
+function addEntityGraph(entity_id)
+{
+    if( _hass.states[entity_id] == undefined ) return;
 
     const type = ( _hass.states[entity_id].attributes?.unit_of_measurement == undefined ) ? 'timeline' : 'line';
 
@@ -1133,8 +1151,6 @@ function addEntitySelected(event)
     _this.querySelector(`#bc-${g_id}`).addEventListener('click', removeGraph);
 
     addGraphToCanvas(g_id++, type, entities);
-
-    updateHistoryWithClearCache();
 }
 
 function addGraphToCanvas(gid, type, entities)
@@ -1211,6 +1227,10 @@ function createContent()
                 o.innerHTML = e;
                 datalist.appendChild(o);
             }
+
+            pconfig.entities = JSON.parse(window.localStorage.getItem('history-explorer-card'));
+            
+            for( let e of pconfig.entities ) addEntityGraph(e);
 
         }
 
@@ -1293,9 +1313,6 @@ class HistoryExplorerCard extends HTMLElement
     // The user supplied configuration. Throw an exception and Lovelace will render an error card.
     setConfig(config) 
     {
-        //console.log("----------------------------");
-        //console.log(config);
-
         this.config = config;
 
         g_id = 0;
