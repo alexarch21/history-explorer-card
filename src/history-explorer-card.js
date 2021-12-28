@@ -12,6 +12,7 @@ var ui = {};
     ui.darkMode      = false;
 
 var i18n = {};
+    i18n.valid                = false;
     i18n.styleDateSelector    = '';
     i18n.styleTimeTicks       = '';
     i18n.styleDateTicks       = '';
@@ -104,6 +105,12 @@ var stateColors = {
 
     'WCDMA' : '#44739e', 
     'LTE' : '#984ea3',
+
+    'cloudy' : '#91acce',
+    'fog' : '#adadad',
+    'rainy' : '#5285df',
+    'partlycloudy' : '#11a3e9',
+    'sunny' : '#e9db11'
 
 };
 
@@ -1230,7 +1237,8 @@ function createContent()
 
             pconfig.entities = JSON.parse(window.localStorage.getItem('history-explorer-card'));
             
-            for( let e of pconfig.entities ) addEntityGraph(e);
+            if( pconfig.entities )
+                for( let e of pconfig.entities ) addEntityGraph(e);
 
         }
 
@@ -1298,11 +1306,28 @@ class HistoryExplorerCard extends HTMLElement
         _this = this;
         _hass = hass;
 
-        let locale = hass.selectedLanguage;
-        i18n.styleDateSelector = getLocalizedDateString(locale, { dateStyle: 'medium' });
-        i18n.styleTimeTicks = getLocalizedDateString(locale, { timeStyle: 'short' });
-        i18n.styleDateTicks = ( i18n.styleDateSelector[0] == 'D' ) ? 'D MMM' : 'MMM D';
-        i18n.styleDateTimeTooltip = i18n.styleDateTicks + ', ' + getLocalizedDateString(locale, { timeStyle: 'medium' });
+        if( !i18n.valid ) {
+
+            if( !this.config.skiplocale ) {
+
+                let locale = hass.selectedLanguage;
+                i18n.styleDateSelector = getLocalizedDateString(locale, { dateStyle: 'medium' });
+                i18n.styleTimeTicks = getLocalizedDateString(locale, { timeStyle: 'short' });
+                i18n.styleDateTicks = ( i18n.styleDateSelector[0] == 'D' ) ? 'D MMM' : 'MMM D';
+                i18n.styleDateTimeTooltip = i18n.styleDateTicks + ', ' + getLocalizedDateString(locale, { timeStyle: 'medium' });
+
+            } else {
+
+                i18n.styleDateSelector = 'D MMM YYYY';
+                i18n.styleTimeTicks = 'HH:mm';
+                i18n.styleDateTicks = 'D MMM';
+                i18n.styleDateTimeTooltip = 'D MMM, HH:mm:ss';
+
+            }
+
+            i18n.valid = true;
+
+        }
 
         if( !contentValid && !iid )
             iid = setInterval(updateContent, 100);
