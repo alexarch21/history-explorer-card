@@ -1308,22 +1308,11 @@ class HistoryExplorerCard extends HTMLElement
 
         if( !i18n.valid ) {
 
-            if( !this.config.skiplocale ) {
-
-                let locale = hass.selectedLanguage;
-                i18n.styleDateSelector = getLocalizedDateString(locale, { dateStyle: 'medium' });
-                i18n.styleTimeTicks = getLocalizedDateString(locale, { timeStyle: 'short' });
-                i18n.styleDateTicks = ( i18n.styleDateSelector[0] == 'D' ) ? 'D MMM' : 'MMM D';
-                i18n.styleDateTimeTooltip = i18n.styleDateTicks + ', ' + getLocalizedDateString(locale, { timeStyle: 'medium' });
-
-            } else {
-
-                i18n.styleDateSelector = 'D MMM YYYY';
-                i18n.styleTimeTicks = 'HH:mm';
-                i18n.styleDateTicks = 'D MMM';
-                i18n.styleDateTimeTooltip = 'D MMM, HH:mm:ss';
-
-            }
+            let locale = hass.language ? hass.language : 'en-GB';
+            i18n.styleDateSelector = getLocalizedDateString(locale, { dateStyle: 'medium' });
+            i18n.styleTimeTicks = getLocalizedDateString(locale, { timeStyle: 'short' });
+            i18n.styleDateTicks = ( i18n.styleDateSelector[0] == 'D' ) ? 'D MMM' : 'MMM D';
+            i18n.styleDateTimeTooltip = i18n.styleDateTicks + ', ' + getLocalizedDateString(locale, { timeStyle: 'medium' });
 
             i18n.valid = true;
 
