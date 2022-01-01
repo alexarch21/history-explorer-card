@@ -1198,6 +1198,10 @@ function createContent()
         contentValid = true;
 
         ui.darkMode = _hass.selectedTheme && _hass.selectedTheme.dark;
+        if( _this.config.uimode ) {
+            if( _this.config.uimode === 'dark' ) ui.darkMode = true; else
+            if( _this.config.uimode === 'light' ) ui.darkMode = false;
+        }
 
         pconfig.graphLabelColor = ui.darkMode ? '#9b9b9b' : '#333';
         pconfig.graphGridColor  = ui.darkMode ? "rgba(255, 255, 255, 0.1)" : "rgba(0, 0, 0, 0.1)";
@@ -1237,8 +1241,10 @@ function createContent()
 
             pconfig.entities = JSON.parse(window.localStorage.getItem('history-explorer-card'));
             
-            if( pconfig.entities )
+            if( pconfig.entities ) {
                 for( let e of pconfig.entities ) addEntityGraph(e);
+            ] else
+                pconfig.entities = [];
 
         }
 
@@ -1355,6 +1361,8 @@ class HistoryExplorerCard extends HTMLElement
 
         const bgcol = getComputedStyle(document.body).getPropertyValue('--primary-color') + '1f';
 
+        const optionStyle = `style="color:var(--primary-text-color);background-color:var(--paper-listbox-background-color)"`;
+
         let html = `
             <ha-card id="maincard" header="${header}">
             <div style="margin-left:0px;width:100%">
@@ -1367,25 +1375,25 @@ class HistoryExplorerCard extends HTMLElement
                     <button id="bz" style="border:0px solid black;color:inherit;background-color:#00000000"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="24" height="24" viewBox="0 0 24 24" style="vertical-align:middle;"><path fill="var(--primary-text-color)" d="M15.5,14L20.5,19L19,20.5L14,15.5V14.71L13.73,14.43C12.59,15.41 11.11,16 9.5,16A6.5,6.5 0 0,1 3,9.5A6.5,6.5 0 0,1 9.5,3A6.5,6.5 0 0,1 16,9.5C16,11.11 15.41,12.59 14.43,13.73L14.71,14H15.5M9.5,14C12,14 14,12 14,9.5C14,7 12,5 9.5,5C7,5 5,7 5,9.5C5,12 7,14 9.5,14M12,10H10V12H9V10H7V9H9V7H10V9H12V10Z" /></svg></button>
                     <button id="b4" style="border:0px solid black;color:inherit;background-color:#00000000;height:30px">-</button>
                     <select id="b3" style="border:0px solid black;color:inherit;background-color:#00000000;height:30px">
-                        <option value="1">1 H</option>
-                        <option value="2">2 H</option>
-                        <option value="3" hidden>3 H</option>
-                        <option value="4" hidden>4 H</option>
-                        <option value="5" hidden>5 H</option>
-                        <option value="6">6 H</option>
-                        <option value="7" hidden>7 H</option>
-                        <option value="8" hidden>8 H</option>
-                        <option value="9" hidden>9 H</option>
-                        <option value="10" hidden>10 H</option>
-                        <option value="11" hidden>11 H</option>
-                        <option value="12">12 H</option>
-                        <option value="24">1 Day</option>
-                        <option value="48">2 Days</option>
-                        <option value="72">3 Days</option>
-                        <option value="96">4 Days</option>
-                        <option value="120">5 Days</option>
-                        <option value="144">6 Days</option>
-                        <option value="168">1 Week</option>
+                        <option value="1" ${optionStyle}>1 H</option>
+                        <option value="2" ${optionStyle}>2 H</option>
+                        <option value="3" ${optionStyle} hidden>3 H</option>
+                        <option value="4" ${optionStyle} hidden>4 H</option>
+                        <option value="5" ${optionStyle} hidden>5 H</option>
+                        <option value="6" ${optionStyle}>6 H</option>
+                        <option value="7" ${optionStyle} hidden>7 H</option>
+                        <option value="8" ${optionStyle} hidden>8 H</option>
+                        <option value="9" ${optionStyle} hidden>9 H</option>
+                        <option value="10" ${optionStyle} hidden>10 H</option>
+                        <option value="11" ${optionStyle} hidden>11 H</option>
+                        <option value="12" ${optionStyle}>12 H</option>
+                        <option value="24" ${optionStyle}>1 Day</option>
+                        <option value="48" ${optionStyle}>2 Days</option>
+                        <option value="72" ${optionStyle}>3 Days</option>
+                        <option value="96" ${optionStyle}>4 Days</option>
+                        <option value="120" ${optionStyle}>5 Days</option>
+                        <option value="144" ${optionStyle}>6 Days</option>
+                        <option value="168" ${optionStyle}>1 Week</option>
                     </select>
                     <button id="b5" style="border:0px solid black;color:inherit;background-color:#00000000;height:30px">+</button>
                 </div>
