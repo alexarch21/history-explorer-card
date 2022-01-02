@@ -57,6 +57,16 @@ type: custom:history-explorer-card
 graphs:
 ```
 
+### Themes and dark mode
+
+The card will try to adapt its UI colors to the currently active theme. But for best results, it will have to know if you're running a dark or a light theme. By default the card asks HA for this information. If you're using the default Lovelace theme, or another modern theme that properly sets the dark mode flag, then you should be all with the default settings. If you are using an older theme that uses the legacy format and doesn't properly set the dark mode flag, the card may end up in the wrong mode. You can override the mode by adding this YAML to the global card settings (see below) to force either dark or light mode:
+
+```yaml
+type: custom:history-explorer-card
+uimode: dark
+```
+Replace dark with light to force light mode instead.
+ 
 ### YAML configuration
 
 YAML configuration is optional. And while the interactive configuration is preferrable, it can sometimes be useful to keep a set of predefined entities.
