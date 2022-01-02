@@ -22,7 +22,7 @@ var pconfig = {};
     pconfig.graphLabelColor      = '#333';
     pconfig.graphGridColor       = '#00000000';
     pconfig.lineGraphHeight      = 250;
-    pconfig.customStateColors    = {};
+    pconfig.customStateColors    = undefined;
     pconfig.graphConfig          = [];
     pconfig.lockAllGraphs        = false;
     pconfig.enableDynamicModify  = true;
@@ -82,35 +82,100 @@ function getNextDefaultColor()
 // Predefined state colors for timeline history
 // --------------------------------------------------------------------------------------
 
+var defaultGood = '#66a61e';
+var defaultBad = '#b5342d';
+var defaultMultiple = '#e5ad23';
+
+var activeRed = '#cd3e3e';
+var activeGreen = '#3ecd3e';
+var multipleRed = 'rgb(213, 142, 142)';
+var multipleGreen = 'rgb(142, 213, 142)';
+
 var stateColors = { 
 
-    'binary_sensor.multiple' : 'rgb(213, 142, 142)',
-    'sensor.multiple' : 'rgb(213, 142, 142)',
-    'person.multiple' : '#e5ad23',
+    // Special states
 
     'unknown' : "#888888",
     'unavailable' : "#aaaaaa",
+    'idle' : "#aaaaaa",
 
-    'on' : "#cd3e3e", 
-    'off' : "#dddddd", 
+    // on = red , off = inactive (default fallback used for all device classes not explicitely mentioned)
 
-    'home' : '#66a61e',
-    'not_home' : '#b5342d',
-    'arriving' : '#d5bd43',
+    'on' : activeRed, 
+    'off' : '#dddddd',
+    'binary_sensor.multiple' : multipleRed,
 
-    'Eco' : '#44739e', 
-    'Confort - 2' : '#984ea3', 
-    'Confort - 1' : '#00d2d5', 
-    'Confort' : '#ff7f00',
+    // on = green , off = inactive
 
-    'WCDMA' : '#44739e', 
-    'LTE' : '#984ea3',
+    'battery_charging.on': activeGreen,
+    'battery_charging.multiple': multipleGreen,
+    'plug.on': activeGreen,
+    'plug.multiple': multipleGreen,
+    'running.on': activeGreen,
+    'running.multiple': multipleGreen,
+    'update.on': activeGreen,
+    'update.multiple': multipleGreen,
 
-    'cloudy' : '#91acce',
-    'fog' : '#adadad',
-    'rainy' : '#5285df',
-    'partlycloudy' : '#11a3e9',
-    'sunny' : '#e9db11'
+    // on = good (green), off = bad (red)
+
+    'connectivity.on': defaultGood,
+    'connectivity.off': defaultBad,
+    'connectivity.multiple': defaultMultiple,
+    'power.on': defaultGood,
+    'power.off': defaultBad,
+    'power.multiple': defaultMultiple,
+    'presence.on': defaultGood,
+    'presence.off': defaultBad,
+    'presence.multiple': defaultMultiple,
+
+    // on = bad (red), off = good (green)
+
+    'gas.on': defaultBad,
+    'gas.off': defaultGood,
+    'gas.multiple': defaultMultiple,
+    'smoke.on': defaultBad,
+    'smoke.off': defaultGood,
+    'smoke.multiple': defaultMultiple,
+    'problem.on': defaultBad,
+    'problem.off': defaultGood,
+    'problem.multiple': defaultMultiple,
+    'safety.on': defaultBad,
+    'safety.off': defaultGood,
+    'safety.multiple': defaultMultiple,
+
+    // person domain
+
+    'person.home' : '#66a61e',
+    'person.not_home' : '#b5342d',
+    'person.arriving' : '#d5bd43',
+    'person.leaving' : '#d5bd43',
+    'person.multiple' : '#e5ad23',
+
+    // weather domain
+
+    'weather.cloudy' : '#91acce',
+    'weather.fog' : '#adadad',
+    'weather.rainy' : '#5285df',
+    'weather.partlycloudy' : '#11a3e9',
+    'weather.sunny' : '#e9db11',
+    'weather.multiple' : '#aaaaaa',
+
+    // automation domain
+
+    'automation.on': activeGreen,
+    'automation.multiple': multipleGreen,
+
+    // 
+
+    'input_select.Eco' : '#44739e', 
+    'input_select.Confort - 2' : '#984ea3', 
+    'input_select.Confort - 1' : '#00d2d5', 
+    'input_select.Confort' : '#ff7f00',
+
+    // 
+
+    'sensor.WCDMA' : '#44739e', 
+    'sensor.LTE' : '#984ea3',
 
 };
 
@@ -120,17 +185,32 @@ var stateColorsDark = {
 
 };
 
-function getStateColor(value)
+function getStateColor(domain, device_class, value)
 {
     let c;
 
-    if( pconfig.customStateColors ) 
-        c = pconfig.customStateColors[value];
-
-    if( !c ) {
-        c = ui.darkMode ? stateColorsDark[value] ? stateColorsDark[value] : stateColors[value] : stateColors[value];
-        c = c ? c : ui.darkMode ? "#333333" : "#dddddd";
+    // device_class.state override
+    if( device_class ) {
+        const v = device_class + '.' + value;
+        c = pconfig.customStateColors?.[v];
+        c = c ?? (( ui.darkMode && stateColorsDark[v] ) ? stateColorsDark[v] : stateColors[v]);
     }
+
+    // domain.state override
+    if( !c && domain ) {
+        const v = domain + '.' + value;
+        c = pconfig.customStateColors?.[v];
+        c = c ?? (( ui.darkMode && stateColorsDark[v] ) ? stateColorsDark[v] : stateColors[v]);
+    }
+
+    // global state override
+    if( !c ) {
+        c = pconfig.customStateColors?.[value];
+        c = c ?? (( ui.darkMode && stateColorsDark[value] ) ? stateColorsDark[value] : stateColors[value]);
+    }
+
+    // general fallback if state color is not defined anywhere
+    c = c ?? (ui.darkMode ? "#333333" : "#dddddd");
 
     return c;
 }
@@ -535,8 +615,10 @@ function buildChartData(result)
                         }
                     }
 
-                    if( !state.drag && m_now > m_end && s.length > 0 && moment(s[s.length-1].x) < m_end ) {
+                    if( m_now > m_end && s.length > 0 && moment(s[s.length-1].x) < m_end ) {
                         s.push({ x: m_end, y: result[id][n-1].state});
+                    } else if( m_now <= m_end && s.length > 0 && moment(s[s.length-1].x) < m_now ) {
+                        s.push({ x: m_now, y: result[id][n-1].state});
                     }
 
                 } else if( g.type == 'timeline' ) {				
@@ -549,11 +631,13 @@ function buildChartData(result)
                     let mt0, mt1;
                     let state;
 
+                    const m_max = ( m_now < m_end ) ? m_now : m_end;
+
                     for( let i = 0; i < n; i++ ) {
 
                         // Start and end timecode of current state block
                         let t0 = result[id][i].last_changed;
-                        let t1 = ( i < n-1 ) ? result[id][i+1].last_changed : endTime;
+                        let t1 = ( i < n-1 ) ? result[id][i+1].last_changed : m_max;
 
                         // Not currently merging small blocks ?
                         if( !merged ) {
@@ -564,7 +648,7 @@ function buildChartData(result)
                             // Skip noop state changes (can happen at cache slot boundaries)
                             while( i < n-1 && result[id][i].state == result[id][i+1].state ) {
                                 ++i;
-                                t1 = ( i < n-1 ) ? result[id][i+1].last_changed : endTime;
+                                t1 = ( i < n-1 ) ? result[id][i+1].last_changed : m_max;
                             }
 
                         }
@@ -668,6 +752,7 @@ function newGraph(canvas, graphtype, datasets)
             datastructure.labels.push(d.name);
             datastructure.datasets.push({ 
                 domain: d.domain,
+                device_class: d.device_class,
                 entity_id: d.entity_id,
                 data: [ ] 
             });
@@ -750,8 +835,12 @@ function newGraph(canvas, graphtype, datasets)
             },
             elements: {
                 colorFunction: function(text, data, datasets, index) {
-                    let domain = datasets[index].domain;
-                    return getStateColor(( data[2] == 'multiple' ) ? domain + "." + data[2] : data[2]);
+                    // * check domain.state first
+                    // * if not found, then check device_class.state (if it exists)
+                    // * if not found, check state only
+//                    let domain = datasets[index].domain;
+                    //return getStateColor(( data[2] == 'multiple' ) ? domain + "." + data[2] : data[2]);
+                    return getStateColor(datasets[index].domain, datasets[index].device_class, data[2]);
                 },
                 showText: true,
                 font: 'normal 13px "Helvetica Neue", Helvetica, Arial, sans-serif',
@@ -1071,6 +1160,11 @@ function getDomainForEntity(entity)
     return entity.substr(0, entity.indexOf("."));
 }
 
+function getDeviceClass(entity)
+{
+    return _hass.states[entity]?.attributes?.device_class;
+}
+
 function removeGraph(event)
 {
     const id = event.target.id.substr(event.target.id.indexOf("-") + 1);
@@ -1174,6 +1268,7 @@ function addGraphToCanvas(gid, type, entities)
             "width": d.width || 2.0,
             "unit": ( d.unit === undefined ) ? _hass.states[d.entity].attributes.unit_of_measurement : d.unit,
             "domain": getDomainForEntity(d.entity),
+            "device_class": getDeviceClass(d.entity),
             "entity_id" : d.entity
         });
     }
@@ -1243,7 +1338,7 @@ function createContent()
             
             if( pconfig.entities ) {
                 for( let e of pconfig.entities ) addEntityGraph(e);
-            ] else
+            } else
                 pconfig.entities = [];
 
         }
@@ -1348,10 +1443,10 @@ class HistoryExplorerCard extends HTMLElement
             }
         }
 
-        if( config.stateColors ) 
-            pconfig.customStateColors = JSON.parse(config.stateColors);
-        else
-            pconfig.customStateColors = undefined;
+//        if( config.stateColors ) 
+            pconfig.customStateColors = config.stateColors;
+//        else
+//            pconfig.customStateColors = undefined;
 
         pconfig.enableDataClustering = config.decimation == undefined || config.decimation;
 
