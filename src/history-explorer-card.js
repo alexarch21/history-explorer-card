@@ -226,8 +226,8 @@ function today()
 
         if( activeRange.timeRangeHours < 24 ) setTimeRange(24, false);
 
-        startTime = moment().subtract(1, 'day').format('YYYY-MM-DDTHH[:00:00]');
-        endTime = moment(startTime).add(activeRange.timeRangeHours, "hour");
+        endTime = moment().add(1, 'hour').format('YYYY-MM-DDTHH[:00:00]');
+        startTime = moment(endTime).subtract(activeRange.timeRangeHours, "hour");
 
         updateHistory();
 
