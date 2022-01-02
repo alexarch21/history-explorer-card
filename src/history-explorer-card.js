@@ -181,7 +181,7 @@ var stateColors = {
 
 var stateColorsDark = { 
 
-    'off' : "#333333", 
+    'off' : "#383838", 
 
 };
 
@@ -210,7 +210,7 @@ function getStateColor(domain, device_class, value)
     }
 
     // general fallback if state color is not defined anywhere
-    c = c ?? (ui.darkMode ? "#333333" : "#dddddd");
+    c = c ?? (ui.darkMode ? "#777777" : "#dddddd");
 
     return c;
 }
@@ -835,11 +835,9 @@ function newGraph(canvas, graphtype, datasets)
             },
             elements: {
                 colorFunction: function(text, data, datasets, index) {
-                    // * check domain.state first
-                    // * if not found, then check device_class.state (if it exists)
-                    // * if not found, check state only
-//                    let domain = datasets[index].domain;
-                    //return getStateColor(( data[2] == 'multiple' ) ? domain + "." + data[2] : data[2]);
+                    // * check device_class.state first (if it exists)
+                    // * if not found, then check domain.state
+                    // * if not found, check global state
                     return getStateColor(datasets[index].domain, datasets[index].device_class, data[2]);
                 },
                 showText: true,
@@ -1443,10 +1441,7 @@ class HistoryExplorerCard extends HTMLElement
             }
         }
 
-//        if( config.stateColors ) 
-            pconfig.customStateColors = config.stateColors;
-//        else
-//            pconfig.customStateColors = undefined;
+        pconfig.customStateColors = config.stateColors;
 
         pconfig.enableDataClustering = config.decimation == undefined || config.decimation;
 
