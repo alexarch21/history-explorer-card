@@ -57,6 +57,38 @@ type: custom:history-explorer-card
 graphs:
 ```
 
+### Customizing state colors
+
+The default colors used for the states shown on timeline graphs can be customized in many different ways. Customizing is done by adding the statesColor key to the card YAML. Colors act on device classes, domains or global states. You can, for example, have distinct colors for the on and off states of your motion sensors and your door sensors, even if they're both binary sensors.
+
+The following example will turn the *on* state of all door sensors blue and the *on* state of all motion sensors yellow. The *on* state of other sensor device classes will not be affected. They will inherit their colors from either a domain wide or a global color rule, in that order (see below). You specify the device class followed by a dot and the state you'd like to customize:
+
+```yaml
+type: custom:history-explorer-card
+stateColors:
+  door.on: blue
+  motion.on: yellow
+```
+
+You can also specify state colors for an entire domain. The following example will turn the *off* state for all binary sensors that don't have a color defined for their device class purple and the *home* state of the person domain green:
+
+```yaml
+type: custom:history-explorer-card
+stateColors:
+  binary_sensor.off: purple
+  person.home: 'rgb(0,255,0)'
+```
+
+Finally, you can color a specific state globally through all device classes and domains. This can be used as a generic fallback. The following example colors the *off* state of all sensors red, as long as they don't have a specific rule for their device class or domain:
+
+```yaml
+type: custom:history-explorer-card
+stateColors:
+  off: '#ff0000'
+```
+
+There is a special virtual state that is added to all entities, the *multiple* state. This state substitutes an aggregation of multiple states on the timeline when they were merged due to data decimation. Like normal states, you can specify the color for this special state for device classes, domains or globally.
+
 ### Themes and dark mode
 
 The card will try to adapt its UI colors to the currently active theme. But for best results, it will have to know if you're running a dark or a light theme. By default the card asks HA for this information. If you're using the default Lovelace theme, or another modern theme that properly sets the dark mode flag, then you should be all with the default settings. If you are using an older theme that uses the legacy format and doesn't properly set the dark mode flag, the card may end up in the wrong mode. You can override the mode by adding this YAML to the global card settings (see below) to force either dark or light mode:
@@ -106,7 +138,10 @@ And a more advanced one:
 
 ```yaml
 type: custom:history-explorer-card
-stateColors: '{ "on": "#b00000", "off": "#dddddd", "home": "#ff3333", "not_home": "#0000aa" }'
+uimode: dark
+stateColors:
+  person.home: blue
+  person.not_home: yellow
 decimation: false
 header: 'My sample history'
 graphs:
