@@ -24,20 +24,24 @@ The card will automatically reduce the data shown in the charts and remove detai
 
 This feature can be turned off in the options if you want, either globally or by entity.
 
-![screen](./images/screenshots/history-panel-line-decimation.png)
+![history-panel-line-decimation](https://github.com/alexarch21/history-explorer-card/raw/main/images/screenshots/history-panel-line-decimation.png)
 
 Decimation works on state timelines by merging very small state changes into 'multiple' sections when they can't be seen individually anymore. Zoom into the timeline and the details will appear. The color used for the multiple sections can be adjusted per graph.
 
-![screen](./images/screenshots/history-panel-timeline-multiple.png)
+![history-panel-timeline-multiple](https://github.com/alexarch21/history-explorer-card/raw/main/images/screenshots/history-panel-timeline-multiple.png)
 
 ## Install and configuration
 
-Only manual install is supported right now: 
+### HACS
 
- 1. Download the history-explorer-card.js file and copy it into your config/www folder
+Add this repository as a custom repository to HACS and install as normal.
+
+### Manual install
+
+ 1. Download the `history-explorer-card.js` file and copy it into your `config/www` folder
  2. Add a resource reference to it. On the HA UI, navigate to Configuration -> Dashboards -> Resources. Visit the [Registering resources](https://developers.home-assistant.io/docs/frontend/custom-ui/registering-resources) page on the Home Assistant support site for more information.
- 3. Click on the + Add Resource button
- 4. Add /local/history-explorer-card.js into the URL field and make sure the resource type field says Javascript Module
+ 3. Click on the `+ Add Resource` button
+ 4. Type `/local/history-explorer-card.js` into the URL field and make sure the resource type field says Javascript Module
  5. Hit create
 
 You can now add the card to your dashboard as usual.
@@ -48,7 +52,7 @@ The entities visible on the history explorer card can be defined in the card con
 
 You can manage your dynamically configured entities like this:
 
-![screen](./images/screenshots/history-panel-otf-entities.png)
+![history-panel-otf-entities](https://github.com/alexarch21/history-explorer-card/raw/main/images/screenshots/history-panel-otf-entities.png)
 
 If you want to manage all your entities dynamically, you will need to supply an empty YAML. You can still add global configuration settings.
 
