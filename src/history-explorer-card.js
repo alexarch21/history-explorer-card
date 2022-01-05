@@ -27,6 +27,7 @@ var pconfig = {};
     pconfig.lockAllGraphs        = false;
     pconfig.enableDynamicModify  = true;
     pconfig.enableDataClustering = true;
+    pconfig.roundingPrecision    = 2;
     pconfig.nextDefaultColor     = 0;
     pconfig.entities             = [];
 
@@ -811,7 +812,8 @@ function newGraph(canvas, graphtype, datasets)
                         if( graphtype == 'line' ) {
                             let label = data.datasets[item.datasetIndex].label || '';
                             if( label ) label += ': ';
-                            label += Math.round(item.yLabel * 100) / 100;
+                            const p = 10 ** pconfig.roundingPrecision;
+                            label += Math.round(item.yLabel * p) / p;
                             label += ' ' + data.datasets[item.datasetIndex].unit || '';
                             return label;
                         } else {
@@ -1442,8 +1444,8 @@ class HistoryExplorerCard extends HTMLElement
         }
 
         pconfig.customStateColors = config.stateColors;
-
-        pconfig.enableDataClustering = config.decimation == undefined || config.decimation;
+        pconfig.enableDataClustering = ( config.decimation == undefined ) || config.decimation;
+        pconfig.roundingPrecision = config.rounding || 2;
 
         contentValid = false;
 
