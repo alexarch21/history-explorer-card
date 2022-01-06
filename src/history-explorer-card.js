@@ -797,6 +797,11 @@ function newGraph(canvas, graphtype, datasets)
                     afterFit: (scaleInstance) => {
                         scaleInstance.width = 65;
                     },
+                    afterDataLimits: (me) => {
+                        const epsilon = 0.0001;
+                        me.min -= epsilon;
+                        me.max += epsilon;
+                    },
                     ticks: {
                         fontColor: pconfig.graphLabelColor
                     },
