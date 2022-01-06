@@ -28,6 +28,7 @@ var pconfig = {};
     pconfig.enableDynamicModify  = true;
     pconfig.enableDataClustering = true;
     pconfig.roundingPrecision    = 2;
+    pconfig.defaultLineMode      = undefined;
     pconfig.nextDefaultColor     = 0;
     pconfig.entities             = [];
 
@@ -733,8 +734,9 @@ function newGraph(canvas, graphtype, datasets)
                 pointRadius: 0,
                 hitRadius: 5,
                 label: d.name,
-                steppedLine: d.stepped,
-                cubicInterpolationMode: 'monotone',
+                steppedLine: d.mode === 'stepped',
+                cubicInterpolationMode: ( d.mode !== 'stepped' && d.mode !== 'lines' ) ? 'monotone' : 'default',
+                lineTension: ( d.mode === 'lines' ) ? 0 : undefined,
                 domain: d.domain,
                 entity_id: d.entity_id,
                 unit: d.unit,
@@ -1264,7 +1266,7 @@ function addGraphToCanvas(gid, type, entities)
             "name": ( d.name === undefined ) ? _hass.states[d.entity].attributes.friendly_name : d.name,
             "bColor": d.color, 
             "fillColor": d.fill, 
-            "stepped": d.stepped || false, 
+            "mode": d.lineMode || pconfig.defaultLineMode, 
             "width": d.width || 2.0,
             "unit": ( d.unit === undefined ) ? _hass.states[d.entity].attributes.unit_of_measurement : d.unit,
             "domain": getDomainForEntity(d.entity),
@@ -1444,8 +1446,9 @@ class HistoryExplorerCard extends HTMLElement
         }
 
         pconfig.customStateColors = config.stateColors;
-        pconfig.enableDataClustering = ( config.decimation == undefined ) || config.decimation;
+        pconfig.enableDataClustering = ( config.decimation === undefined ) || config.decimation;
         pconfig.roundingPrecision = config.rounding || 2;
+        pconfig.defaultLineMode = config.lineMode;
 
         contentValid = false;
 
