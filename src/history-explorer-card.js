@@ -1350,6 +1350,8 @@ function createContent()
 
         }
 
+        setTimeRange(24, false);
+
         today();
 
     }
