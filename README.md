@@ -61,6 +61,30 @@ type: custom:history-explorer-card
 graphs:
 ```
 
+### Line interpolation modes
+
+Three modes are available for line charts: cubic splines, line segments and stepped. Cubic splines, the default, are the smoothest but can sometimes overshoot after steep gradients followed by longer constant sections. Line segments will connect your data points using straight lines. They are less smooth, but can't overshoot. Stepped mode will show the raw quantized data.
+
+![image](https://user-images.githubusercontent.com/60828821/148483356-aea06848-13d9-4e1e-bd06-485b44505d48.png)
+
+You can specify the line mode in the YAML global settings. Possible options are `curves`, `lines` or `stepped`. The default if the option is not present is curves.
+
+```yaml
+type: custom:history-explorer-card
+lineMode: lines
+```
+
+For fixed entities defined in the YAML (see below) the lineMode can be defined per entity.
+
+### Rounding
+
+The rounding precision used for displaying data point values on the tooltip in line charts can be defined globally through the `rounding` key followed by the amount of fractional digits. The default is 2 digits.
+
+```yaml
+type: custom:history-explorer-card
+rounding: 4
+```
+
 ### Customizing state colors
 
 The default colors used for the states shown on timeline graphs can be customized in many different ways. Customizing is done by adding the statesColor key to the card YAML. Colors act on device classes, domains or global states. You can, for example, have distinct colors for the on and off states of your motion sensors and your door sensors, even if they're both binary sensors.
@@ -155,11 +179,11 @@ graphs:
         color: '#3e95cd'
         fill: rgba(151,187,205,0.15)
         width: 4
-        stepped: true
+        lineMode: stepped
       - entity: sensor.annexe_temperature
         color: '#ee3452'
         fill: rgba(0,0,0,0)
-        stepped: false
+        lineMode: lines
   - type: line
     entities:
       - entity: sensor.outside_pressure
