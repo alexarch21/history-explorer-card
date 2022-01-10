@@ -1299,7 +1299,7 @@ function createContent()
 
         contentValid = true;
 
-        ui.darkMode = _hass.selectedTheme && _hass.selectedTheme.dark;
+        ui.darkMode = (_hass.selectedTheme && _hass.selectedTheme.dark) || (_hass.themes && _hass.themes.darkMode);
         if( _this.config.uimode ) {
             if( _this.config.uimode === 'dark' ) ui.darkMode = true; else
             if( _this.config.uimode === 'light' ) ui.darkMode = false;
