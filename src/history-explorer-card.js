@@ -2,6 +2,7 @@
 import "./moment.min.js";
 import "./Chart.js";
 import "./timeline.js";
+import "./md5.min.js"
 
 var isMobile = ( navigator.appVersion.indexOf("Mobi") > -1 );
 
@@ -23,9 +24,9 @@ var pconfig = {};
     pconfig.graphGridColor       = '#00000000';
     pconfig.lineGraphHeight      = 250;
     pconfig.customStateColors    = undefined;
+    pconfig.colorSeed            = 137;
     pconfig.graphConfig          = [];
     pconfig.lockAllGraphs        = false;
-    pconfig.enableDynamicModify  = true;
     pconfig.enableDataClustering = true;
     pconfig.roundingPrecision    = 2;
     pconfig.defaultLineMode      = undefined;
@@ -169,10 +170,11 @@ var stateColors = {
 
     // 
 
+    'input_select.Arret' : '#dddddd', 
     'input_select.Eco' : '#44739e', 
-    'input_select.Confort - 2' : '#984ea3', 
-    'input_select.Confort - 1' : '#00d2d5', 
-    'input_select.Confort' : '#ff7f00',
+    'input_select.Confort - 2' : '#53b8ba', 
+    'input_select.Confort - 1' : '#984ea3', 
+    'input_select.Confort' : '#e99745',
 
     // 
 
@@ -185,11 +187,17 @@ var stateColorsDark = {
 
     'off' : "#383838", 
 
+    'input_select.Arret' : '#383838', 
+
 };
+
+var colorMap = new Map();
 
 function getStateColor(domain, device_class, value)
 {
     let c;
+
+    if( value === undefined || value === '' ) value = 'unknown';
 
     // device_class.state override
     if( device_class ) {
@@ -211,8 +219,18 @@ function getStateColor(domain, device_class, value)
         c = c ?? (( ui.darkMode && stateColorsDark[value] ) ? stateColorsDark[value] : stateColors[value]);
     }
 
-    // general fallback if state color is not defined anywhere
-    c = c ?? (ui.darkMode ? "#777777" : "#dddddd");
+    // general fallback if state color is not defined anywhere, generate color from the MD5 hash of the state name
+    if( !c ) {
+        if( !colorMap.has(value) ) {
+            const md = md5(value);
+            const h = ((md[0] & 0x7FFFFFFF) * pconfig.colorSeed) % 359;
+            const s = Math.ceil(45.0 + (30.0 * (((md[1] & 0x7FFFFFFF) % 255) / 255.0))) - (ui.darkMode ? 13 : 0);
+            const l = Math.ceil(55.0 + (10.0 * (((md[1] & 0x7FFFFFFF) % 255) / 255.0))) - (ui.darkMode ? 5 : 0);
+            c = 'hsl(' + h +',' + s + '%,' + l + '%)';
+            colorMap.set(value, c);
+        } else
+           c = colorMap.get(value);
+    }
 
     return c;
 }
@@ -358,7 +376,6 @@ function setTimeRange(range, update, t_center = null)
 
     }
 }
-
 
 
 // --------------------------------------------------------------------------------------
@@ -1328,27 +1345,23 @@ function createContent()
         ui.rangeSelector = _this.querySelector('#b3');
         ui.zoomButton = _this.querySelector('#bz');
 
-        if( pconfig.enableDynamicModify ) {
+        _this.querySelector('#b8').addEventListener('click', addEntitySelected);
 
-            _this.querySelector('#b8').addEventListener('click', addEntitySelected);
+        let datalist = _this.querySelector('#b6');
 
-            let datalist = _this.querySelector('#b6');
-
-            for( let e in _hass.states ) {
-                const domain = e.substr(0, e.indexOf("."));
-                let o = document.createElement('option');
-                o.innerHTML = e;
-                datalist.appendChild(o);
-            }
-
-            pconfig.entities = JSON.parse(window.localStorage.getItem('history-explorer-card'));
-            
-            if( pconfig.entities ) {
-                for( let e of pconfig.entities ) addEntityGraph(e);
-            } else
-                pconfig.entities = [];
-
+        for( let e in _hass.states ) {
+            const domain = e.substr(0, e.indexOf("."));
+            let o = document.createElement('option');
+            o.innerHTML = e;
+            datalist.appendChild(o);
         }
+
+        pconfig.entities = JSON.parse(window.localStorage.getItem('history-explorer-card'));
+        
+        if( pconfig.entities ) {
+            for( let e of pconfig.entities ) addEntityGraph(e);
+        } else
+            pconfig.entities = [];
 
         setTimeRange(24, false);
 
@@ -1453,6 +1466,7 @@ class HistoryExplorerCard extends HTMLElement
         }
 
         pconfig.customStateColors = config.stateColors;
+        pconfig.colorSeed = config.stateColorSeed ?? 137;
         pconfig.enableDataClustering = ( config.decimation === undefined ) || config.decimation;
         pconfig.roundingPrecision = config.rounding || 2;
         pconfig.defaultLineMode = config.lineMode;
@@ -1513,18 +1527,16 @@ class HistoryExplorerCard extends HTMLElement
             html += `</div>`;
         }
 
-        if( pconfig.enableDynamicModify ) {
-            html += 
-                `</div> 
-                <div style="background-color:${bgcol};margin-left:20px;display:inline-block;padding-left:10px;padding-right:10px;">
-                    <datalist id="b6"></datalist>
-                    <input id="b7" autoComplete="on" list="b6" size=40 placeholder="Type to search for an entity to add"/>
-                    <button id="b8" style="border:0px solid black;color:inherit;background-color:#00000000;height:34px;margin-left:5px;">+</button>
-                </div>
-                <br><br>
-                </ha-card>
-            `;
-        }
+        html += 
+            `</div> 
+            <div style="background-color:${bgcol};margin-left:20px;display:inline-block;padding-left:10px;padding-right:10px;">
+                <datalist id="b6"></datalist>
+                <input id="b7" autoComplete="on" list="b6" size=40 placeholder="Type to search for an entity to add"/>
+                <button id="b8" style="border:0px solid black;color:inherit;background-color:#00000000;height:34px;margin-left:5px;">+</button>
+            </div>
+            <br><br>
+            </ha-card>
+        `;
 
         this.innerHTML = html;
 
