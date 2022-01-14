@@ -31,6 +31,7 @@ var pconfig = {};
     pconfig.roundingPrecision    = 2;
     pconfig.defaultLineMode      = undefined;
     pconfig.nextDefaultColor     = 0;
+    pconfig.showUnavailable      = true;
     pconfig.entities             = [];
 
 var loader = {};
@@ -580,6 +581,8 @@ function loaderFailed(error)
     console.log(error);
 
     buildChartData(null);
+
+    state.loading = false;
 }
 
 
@@ -592,6 +595,8 @@ function buildChartData(result)
     let m_now = moment();
     let m_start = moment(startTime);
     let m_end = moment(endTime);
+
+    const isDataValid = state => pconfig.showUnavailable || !['unavailable', 'unknown'].includes(state);
 
     let id = 0;
 
@@ -615,22 +620,26 @@ function buildChartData(result)
 
                     const enableClustering = g.entities[j].decimation == undefined || g.entities[j].decimation;
 
-                    if( enableClustering && activeRange.dataClusterSize > 0 ) {
+                    if( n > 2 && enableClustering && activeRange.dataClusterSize > 0 ) {
 
                         let last_time = moment(result[id][0].last_changed);
 
                         for( let i = 0; i < n; i++ ) {
-                            let this_time = moment(result[id][i].last_changed);
-                            if( i > 0 && this_time.diff(last_time) >= activeRange.dataClusterSize ) {
-                                s.push({ x: this_time, y: result[id][i].state});
-                                last_time = this_time;
+                            if( isDataValid(result[id][i].state) ) {
+                                let this_time = moment(result[id][i].last_changed);
+                                if( !i || this_time.diff(last_time) >= activeRange.dataClusterSize ) {
+                                    s.push({ x: this_time, y: result[id][i].state});
+                                    last_time = this_time;
+                                }
                             }
                         }
 
                     } else {
 
                         for( let i = 0; i < n; i++ ) {
-                            s.push({ x: result[id][i].last_changed, y: result[id][i].state});
+                            if( isDataValid(result[id][i].state) ) {
+                                s.push({ x: result[id][i].last_changed, y: result[id][i].state});
+                            }
                         }
                     }
 
@@ -1470,6 +1479,7 @@ class HistoryExplorerCard extends HTMLElement
         pconfig.enableDataClustering = ( config.decimation === undefined ) || config.decimation;
         pconfig.roundingPrecision = config.rounding || 2;
         pconfig.defaultLineMode = config.lineMode;
+        pconfig.showUnavailable = config.showUnavailable ?? true;
 
         contentValid = false;
 
