@@ -1331,8 +1331,8 @@ function createContent()
             if( _this.config.uimode === 'light' ) ui.darkMode = false;
         }
 
-        pconfig.graphLabelColor = ui.darkMode ? '#9b9b9b' : '#333';
-        pconfig.graphGridColor  = ui.darkMode ? "rgba(255, 255, 255, 0.1)" : "rgba(0, 0, 0, 0.1)";
+        pconfig.graphLabelColor = _this.config.uiColors?.labels ?? (ui.darkMode ? '#9b9b9b' : '#333');
+        pconfig.graphGridColor  = _this.config.uiColors?.gridlines ?? (ui.darkMode ? "rgba(255, 255, 255, 0.1)" : "rgba(0, 0, 0, 0.1)");
 
         graphs = [];
 
@@ -1485,7 +1485,7 @@ class HistoryExplorerCard extends HTMLElement
 
         const header = config.header || "History explorer";
 
-        const bgcol = getComputedStyle(document.body).getPropertyValue('--primary-color') + '1f';
+        const bgcol = config.uiColors?.buttons ?? getComputedStyle(document.body).getPropertyValue('--primary-color') + '1f';
 
         const optionStyle = `style="color:var(--primary-text-color);background-color:var(--paper-listbox-background-color)"`;
 
