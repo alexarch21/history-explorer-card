@@ -85,6 +85,15 @@ type: custom:history-explorer-card
 rounding: 4
 ```
 
+### Line graphs and unavailable data
+
+If your history data contains an unavailable state, for example if a sensor went offline for a while, then this appears as a gap in the line charts. This way you will be able to easily see when and how often your sensors disconnected or became unavailable. This unavailable state is also shown on timeline charts. If you prefer to not have gaps in your line charts, you can add the following YAML option to hide and interpolate over the unavailable states:
+
+```yaml
+type: custom:history-explorer-card
+showUnavailable: false
+```
+
 ### Customizing state colors
 
 The default colors used for the states shown on timeline graphs can be customized in many different ways. Customizing is done by adding the statesColor key to the card YAML. Colors act on device classes, domains or global states. You can, for example, have distinct colors for the on and off states of your motion sensors and your door sensors, even if they're both binary sensors.
@@ -117,7 +126,9 @@ stateColors:
 
 There is a special virtual state that is added to all entities, the *multiple* state. This state substitutes an aggregation of multiple states on the timeline when they were merged due to data decimation. Like normal states, you can specify the color for this special state for device classes, domains or globally.
 
-### Themes and dark mode
+### Theming the UI 
+
+#### Dark mode
 
 The card will try to adapt its UI colors to the currently active theme. But for best results, it will have to know if you're running a dark or a light theme. By default the card asks HA for this information. If you're using the default Lovelace theme, or another modern theme that properly sets the dark mode flag, then you should be all with the default settings. If you are using an older theme that uses the legacy format and doesn't properly set the dark mode flag, the card may end up in the wrong mode. You can override the mode by adding this YAML to the global card settings (see below) to force either dark or light mode:
 
@@ -126,8 +137,20 @@ type: custom:history-explorer-card
 uimode: dark
 ```
 Replace dark with light to force light mode instead.
+
+#### Customizing the color of UI elements
+
+The color for various elements of the UI can be customized further:
+
+```yaml
+type: custom:history-explorer-card
+uiColors:
+  gridlines: '#ff000040'
+  labels: green
+  buttons: '#80f00050'
+```
  
-### YAML configuration
+### YAML configuration for preconfigured graphs
 
 YAML configuration is optional. And while the interactive configuration is preferrable, it can sometimes be useful to keep a set of predefined entities.
 
