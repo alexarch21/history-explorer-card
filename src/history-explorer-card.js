@@ -32,6 +32,8 @@ var pconfig = {};
     pconfig.defaultLineMode      = undefined;
     pconfig.nextDefaultColor     = 0;
     pconfig.showUnavailable      = true;
+    pconfig.axisAddMarginMin     = false;
+    pconfig.axisAddMarginMax     = true;
     pconfig.entities             = [];
 
 var loader = {};
@@ -825,8 +827,8 @@ function newGraph(canvas, graphtype, datasets)
                     },
                     afterDataLimits: (me) => {
                         const epsilon = 0.0001;
-                        me.min -= epsilon;
-                        me.max += epsilon;
+                        if( pconfig.axisAddMarginMin ) me.min -= epsilon;
+                        if( pconfig.axisAddMarginMax ) me.max += epsilon;
                     },
                     ticks: {
                         fontColor: pconfig.graphLabelColor
@@ -836,6 +838,8 @@ function newGraph(canvas, graphtype, datasets)
                     }
                 }],
             },
+            topClipMargin : 4,
+            bottomClipMargin: 4,
             animation: {
                 duration: 0
             },
@@ -1002,6 +1006,8 @@ function pointerDown(event)
             g.chart.options.tooltips.enabled = false;
             g.chart.options.scales.yAxes[0].ticks.min = g.chart.scales["y-axis-0"].min;
             g.chart.options.scales.yAxes[0].ticks.max = g.chart.scales["y-axis-0"].max;
+            g.chart.options.topClipMargin = 0;
+            g.chart.options.bottomClipMargin = 0;
             break;
         }
     }
@@ -1104,6 +1110,8 @@ function pointerUp(event)
         panstate.g.chart.options.tooltips.enabled = true;
         panstate.g.chart.options.scales.yAxes[0].ticks.min = undefined;
         panstate.g.chart.options.scales.yAxes[0].ticks.max = undefined;
+        panstate.g.chart.options.topClipMargin = 4;
+        panstate.g.chart.options.bottomClipMargin = 4;
 
         updateHistory();
 
@@ -1161,6 +1169,8 @@ function pointerCancel(event)
         panstate.g.chart.options.tooltips.enabled = true;
         panstate.g.chart.options.scales.yAxes[0].ticks.min = undefined;
         panstate.g.chart.options.scales.yAxes[0].ticks.max = undefined;
+        panstate.g.chart.options.topClipMargin = 4;
+        panstate.g.chart.options.bottomClipMargin = 4;
 
     }
 
@@ -1480,6 +1490,8 @@ class HistoryExplorerCard extends HTMLElement
         pconfig.roundingPrecision = config.rounding || 2;
         pconfig.defaultLineMode = config.lineMode;
         pconfig.showUnavailable = config.showUnavailable ?? true;
+        pconfig.axisAddMarginMin = ( config.axisAddMarginMin !== undefined ) ? config.axisAddMarginMin : false;
+        pconfig.axisAddMarginMax = ( config.axisAddMarginMax !== undefined ) ? config.axisAddMarginMax : true;
 
         contentValid = false;
 
