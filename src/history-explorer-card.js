@@ -748,6 +748,8 @@ function newGraph(canvas, graphtype, datasets)
 
     var datastructure;
 
+    let scaleUnit;
+
     if( graphtype == 'line' ) {
 
         datastructure = {
@@ -770,6 +772,7 @@ function newGraph(canvas, graphtype, datasets)
                 unit: d.unit,
                 data: { }
             });
+            scaleUnit = scaleUnit ?? d.unit;
         }
 
     } else if( graphtype == 'timeline' ) {
@@ -835,6 +838,10 @@ function newGraph(canvas, graphtype, datasets)
                     },
                     gridLines: {
                         color: pconfig.graphGridColor
+                    },
+                    scaleLabel: {
+                        display: scaleUnit !== undefined && scaleUnit !== '',
+                        labelString: scaleUnit
                     }
                 }],
             },
