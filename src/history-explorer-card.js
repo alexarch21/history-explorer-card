@@ -27,12 +27,13 @@ var pconfig = {};
     pconfig.colorSeed            = 137;
     pconfig.graphConfig          = [];
     pconfig.lockAllGraphs        = false;
+    pconfig.recordedEntitiesOnly = false;
     pconfig.enableDataClustering = true;
     pconfig.roundingPrecision    = 2;
     pconfig.defaultLineMode      = undefined;
     pconfig.nextDefaultColor     = 0;
     pconfig.showUnavailable      = true;
-    pconfig.axisAddMarginMin     = false;
+    pconfig.axisAddMarginMin     = true;
     pconfig.axisAddMarginMax     = true;
     pconfig.entities             = [];
 
@@ -1203,6 +1204,7 @@ function pointerCancel(event)
 var _hass = null;
 var _this = null;
 var contentValid = false;
+var entitiesPopulated = false;
 var iid = 0;
 
 function getDomainForEntity(entity)
@@ -1373,15 +1375,6 @@ function createContent()
 
         _this.querySelector('#b8').addEventListener('click', addEntitySelected);
 
-        let datalist = _this.querySelector('#b6');
-
-        for( let e in _hass.states ) {
-            const domain = e.substr(0, e.indexOf("."));
-            let o = document.createElement('option');
-            o.innerHTML = e;
-            datalist.appendChild(o);
-        }
-
         pconfig.entities = JSON.parse(window.localStorage.getItem('history-explorer-card'));
         
         if( pconfig.entities ) {
@@ -1405,6 +1398,44 @@ function updateContent()
             createContent();
             iid = null;
         }
+    }
+}
+
+
+// --------------------------------------------------------------------------------------
+// Entity listbox populators
+// --------------------------------------------------------------------------------------
+
+function entityCollectorCallback(result)
+{ 
+    const datalist = _this.querySelector('#b6');
+
+    for( let r of result ) {
+        let o = document.createElement('option');
+        o.innerHTML = r[0].entity_id;
+        datalist.appendChild(o);
+    }
+
+    _this.querySelector('#b7').placeholder = "Type to search for an entity to add";
+}
+
+function entityCollectorFailed(error) 
+{
+    console.log(error);
+
+    entityCollectAll();
+
+    _this.querySelector('#b7').placeholder = "Could not retrieve available entities !";
+}
+
+function entityCollectAll()
+{
+    let datalist = _this.querySelector('#b6');
+
+    for( let e in _hass.states ) {
+        let o = document.createElement('option');
+        o.innerHTML = e;
+        datalist.appendChild(o);
     }
 }
 
@@ -1455,6 +1486,18 @@ class HistoryExplorerCard extends HTMLElement
         _this = this;
         _hass = hass;
 
+        if( !entitiesPopulated ) {
+            entitiesPopulated = true;
+            if( pconfig.recordedEntitiesOnly ) {
+                _this.querySelector('#b7').placeholder = "Loading available entities...";
+                const t0 = moment().subtract(30, "minutes").format('YYYY-MM-DDTHH:mm:ss');
+                const t1 = moment().format('YYYY-MM-DDTHH:mm:ss');
+                const url = `history/period/${t0}?end_time=${t1}&minimal_response`;
+                callHassAPIGet(url).then(entityCollectorCallback, entityCollectorFailed);
+            } else
+                entityCollectAll();
+        }
+
         if( !i18n.valid ) {
 
             let locale = hass.language ? hass.language : 'en-GB';
@@ -1497,8 +1540,9 @@ class HistoryExplorerCard extends HTMLElement
         pconfig.roundingPrecision = config.rounding || 2;
         pconfig.defaultLineMode = config.lineMode;
         pconfig.showUnavailable = config.showUnavailable ?? true;
-        pconfig.axisAddMarginMin = ( config.axisAddMarginMin !== undefined ) ? config.axisAddMarginMin : false;
+        pconfig.axisAddMarginMin = ( config.axisAddMarginMin !== undefined ) ? config.axisAddMarginMin : true;
         pconfig.axisAddMarginMax = ( config.axisAddMarginMax !== undefined ) ? config.axisAddMarginMax : true;
+        pconfig.recordedEntitiesOnly = config.recordedEntitiesOnly ?? false;
 
         contentValid = false;
 
