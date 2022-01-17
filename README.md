@@ -60,6 +60,12 @@ If you want to manage all your entities dynamically, you will need to supply an 
 type: custom:history-explorer-card
 graphs:
 ```
+By default the UI entity dropdown will list all entities known to HA. This can be a little overwhelming if you have lots. Alternatively the card can only list entities that are actually recorded and available in the database. Doing this will require a database access which can take a few seconds on larger installs. You can use the card normally while the list is loading in the background. The add entity list will become available as soon as the data is loaded. To turn on this mode use the following config in your YAML:
+
+```yaml
+type: custom:history-explorer-card
+recordedEntitiesOnly: true
+```
 
 ### Line interpolation modes
 
@@ -75,6 +81,14 @@ lineMode: lines
 ```
 
 For fixed entities defined in the YAML (see below) the lineMode can be defined per entity.
+
+A small margin will be added to the top and bottom of line charts, so to give some headroom to curves should they overshoot and make it visually nicer. You can turn off these margins if you don't want the additional space. It's recommended to use lines or stepped mode if you remove both margins to avoid curves overshooting outside of the chart area:
+
+```yaml
+type: custom:history-explorer-card
+axisAddMarginMin: false
+axisAddMarginMax: false
+```
 
 ### Rounding
 
