@@ -684,8 +684,9 @@ function buildChartData(result)
 
                         }
 
-                        if( !enableClustering || moment(t1).diff(moment(t0)) >= activeRange.dataClusterSize ) {
+                        if( !enableClustering || moment(t1).diff(moment(t0)) >= activeRange.dataClusterSize || i == n-1 ) {
                             // Larger than merge limit, finish a potential current merge before proceeding with new block
+                            // Also stop merging when hitting the last state block regardless of size, otherwise it wont be committed
                             if( merged > 0 ) {
                                 t0 = mt0;
                                 t1 = mt1;
