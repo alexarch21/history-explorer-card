@@ -935,14 +935,13 @@ function updateHistory()
 
         //console.log(`Slots ${l0} to ${l1} need loading`);
 
-        state.loading = true;
-
         loader.startTime = cache[l0].start;
         loader.endTime = cache[l1].end;
         loader.startIndex = l0;
         loader.endIndex = l1;
 
         // Issue db retrieval request to HA, async
+        let n = 0;
         let t0 = loader.startTime.replace('+', '%2b');
         let t1 = loader.endTime.replace('+', '%2b');
         let url = `history/period/${t0}?end_time=${t1}&minimal_response&filter_entity_id`;
@@ -952,9 +951,14 @@ function updateHistory()
                 url += separator;
                 url += e.entity;
                 separator = ',';
+                n++;
             }
         }
         //console.log(url);
+
+        if( !n ) return;
+
+        state.loading = true;
 
         const p = callHassAPIGet(url);
         p.then(loaderCallback, loaderFailed);
