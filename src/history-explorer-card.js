@@ -7,9 +7,10 @@ import "./md5.min.js"
 var isMobile = ( navigator.appVersion.indexOf("Mobi") > -1 );
 
 var ui = {};
-    ui.dateSelector  = null;
-    ui.rangeSelector = null;
-    ui.zoomButton    = null;
+    ui.dateSelector  = [];
+    ui.rangeSelector = [];
+    ui.zoomButton    = [];
+    ui.inputField    = [];
     ui.darkMode      = false;
 
 var i18n = {};
@@ -293,7 +294,9 @@ function addDay()
 function toggleZoom()
 {
     state.zoomMode = !state.zoomMode;
-    ui.zoomButton.style.backgroundColor = state.zoomMode ? ui.darkMode ? '#ffffff3a' : '#0000003a' : '#0000';
+
+    for( let i of ui.zoomButton )
+        if( i ) i.style.backgroundColor = state.zoomMode ? ui.darkMode ? '#ffffff3a' : '#0000003a' : '#0000';
 
     if( panstate.overlay ) {
         panstate.overlay.remove();
@@ -342,7 +345,7 @@ function setTimeRange(range, update, t_center = null)
     if( !pconfig.enableDataClustering ) activeRange.dataClusterSize = 0;
 
     activeRange.timeRangeHours = range;
-    ui.rangeSelector.value = range;
+    for( let i of ui.rangeSelector ) if( i ) i.value = range;
 
     for( let g of graphs ) {
         g.chart.options.scales.xAxes[0].time.unit = ( activeRange.timeRangeHours < 24 ) ? 'minute' : 'hour';
@@ -907,7 +910,8 @@ function newGraph(canvas, graphtype, datasets)
 
 function updateHistory()
 {
-    ui.dateSelector.innerHTML = moment(startTime).format(i18n.styleDateSelector);
+    for( let i of ui.dateSelector )
+        if( i ) i.innerHTML = moment(startTime).format(i18n.styleDateSelector);
 
     // Prime the cache on first call
     if( !cache.length ) initCache();
@@ -1248,10 +1252,12 @@ function addEntitySelected(event)
 {
     if( state.loading ) return;
 
-    let inputfield =_this.querySelector('#b7'); 
+    let ii = event.target ? ( event.target.id == 'b8_0' ) ? 0 : 1 : -1;
+    if( ii < 0 ) return;
 
-    const entity_id = inputfield.value;
-    inputfield.value = "";
+    const entity_id = ui.inputField[ii]?.value;
+
+    for( let i of ui.inputField ) if( i ) i.value = "";
 
     if( _hass.states[entity_id] == undefined ) {
         // TODO: let the user know
@@ -1342,6 +1348,56 @@ function addGraphToCanvas(gid, type, entities)
     canvas.addEventListener('pointercancel', pointerCancel);
 }
 
+function addUIHtml(timeline, selector, bgcol, optionStyle, i)
+{
+    let html = `<div style="margin-left:0px;width:100%;text-align:center;">`;
+
+    if( timeline ) html += `
+        <div style="background-color:${bgcol};float:left;margin-left:10px;display:inline-block;padding-left:10px;padding-right:10px;">
+            <button id="b1_${i}" style="border:0px solid black;color:inherit;background-color:#00000000;height:30px"><</button>
+            <button id="bx_${i}" style="border:0px solid black;color:inherit;background-color:#00000000;height:30px"></button>
+            <button id="b2_${i}" style="border:0px solid black;color:inherit;background-color:#00000000;height:30px">></button>
+        </div>`;
+
+    if( selector ) html += `
+        <div style="background-color:${bgcol};display:inline-block;padding-left:10px;padding-right:10px;">
+            <input id="b7_${i}" autoComplete="on" list="b6" size=40 placeholder="Type to search for an entity to add"/>
+            <button id="b8_${i}" style="border:0px solid black;color:inherit;background-color:#00000000;height:34px;margin-left:5px;">+</button>
+        </div>`;
+
+    if( timeline ) html += `
+        <div style="background-color:${bgcol};float:right;margin-right:10px;display:inline-block;padding-left:10px;padding-right:10px;">
+            <button id="bz_${i}" style="border:0px solid black;color:inherit;background-color:#00000000"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="24" height="24" viewBox="0 0 24 24" style="vertical-align:middle;"><path fill="var(--primary-text-color)" d="M15.5,14L20.5,19L19,20.5L14,15.5V14.71L13.73,14.43C12.59,15.41 11.11,16 9.5,16A6.5,6.5 0 0,1 3,9.5A6.5,6.5 0 0,1 9.5,3A6.5,6.5 0 0,1 16,9.5C16,11.11 15.41,12.59 14.43,13.73L14.71,14H15.5M9.5,14C12,14 14,12 14,9.5C14,7 12,5 9.5,5C7,5 5,7 5,9.5C5,12 7,14 9.5,14M12,10H10V12H9V10H7V9H9V7H10V9H12V10Z" /></svg></button>
+            <button id="b4_${i}" style="border:0px solid black;color:inherit;background-color:#00000000;height:30px">-</button>
+            <select id="by_${i}" style="border:0px solid black;color:inherit;background-color:#00000000;height:30px">
+                <option value="1" ${optionStyle}>1 H</option>
+                <option value="2" ${optionStyle}>2 H</option>
+                <option value="3" ${optionStyle} hidden>3 H</option>
+                <option value="4" ${optionStyle} hidden>4 H</option>
+                <option value="5" ${optionStyle} hidden>5 H</option>
+                <option value="6" ${optionStyle}>6 H</option>
+                <option value="7" ${optionStyle} hidden>7 H</option>
+                <option value="8" ${optionStyle} hidden>8 H</option>
+                <option value="9" ${optionStyle} hidden>9 H</option>
+                <option value="10" ${optionStyle} hidden>10 H</option>
+                <option value="11" ${optionStyle} hidden>11 H</option>
+                <option value="12" ${optionStyle}>12 H</option>
+                <option value="24" ${optionStyle}>1 Day</option>
+                <option value="48" ${optionStyle}>2 Days</option>
+                <option value="72" ${optionStyle}>3 Days</option>
+                <option value="96" ${optionStyle}>4 Days</option>
+                <option value="120" ${optionStyle}>5 Days</option>
+                <option value="144" ${optionStyle}>6 Days</option>
+                <option value="168" ${optionStyle}>1 Week</option>
+            </select>
+            <button id="b5_${i}" style="border:0px solid black;color:inherit;background-color:#00000000;height:30px">+</button>
+        </div>`;
+
+    html += `</div>`;
+
+    return html;
+}
+
 function createContent()
 {
     // Initialize the content if it's not there yet.
@@ -1365,20 +1421,22 @@ function createContent()
         }
 
         /// 
-        _this.querySelector('#b1').addEventListener('click', subDay, false);
-        _this.querySelector('#b2').addEventListener('click', addDay, false);
-        _this.querySelector('#bx').addEventListener('click', today, false);
+        for( let i = 0; i < 2; i++ ) {
 
-        _this.querySelector('#bz').addEventListener('click', toggleZoom, false);
-        _this.querySelector('#b4').addEventListener('click', decZoom, false);
-        _this.querySelector('#b5').addEventListener('click', incZoom, false);
-        _this.querySelector('#b3').addEventListener('change', timeRangeSelected);
+            _this.querySelector(`#b1_${i}`)?.addEventListener('click', subDay, false);
+            _this.querySelector(`#b2_${i}`)?.addEventListener('click', addDay, false);
+            _this.querySelector(`#b4_${i}`)?.addEventListener('click', decZoom, false);
+            _this.querySelector(`#b5_${i}`)?.addEventListener('click', incZoom, false);
+            _this.querySelector(`#b8_${i}`)?.addEventListener('click', addEntitySelected);
+            _this.querySelector(`#bx_${i}`)?.addEventListener('click', today, false);
+            _this.querySelector(`#by_${i}`)?.addEventListener('change', timeRangeSelected);
+            _this.querySelector(`#bz_${i}`)?.addEventListener('click', toggleZoom, false);
 
-        ui.dateSelector = _this.querySelector('#bx');
-        ui.rangeSelector = _this.querySelector('#b3');
-        ui.zoomButton = _this.querySelector('#bz');
+            ui.dateSelector[i] = _this.querySelector(`#bx_${i}`);
+            ui.rangeSelector[i] = _this.querySelector(`#by_${i}`);
+            ui.zoomButton[i] = _this.querySelector(`#bz_${i}`);
 
-        _this.querySelector('#b8').addEventListener('click', addEntitySelected);
+        }
 
         pconfig.entities = JSON.parse(window.localStorage.getItem('history-explorer-card'));
         
@@ -1421,7 +1479,8 @@ function entityCollectorCallback(result)
         datalist.appendChild(o);
     }
 
-    _this.querySelector('#b7').placeholder = "Type to search for an entity to add";
+    for( let i of ui.inputField )
+        if( i ) i.placeholder = "Type to search for an entity to add";
 }
 
 function entityCollectorFailed(error) 
@@ -1430,7 +1489,8 @@ function entityCollectorFailed(error)
 
     entityCollectAll();
 
-    _this.querySelector('#b7').placeholder = "Could not retrieve available entities !";
+    for( let i of ui.inputField )
+        if( i ) i.placeholder = "Could not retrieve available entities !";
 }
 
 function entityCollectAll()
@@ -1493,8 +1553,11 @@ class HistoryExplorerCard extends HTMLElement
 
         if( !entitiesPopulated ) {
             entitiesPopulated = true;
+            ui.inputField[0] = _this.querySelector(`#b7_0`);
+            ui.inputField[1] = _this.querySelector(`#b7_1`);
             if( pconfig.recordedEntitiesOnly ) {
-                _this.querySelector('#b7').placeholder = "Loading available entities...";
+                for( let i of ui.inputField )
+                    if( i ) i.placeholder = "Loading available entities...";
                 const t0 = moment().subtract(30, "minutes").format('YYYY-MM-DDTHH:mm:ss');
                 const t1 = moment().format('YYYY-MM-DDTHH:mm:ss');
                 const url = `history/period/${t0}?end_time=${t1}&minimal_response`;
@@ -1552,50 +1615,25 @@ class HistoryExplorerCard extends HTMLElement
         contentValid = false;
 
         const header = config.header || "History explorer";
-
         const bgcol = config.uiColors?.buttons ?? getComputedStyle(document.body).getPropertyValue('--primary-color') + '1f';
+
+        const bitmask = { 'hide': 0, 'top': 1, 'bottom': 2, 'both': 3 };
+        const tools = bitmask[config.uiLayout?.toolbar] ?? 1;
+        const selector = bitmask[config.uiLayout?.selector] ?? 2;
 
         const optionStyle = `style="color:var(--primary-text-color);background-color:var(--paper-listbox-background-color)"`;
 
+        // Generate card html
+
+        // Header
         let html = `
             <ha-card id="maincard" header="${header}">
-            <div style="margin-left:0px;width:100%">
-                <div style="background-color:${bgcol};margin-left:10px;display:inline-block;padding-left:10px;padding-right:10px;">
-                    <button id="b1" style="border:0px solid black;color:inherit;background-color:#00000000;height:30px"><</button>
-                    <button id="bx" style="border:0px solid black;color:inherit;background-color:#00000000;height:30px"></button>
-                    <button id="b2" style="border:0px solid black;color:inherit;background-color:#00000000;height:30px">></button>
-                </div>
-                <div style="background-color:${bgcol};float:right;margin-right:10px;display:inline-block;padding-left:10px;padding-right:10px;">
-                    <button id="bz" style="border:0px solid black;color:inherit;background-color:#00000000"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="24" height="24" viewBox="0 0 24 24" style="vertical-align:middle;"><path fill="var(--primary-text-color)" d="M15.5,14L20.5,19L19,20.5L14,15.5V14.71L13.73,14.43C12.59,15.41 11.11,16 9.5,16A6.5,6.5 0 0,1 3,9.5A6.5,6.5 0 0,1 9.5,3A6.5,6.5 0 0,1 16,9.5C16,11.11 15.41,12.59 14.43,13.73L14.71,14H15.5M9.5,14C12,14 14,12 14,9.5C14,7 12,5 9.5,5C7,5 5,7 5,9.5C5,12 7,14 9.5,14M12,10H10V12H9V10H7V9H9V7H10V9H12V10Z" /></svg></button>
-                    <button id="b4" style="border:0px solid black;color:inherit;background-color:#00000000;height:30px">-</button>
-                    <select id="b3" style="border:0px solid black;color:inherit;background-color:#00000000;height:30px">
-                        <option value="1" ${optionStyle}>1 H</option>
-                        <option value="2" ${optionStyle}>2 H</option>
-                        <option value="3" ${optionStyle} hidden>3 H</option>
-                        <option value="4" ${optionStyle} hidden>4 H</option>
-                        <option value="5" ${optionStyle} hidden>5 H</option>
-                        <option value="6" ${optionStyle}>6 H</option>
-                        <option value="7" ${optionStyle} hidden>7 H</option>
-                        <option value="8" ${optionStyle} hidden>8 H</option>
-                        <option value="9" ${optionStyle} hidden>9 H</option>
-                        <option value="10" ${optionStyle} hidden>10 H</option>
-                        <option value="11" ${optionStyle} hidden>11 H</option>
-                        <option value="12" ${optionStyle}>12 H</option>
-                        <option value="24" ${optionStyle}>1 Day</option>
-                        <option value="48" ${optionStyle}>2 Days</option>
-                        <option value="72" ${optionStyle}>3 Days</option>
-                        <option value="96" ${optionStyle}>4 Days</option>
-                        <option value="120" ${optionStyle}>5 Days</option>
-                        <option value="144" ${optionStyle}>6 Days</option>
-                        <option value="168" ${optionStyle}>1 Week</option>
-                    </select>
-                    <button id="b5" style="border:0px solid black;color:inherit;background-color:#00000000;height:30px">+</button>
-                </div>
-            </div>
-            <br>
+            ${addUIHtml(tools & 1, selector & 1, bgcol, optionStyle, 0)}
+            ${(tools | selector) & 1 ? '<br>' : ''}
             <div id='graphlist' class='card-content'>
         `;
 
+        // Graph area
         for( let g of pconfig.graphConfig ) {
             if( g.id > 0 ) html += '<br>';
             if( g.graph.title !== undefined ) html += `<div style='text-align:center;'>${g.graph.title}</div>`;
@@ -1605,14 +1643,13 @@ class HistoryExplorerCard extends HTMLElement
             html += `</div>`;
         }
 
-        html += 
-            `</div> 
-            <div style="background-color:${bgcol};margin-left:20px;display:inline-block;padding-left:10px;padding-right:10px;">
-                <datalist id="b6"></datalist>
-                <input id="b7" autoComplete="on" list="b6" size=40 placeholder="Type to search for an entity to add"/>
-                <button id="b8" style="border:0px solid black;color:inherit;background-color:#00000000;height:34px;margin-left:5px;">+</button>
+        // Footer
+        html += `
             </div>
-            <br><br>
+            ${addUIHtml(tools & 2, selector & 2, bgcol, optionStyle, 1)}
+            <datalist id="b6"></datalist>
+            ${(tools | selector) & 2 ? '<br>' : ''}
+            <br>
             </ha-card>
         `;
 
