@@ -44,7 +44,7 @@ Add this repository as a custom repository to HACS and install as normal.
  4. Type `/local/history-explorer-card.js` into the URL field and make sure the resource type field says Javascript Module
  5. Hit create
 
-You can now add the card to your dashboard as usual.
+You can now add the card to your dashboard as usual. Refresh the page in your browser once after adding the card to properly initialize it.
 
 ### Interactive configuration
 
