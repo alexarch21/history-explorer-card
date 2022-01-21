@@ -44,7 +44,7 @@ Add this repository as a custom repository to HACS and install as normal.
  4. Type `/local/history-explorer-card.js` into the URL field and make sure the resource type field says Javascript Module
  5. Hit create
 
-You can now add the card to your dashboard as usual.
+You can now add the card to your dashboard as usual. Refresh the page in your browser once after adding the card to properly initialize it.
 
 ### Interactive configuration
 
@@ -140,7 +140,7 @@ stateColors:
 
 There is a special virtual state that is added to all entities, the *multiple* state. This state substitutes an aggregation of multiple states on the timeline when they were merged due to data decimation. Like normal states, you can specify the color for this special state for device classes, domains or globally.
 
-### Theming the UI 
+### Configuring the UI 
 
 #### Dark mode
 
@@ -163,6 +163,18 @@ uiColors:
   labels: green
   buttons: '#80f00050'
 ```
+
+#### Changing the UI layout
+
+The position of the time control toolbar and the entity selector can be customized through YAML settings:
+
+```yaml
+type: custom:history-explorer-card
+uiLayout:
+  toolbar: top
+  selector: bottom
+```
+Possible options are `top`, `bottom`, `both` and `hide`. When selecting `both`, the UI element will be duplicated and shown both on top and on the bottom. This is useful on large histories that require a lot of vertical scrolling. When `hide` is selected, the respective UI element is not shown.
  
 ### YAML configuration for preconfigured graphs
 
