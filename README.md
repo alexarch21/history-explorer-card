@@ -44,7 +44,7 @@ Add this repository as a custom repository to HACS and install as normal.
  4. Type `/local/history-explorer-card.js` into the URL field and make sure the resource type field says Javascript Module
  5. Hit create
 
-You can now add the card to your dashboard as usual. Refresh the page in your browser once after adding the card to properly initialize it.
+You can now add the card to your dashboard as usual. You may have to refresh the page in your browser once after adding the card to properly initialize it.
 
 ### Interactive configuration
 
@@ -175,6 +175,17 @@ uiLayout:
   selector: bottom
 ```
 Possible options are `top`, `bottom`, `both` and `hide`. When selecting `both`, the UI element will be duplicated and shown both on top and on the bottom. This is useful on large histories that require a lot of vertical scrolling. When `hide` is selected, the respective UI element is not shown.
+
+### Multiple cards
+
+You can have multiple history explorer cards on the same view or over several views and dashboards. Each card has its own configuration. For the cards to be able to manage their respective configurations, each card needs its own unique name. When adding the card over the UI, a random name is assigned by default. You can adjust the name if needed. If you add the card manually over YAML, you will have to provide your own unique name for each card. 
+
+If you only use a single history explorer card on your Lovelace, then the name is optional.
+
+```yaml
+type: custom:history-explorer-card
+cardName: history-card-5
+```
  
 ### YAML configuration for preconfigured graphs
 
@@ -215,6 +226,7 @@ And a more advanced one:
 
 ```yaml
 type: custom:history-explorer-card
+cardName: advanced-history
 uimode: dark
 stateColors:
   person.home: blue
