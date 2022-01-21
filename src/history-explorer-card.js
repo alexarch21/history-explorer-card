@@ -884,7 +884,8 @@ class HistoryCardState {
                         },
                         scaleLabel: {
                             display: scaleUnit !== undefined && scaleUnit !== '',
-                            labelString: scaleUnit
+                            labelString: scaleUnit,
+                            fontColor: this.pconfig.graphLabelColor
                         }
                     }],
                 },
