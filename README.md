@@ -1,3 +1,5 @@
+[![hacs_badge](https://img.shields.io/badge/HACS-Default-41BDF5.svg?style=for-the-badge)](https://github.com/hacs/integration)
+
 # History explorer card
 
 This is a custom history card for Home Assistant. This card offers a highly interactive and configurable way to view the history of your entities in HA. The card uses asynchronous stream caching and adaptive data decimation to hide the high latency of HA's history database accesses and tries to make it into a smooth interactive experience.
@@ -34,7 +36,7 @@ Decimation works on state timelines by merging very small state changes into 'mu
 
 ### HACS
 
-Add this repository as a custom repository to HACS and install as normal.
+The history explorer card is now part of the default [HACS Home Assistant Community Store](https://hacs.xyz). This is the preferred way to install this card.
 
 ### Manual install
 
