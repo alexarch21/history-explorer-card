@@ -132,6 +132,12 @@ const stateColorsDark = {
 
 };
 
+function parseColor(c)
+{
+    while( c && c.startsWith('--') ) c = getComputedStyle(document.body).getPropertyValue(c);
+    return c;
+}
+
 
 // --------------------------------------------------------------------------------------
 // Shared panning state
@@ -1354,8 +1360,8 @@ class HistoryCardState {
         for( let d of entities ) {
             datasets.push({
                 "name": ( d.name === undefined ) ? this._hass.states[d.entity].attributes.friendly_name : d.name,
-                "bColor": d.color, 
-                "fillColor": d.fill, 
+                "bColor": parseColor(d.color), 
+                "fillColor": parseColor(d.fill), 
                 "mode": d.lineMode || this.pconfig.defaultLineMode, 
                 "width": d.width || 2.0,
                 "unit": ( d.unit === undefined ) ? this._hass.states[d.entity].attributes.unit_of_measurement : d.unit,
@@ -1440,8 +1446,8 @@ class HistoryCardState {
                 if( this._this.config.uimode === 'light' ) this.ui.darkMode = false;
             }
 
-            this.pconfig.graphLabelColor = this._this.config.uiColors?.labels ?? (this.ui.darkMode ? '#9b9b9b' : '#333');
-            this.pconfig.graphGridColor  = this._this.config.uiColors?.gridlines ?? (this.ui.darkMode ? "rgba(255, 255, 255, 0.1)" : "rgba(0, 0, 0, 0.1)");
+            this.pconfig.graphLabelColor = parseColor(this._this.config.uiColors?.labels ?? (this.ui.darkMode ? '#9b9b9b' : '#333'));
+            this.pconfig.graphGridColor  = parseColor(this._this.config.uiColors?.gridlines ?? (this.ui.darkMode ? "rgba(255, 255, 255, 0.1)" : "rgba(0, 0, 0, 0.1)"));
 
             this.graphs = [];
 
@@ -1686,7 +1692,14 @@ class HistoryExplorerCard extends HTMLElement
             }
         }
 
-        this.instance.pconfig.customStateColors = config.stateColors;
+        this.instance.pconfig.customStateColors = {};
+
+        if( config.stateColors ) {
+            for( let i in config.stateColors ) {
+                this.instance.pconfig.customStateColors[i] = parseColor(config.stateColors[i]);
+            }
+        }
+
         this.instance.pconfig.colorSeed = config.stateColorSeed ?? 137;
         this.instance.pconfig.enableDataClustering = ( config.decimation === undefined ) || config.decimation;
         this.instance.pconfig.roundingPrecision = config.rounding || 2;
@@ -1702,7 +1715,7 @@ class HistoryExplorerCard extends HTMLElement
         this.instance.entitiesPopulated = false;
 
         const header = config.header || "History explorer";
-        const bgcol = config.uiColors?.buttons ?? getComputedStyle(document.body).getPropertyValue('--primary-color') + '1f';
+        const bgcol = parseColor(config.uiColors?.buttons ?? getComputedStyle(document.body).getPropertyValue('--primary-color') + '1f');
 
         const bitmask = { 'hide': 0, 'top': 1, 'bottom': 2, 'both': 3 };
         const tools = bitmask[config.uiLayout?.toolbar] ?? 1;
