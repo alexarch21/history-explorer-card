@@ -791,7 +791,7 @@ class HistoryCardState {
     // New graph creation
     // --------------------------------------------------------------------------------------
 
-    newGraph(canvas, graphtype, datasets)
+    newGraph(canvas, graphtype, datasets, config)
     {
         const ctx = canvas.getContext('2d');
 
@@ -879,11 +879,15 @@ class HistoryCardState {
                         },
                         afterDataLimits: (me) => {
                             const epsilon = 0.0001;
-                            if( this.pconfig.axisAddMarginMin ) me.min -= epsilon;
-                            if( this.pconfig.axisAddMarginMax ) me.max += epsilon;
+                            if( config?.ymin == null && this.pconfig.axisAddMarginMin ) me.min -= epsilon;
+                            if( config?.ymax == null && this.pconfig.axisAddMarginMax ) me.max += epsilon;
                         },
                         ticks: {
-                            fontColor: this.pconfig.graphLabelColor
+                            fontColor: this.pconfig.graphLabelColor,
+                            min: config?.ymin ?? undefined,
+                            max: config?.ymax ?? undefined,
+                            forceMin: config?.ymin ?? undefined,
+                            forceMax: config?.ymax ?? undefined,
                         },
                         gridLines: {
                             color: this.pconfig.graphGridColor
@@ -895,8 +899,8 @@ class HistoryCardState {
                         }
                     }],
                 },
-                topClipMargin : 4,
-                bottomClipMargin: 4,
+                topClipMargin : ( config?.ymax == null ) ? 4 : 1,
+                bottomClipMargin: ( config?.ymin == null ) ? 4 : 1,
                 animation: {
                     duration: 0
                 },
@@ -1166,10 +1170,18 @@ class HistoryCardState {
             this.state.updateCanvas = null;
 
             panstate.g.chart.options.tooltips.enabled = true;
-            panstate.g.chart.options.scales.yAxes[0].ticks.min = undefined;
-            panstate.g.chart.options.scales.yAxes[0].ticks.max = undefined;
-            panstate.g.chart.options.topClipMargin = 4;
-            panstate.g.chart.options.bottomClipMargin = 4;
+
+            if( panstate.g.chart.options.scales.yAxes[0].ticks.forceMin === undefined ) {
+                panstate.g.chart.options.scales.yAxes[0].ticks.min = undefined;
+                panstate.g.chart.options.bottomClipMargin = 4;
+            } else
+                panstate.g.chart.options.bottomClipMargin = 1;
+
+            if( panstate.g.chart.options.scales.yAxes[0].ticks.forceMax === undefined ) {
+                panstate.g.chart.options.scales.yAxes[0].ticks.max = undefined;
+                panstate.g.chart.options.topClipMargin = 4;
+            } else 
+                panstate.g.chart.options.topClipMargin = 1;
 
             this.updateHistory();
 
@@ -1352,7 +1364,7 @@ class HistoryCardState {
         this.addGraphToCanvas(this.g_id++, type, entities);
     }
 
-    addGraphToCanvas(gid, type, entities)
+    addGraphToCanvas(gid, type, entities, config)
     {
         const canvas = this._this.querySelector(`#graph${gid}`);
 
@@ -1371,7 +1383,7 @@ class HistoryCardState {
             });
         }
 
-        const chart = this.newGraph(canvas, type, datasets);
+        const chart = this.newGraph(canvas, type, datasets, config);
 
         let w = chart.chartArea.right - chart.chartArea.left;
 
@@ -1452,7 +1464,7 @@ class HistoryCardState {
             this.graphs = [];
 
             for( let g of this.pconfig.graphConfig ) {
-                this.addGraphToCanvas(g.id, g.graph.type, g.graph.entities);
+                this.addGraphToCanvas(g.id, g.graph.type, g.graph.entities, g.graph.options);
             }
 
             /// 
