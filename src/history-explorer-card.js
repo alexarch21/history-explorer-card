@@ -184,6 +184,7 @@ class HistoryCardState {
         this.pconfig.customStateColors    = undefined;
         this.pconfig.colorSeed            = 137;
         this.pconfig.graphConfig          = [];
+        this.pconfig.entityOptions        = undefined;
         this.pconfig.lockAllGraphs        = false;
         this.pconfig.recordedEntitiesOnly = false;
         this.pconfig.enableDataClustering = true;
@@ -752,7 +753,7 @@ class HistoryCardState {
                                 if( moment(t1) > m_end ) t1 = this.endTime;
                                 if( moment(t0) > m_end ) break;
                                 if( moment(t0) < m_start ) t0 = this.startTime;
-                                var e = [];
+                                let e = [];
                                 e.push(t0);
                                 e.push(t1);
                                 e.push(( merged > 1 ) ? 'multiple' : state);
@@ -1273,6 +1274,14 @@ class HistoryCardState {
         return this._hass.states[entity]?.attributes?.device_class;
     }
 
+    getEntityOptions(entity)
+    {
+        const dc = this.getDeviceClass(entity);
+        let c = dc ? this.pconfig.entityOptions?.[dc] : undefined;
+        c = c ?? this.pconfig.entityOptions?.[entity];
+        return c ?? undefined;
+    }
+
     removeGraph(event)
     {
         const id = event.target.id.substr(event.target.id.indexOf("-") + 1);
@@ -1327,10 +1336,23 @@ class HistoryCardState {
 
         let entities = [{ "entity": entity_id, "color": "#000000", "fill": "#00000000" }];
 
+        // Get the options for line graphs (use per device_class options if available, otherwise use defaults)
         if( type == 'line' ) {
-            const c = this.getNextDefaultColor();
-            entities[0].color = c.color;
-            entities[0].fill = c.fill;
+
+            var entityOptions = this.getEntityOptions(entity_id);
+
+            if( entityOptions?.color || entityOptions?.fill ) {
+                entities[0].color = entityOptions?.color;
+                entities[0].fill = entityOptions?.fill;
+            } else {
+                const c = this.getNextDefaultColor();
+                entities[0].color = c.color;
+                entities[0].fill = c.fill;
+            }
+
+            entities[0].width = entityOptions?.width;
+            entities[0].lineMode = entityOptions?.lineMode;
+
         }
 
         // Add to an existing timeline graph if possible (if it's the last in the list)
@@ -1361,7 +1383,7 @@ class HistoryCardState {
 
         this._this.querySelector(`#bc-${this.g_id}`).addEventListener('click', this.removeGraph.bind(this));
 
-        this.addGraphToCanvas(this.g_id++, type, entities);
+        this.addGraphToCanvas(this.g_id++, type, entities, entityOptions);
     }
 
     addGraphToCanvas(gid, type, entities, config)
@@ -1711,6 +1733,8 @@ class HistoryExplorerCard extends HTMLElement
                 this.instance.pconfig.customStateColors[i] = parseColor(config.stateColors[i]);
             }
         }
+
+        this.instance.pconfig.entityOptions = config.entityOptions;
 
         this.instance.pconfig.colorSeed = config.stateColorSeed ?? 137;
         this.instance.pconfig.enableDataClustering = ( config.decimation === undefined ) || config.decimation;
