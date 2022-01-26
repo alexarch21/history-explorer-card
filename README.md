@@ -82,7 +82,7 @@ type: custom:history-explorer-card
 lineMode: lines
 ```
 
-For fixed entities defined in the YAML (see below) the lineMode can be defined per entity.
+The line mode can also be set for fixed entities defined in the YAML and for dynamic entities or device classes (see below).
 
 A small margin will be added to the top and bottom of line charts, so to give some headroom to curves should they overshoot and make it visually nicer. You can turn off these margins if you don't want the additional space. It's recommended to use lines or stepped mode if you remove both margins to avoid curves overshooting outside of the chart area:
 
@@ -91,6 +91,10 @@ type: custom:history-explorer-card
 axisAddMarginMin: false
 axisAddMarginMax: false
 ```
+
+### Y axis min and max
+
+By default the min/max scales for the Y axis are adjusted automatically to the data you are currently viewing. You can override the automatic range with your own values for both fixed graphs defined in the YAML, as well as for dynamically added entities or device classes. See the customizing dynamic line graphs section and the advanced YAML example below.
 
 ### Rounding
 
@@ -113,6 +117,8 @@ showUnavailable: false
 ### Customizing state colors
 
 The default colors used for the states shown on timeline graphs can be customized in many different ways. Customizing is done by adding the statesColor key to the card YAML. Colors act on device classes, domains or global states. You can, for example, have distinct colors for the on and off states of your motion sensors and your door sensors, even if they're both binary sensors.
+
+The card accepts all normal HTML color definition strings as well as CSS variables. The latter need to be provided as-is (for example `--primary-color`, without the CSS var function).
 
 The following example will turn the *on* state of all door sensors blue and the *on* state of all motion sensors yellow. The *on* state of other sensor device classes will not be affected. They will inherit their colors from either a domain wide or a global color rule, in that order (see below). You specify the device class followed by a dot and the state you'd like to customize:
 
@@ -141,6 +147,27 @@ stateColors:
 ```
 
 There is a special virtual state that is added to all entities, the *multiple* state. This state substitutes an aggregation of multiple states on the timeline when they were merged due to data decimation. Like normal states, you can specify the color for this special state for device classes, domains or globally.
+
+### Customizing dynamically added line graphs
+
+When you add a new line graph using the add entity dropdown, the graph will use the default settings and an automatically picked color. You can override these settings either for specific entities or for entire device classes. For example, you could set a fixed Y axis range for all your humidity sensors or a specific color or line interpolation mode for your power graphs.
+
+```yaml
+type: custom:history-explorer-card
+entityOptions:
+  humidity:  # Apply these settings to all humidity sensors 
+    color: blue
+    fill: rgba(0,0,255,0.2)
+    ymin: 20
+    ymax: 100
+    lineMode: lines
+  sensor.outside_pressure:  # Apply these settings specifically to this entity if added
+    color: green
+    fill: rgba(0,255,0,0.2)
+    ymin: 900
+    ymax: 1100
+    width: 2
+```
 
 ### Configuring the UI 
 
@@ -237,6 +264,9 @@ decimation: false
 header: 'My sample history'
 graphs:
   - type: line
+    options:
+      ymin: -10
+      ymax: 30
     entities:
       - entity: sensor.outside_temperature
         color: '#3e95cd'
@@ -250,7 +280,7 @@ graphs:
   - type: line
     entities:
       - entity: sensor.outside_pressure
-        color: '#3ecd95'
+        color: --my-special-green
         fill: rgba(151,205,187,0.15)
   - type: timeline
     title: Non-numerical sensors
