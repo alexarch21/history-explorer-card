@@ -181,6 +181,8 @@ class HistoryCardState {
         this.pconfig.graphLabelColor      = '#333';
         this.pconfig.graphGridColor       = '#00000000';
         this.pconfig.lineGraphHeight      = 250;
+        this.pconfig.labelAreaWidth       = 65;
+        this.pconfig.labelsVisible        = true;
         this.pconfig.customStateColors    = undefined;
         this.pconfig.colorSeed            = 137;
         this.pconfig.graphConfig          = [];
@@ -353,7 +355,7 @@ class HistoryCardState {
 
     decZoom()
     {
-        const ranges = [1, 2, 6, 12, 24, 48, 72, 96, 120, 144, 168];
+        const ranges = [1, 2, 6, 12, 24, 48, 72, 96, 120, 144, 168, 336, 504, 720];
            
         let i = ranges.findIndex(e => e >= this.activeRange.timeRangeHours);
         if( i >= 0 ) {
@@ -365,7 +367,8 @@ class HistoryCardState {
 
     incZoom()
     {
-        const ranges = [1, 2, 6, 12, 24, 48, 72, 96, 120, 144, 168];
+        const ranges = [1, 2, 6, 12, 24, 48, 72, 96, 120, 144, 168, 336, 504, 720];
+
         const i = ranges.findIndex(e => e >= this.activeRange.timeRangeHours);
         if( i > 0 ) 
             this.setTimeRange(ranges[i-1], true);
@@ -380,11 +383,11 @@ class HistoryCardState {
     {
         if( this.state.loading ) return;
 
-        const stepSizes = { '1': 5, '2': 10, '3': 15, '4': 30, '5': 30, '6': 30, '7': 30, '8': 30, '9': 30, '10': 60, '11': 60, '12':60, '24': 2, '48': 2, '72': 6, '96': 6, '120':12, '144':12, '168':24 };
+        const stepSizes = { '1': 5, '2': 10, '3': 15, '4': 30, '5': 30, '6': 30, '7': 30, '8': 30, '9': 30, '10': 60, '11': 60, '12':60, '24': 2, '48': 2, '72': 6, '96': 6, '120':12, '144':12, '168':24, '336':24, '504':24, '720':48 };
 
         this.activeRange.tickStepSize = stepSizes[range];
 
-        const dataClusterSizes = { '48': 2, '72': 5, '96': 10, '120': 30, '144': 30, '168': 60 };
+        const dataClusterSizes = { '48': 2, '72': 5, '96': 10, '120': 30, '144': 30, '168': 60, '336': 60, '504': 120, '720': 240 };
         const minute = 60000;
 
         this.activeRange.dataClusterSize = ( range >= 48 ) ? dataClusterSizes[range] * minute : 0;
@@ -462,9 +465,9 @@ class HistoryCardState {
     initCache()
     {
         let d = moment().format("YYYY-MM-DD") + "T00:00:00";
-        d = moment(d).subtract(30, "day").format("YYYY-MM-DD") + "T00:00:00";
+        d = moment(d).subtract(90, "day").format("YYYY-MM-DD") + "T00:00:00";
 
-        for( let i = 0; i < 31; i++ ) {
+        for( let i = 0; i < 91; i++ ) {
             let e = moment(d).add(1, "day").format("YYYY-MM-DD") + "T00:00:00";
             this.cache.push({ "start" : d, "end" : e, "data" : [], "valid": false });
             d = e;
@@ -475,7 +478,7 @@ class HistoryCardState {
     {
         let mt = moment(t);
 
-        for( let i = 0; i < 31; i++ ) {
+        for( let i = 0; i < 91; i++ ) {
             if( mt >= moment(this.cache[i].start) && mt < moment(this.cache[i].end) ) return i;
         }
 
@@ -488,11 +491,11 @@ class HistoryCardState {
     {
         let mt = moment(t);
 
-        for( let i = 0; i < 31; i++ ) {
+        for( let i = 0; i < 91; i++ ) {
             if( mt > moment(this.cache[i].start) && mt <= moment(this.cache[i].end) ) return i;
         }
 
-        if( mt > moment(this.cache[30].end) ) return 30;
+        if( mt > moment(this.cache[90].end) ) return 90;
 
         return -1;
     }
@@ -833,7 +836,7 @@ class HistoryCardState {
             };
 
             for( let d of datasets ) {
-                datastructure.labels.push(d.name);
+                datastructure.labels.push(this.pconfig.labelsVisible ? d.name : '');
                 datastructure.datasets.push({ 
                     domain: d.domain,
                     device_class: d.device_class,
@@ -876,7 +879,7 @@ class HistoryCardState {
                     }],
                     yAxes: [{
                         afterFit: (scaleInstance) => {
-                            scaleInstance.width = 65;
+                            scaleInstance.width = this.pconfig.labelAreaWidth;
                         },
                         afterDataLimits: (me) => {
                             const epsilon = 0.0001;
@@ -894,7 +897,7 @@ class HistoryCardState {
                             color: this.pconfig.graphGridColor
                         },
                         scaleLabel: {
-                            display: scaleUnit !== undefined && scaleUnit !== '',
+                            display: scaleUnit !== undefined && scaleUnit !== '' && this.pconfig.labelsVisible,
                             labelString: scaleUnit,
                             fontColor: this.pconfig.graphLabelColor
                         }
@@ -1214,12 +1217,16 @@ class HistoryCardState {
                 d = Math.ceil(d / 24.0);
 
                 if( d < 1 ) this.setTimeRange(12, true, tm); else
-                if( d < 2 ) this.setTimeRange(24, true, tm); else
-                if( d < 3 ) this.setTimeRange(48, true, tm); else
-                if( d < 4 ) this.setTimeRange(72, true, tm); else
-                if( d < 5 ) this.setTimeRange(96, true, tm); else
-                if( d < 6 ) this.setTimeRange(120, true, tm); else
-                if( d < 7 ) this.setTimeRange(144, true, tm); else this.setTimeRange(189, true, tm);
+                if( d < 2 ) this.setTimeRange(24, true, tm); else       // 1 day
+                if( d < 3 ) this.setTimeRange(48, true, tm); else       // 2 days
+                if( d < 4 ) this.setTimeRange(72, true, tm); else       // 3 days
+                if( d < 5 ) this.setTimeRange(96, true, tm); else       // 4 days
+                if( d < 6 ) this.setTimeRange(120, true, tm); else      // 5 days
+                if( d < 7 ) this.setTimeRange(144, true, tm); else      // 6 days
+                if( d < 13 ) this.setTimeRange(168, true, tm); else     // 1 week
+                if( d < 20 ) this.setTimeRange(336, true, tm); else     // 2 weeks
+                if( d < 28 ) this.setTimeRange(504, true, tm); else     // 3 weeks
+                             this.setTimeRange(720, true, tm);          // 1 month
 
             }
 
@@ -1458,6 +1465,9 @@ class HistoryCardState {
                     <option value="120" ${optionStyle}>5 Days</option>
                     <option value="144" ${optionStyle}>6 Days</option>
                     <option value="168" ${optionStyle}>1 Week</option>
+                    <option value="336" ${optionStyle}>2 Weeks</option>
+                    <option value="504" ${optionStyle}>3 Weeks</option>
+                    <option value="720" ${optionStyle}>1 Month</option>
                 </select>
                 <button id="b5_${i}" style="border:0px solid black;color:inherit;background-color:#00000000;height:30px">+</button>
             </div>`;
@@ -1736,6 +1746,8 @@ class HistoryExplorerCard extends HTMLElement
 
         this.instance.pconfig.entityOptions = config.entityOptions;
 
+        this.instance.pconfig.labelAreaWidth = config.labelAreaWidth ?? 65;
+        this.instance.pconfig.labelsVisible = config.labelsVisible ?? true;
         this.instance.pconfig.colorSeed = config.stateColorSeed ?? 137;
         this.instance.pconfig.enableDataClustering = ( config.decimation === undefined ) || config.decimation;
         this.instance.pconfig.roundingPrecision = config.rounding || 2;
