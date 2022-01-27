@@ -214,6 +214,14 @@ uiLayout:
 ```
 Possible options are `top`, `bottom`, `both` and `hide`. When selecting `both`, the UI element will be duplicated and shown both on top and on the bottom. This is useful on large histories that require a lot of vertical scrolling. When `hide` is selected, the respective UI element is not shown.
 
+The width of the label area to the left of the graphs can be customized and the labels optionally hidden with the following YAML:
+
+```yaml
+type: custom:history-explorer-card
+labelsVisible: false   # this will hide the unit of measure labels and the entity names left of the graphs or timelines
+labelAreaWidth: 10     # the width of the label area in pixels, default is 65
+```
+
 ### Multiple cards
 
 You can have multiple history explorer cards on the same view or over several views and dashboards. Each card has its own configuration. For the cards to be able to manage their respective configurations, each card needs its own unique name. When adding the card over the UI, a random name is assigned by default. You can adjust the name if needed. If you add the card manually over YAML, you will have to provide your own unique name for each card. 
