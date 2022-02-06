@@ -4,6 +4,8 @@ import "./Chart.js";
 import "./timeline.js";
 import "./md5.min.js"
 
+const Version = '1.0.15';
+
 var isMobile = ( navigator.appVersion.indexOf("Mobi") > -1 );
 
 
@@ -196,6 +198,7 @@ class HistoryCardState {
         this.pconfig.showUnavailable      = true;
         this.pconfig.axisAddMarginMin     = true;
         this.pconfig.axisAddMarginMax     = true;
+        this.pconfig.defaultTimeRange     = '24';
         this.pconfig.entities             = [];
 
         this.loader = {};
@@ -276,7 +279,7 @@ class HistoryCardState {
         // general fallback if state color is not defined anywhere, generate color from the MD5 hash of the state name
         if( !c ) {
             if( !this.colorMap.has(value) ) {
-                const md = md5(value);
+                const md = md5hx(value);
                 const h = ((md[0] & 0x7FFFFFFF) * this.pconfig.colorSeed) % 359;
                 const s = Math.ceil(45.0 + (30.0 * (((md[1] & 0x7FFFFFFF) % 255) / 255.0))) - (this.ui.darkMode ? 13 : 0);
                 const l = Math.ceil(55.0 + (10.0 * (((md[1] & 0x7FFFFFFF) % 255) / 255.0))) - (this.ui.darkMode ? 5 : 0);
@@ -294,13 +297,15 @@ class HistoryCardState {
     // UI element handlers
     // --------------------------------------------------------------------------------------
 
-    today()
+    today(resetRange = true)
     {
         if( !this.state.loading ) {
 
-            if( this.activeRange.timeRangeHours < 24 ) this.setTimeRange(24, false);
+            if( resetRange && this.activeRange.timeRangeHours < 24 ) this.setTimeRange(24, false);
 
-            this.endTime = moment().add(1, 'hour').format('YYYY-MM-DDTHH[:00:00]');
+            const offset = ( this.activeRange.timeRangeHours < 24 ) ? 0 : 1;
+
+            this.endTime = moment().add(offset, 'hour').format('YYYY-MM-DDTHH[:00:00]');
             this.startTime = moment(this.endTime).subtract(this.activeRange.timeRangeHours, "hour");
 
             this.updateHistory();
@@ -386,6 +391,12 @@ class HistoryCardState {
         const stepSizes = { '1': 5, '2': 10, '3': 15, '4': 30, '5': 30, '6': 30, '7': 30, '8': 30, '9': 30, '10': 60, '11': 60, '12':60, '24': 2, '48': 2, '72': 6, '96': 6, '120':12, '144':12, '168':24, '336':24, '504':24, '720':48 };
 
         this.activeRange.tickStepSize = stepSizes[range];
+
+        if( !this.activeRange.tickStepSize ) {
+            console.log(`Invalid user predefined time range ${range}, reverting to default 24h`);
+            range = '24';
+            this.activeRange.tickStepSize = stepSizes[range];
+        }
 
         const dataClusterSizes = { '48': 2, '72': 5, '96': 10, '120': 30, '144': 30, '168': 60, '336': 60, '504': 120, '720': 240 };
         const minute = 60000;
@@ -1524,9 +1535,9 @@ class HistoryCardState {
             } else
                 this.pconfig.entities = [];
 
-            this.setTimeRange(24, false);
+            this.setTimeRange(this.pconfig.defaultTimeRange, false);
 
-            this.today();
+            this.today(false);
 
         }
     }
@@ -1756,6 +1767,7 @@ class HistoryExplorerCard extends HTMLElement
         this.instance.pconfig.axisAddMarginMin = ( config.axisAddMarginMin !== undefined ) ? config.axisAddMarginMin : true;
         this.instance.pconfig.axisAddMarginMax = ( config.axisAddMarginMax !== undefined ) ? config.axisAddMarginMax : true;
         this.instance.pconfig.recordedEntitiesOnly = config.recordedEntitiesOnly ?? false;
+        this.instance.pconfig.defaultTimeRange = config.defaultTimeRange ?? '24';
 
         this.instance.id = config.cardName ?? "default";
 
@@ -1818,6 +1830,8 @@ class HistoryExplorerCard extends HTMLElement
     }
 
 }
+
+console.info(`%c HISTORY-EXPLORER-CARD %c Version ${Version}`, "color:white;background:blue;font-weight:bold", "color:black;background:white;font-weight:bold");
 
 customElements.define('history-explorer-card', HistoryExplorerCard);
 
