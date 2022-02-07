@@ -1488,6 +1488,11 @@ class HistoryCardState {
         return html;
     }
 
+    resize()
+    {
+        for( let g of this.graphs ) g.chart.resize();
+    }
+
     createContent()
     {
         // Initialize the content if it's not there yet.
@@ -1538,6 +1543,10 @@ class HistoryCardState {
             this.setTimeRange(this.pconfig.defaultTimeRange, false);
 
             this.today(false);
+
+            // Register observer to resize the graphs whenever the maincard dimensions change
+            let ro = new ResizeObserver(entries => { this.resize(); });
+            ro.observe(this._this.querySelector('#maincard'));
 
         }
     }
