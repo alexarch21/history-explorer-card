@@ -4,7 +4,7 @@ import "./Chart.js";
 import "./timeline.js";
 import "./md5.min.js"
 
-const Version = '1.0.15';
+const Version = '1.0.16';
 
 var isMobile = ( navigator.appVersion.indexOf("Mobi") > -1 );
 
@@ -235,6 +235,7 @@ class HistoryCardState {
         this.contentValid = false;
         this.entitiesPopulated = false;
         this.iid = 0;
+        this.lastWidth = 0;
 
     }
 
@@ -1137,7 +1138,9 @@ class HistoryCardState {
     {
         if( this.state.drag ) {
 
-            let x = Math.floor((event.clientX - panstate.mx) * (60.0 * this.activeRange.timeRangeHours / panstate.g.width));
+            let w = panstate.g.chart.chartArea.right - panstate.g.chart.chartArea.left;
+
+            let x = Math.floor((event.clientX - panstate.mx) * (60.0 * this.activeRange.timeRangeHours / w));
 
             if( x ) {
 
@@ -1300,6 +1303,11 @@ class HistoryCardState {
         return c ?? undefined;
     }
 
+    calcGraphHeight(type, n)
+    {
+        return ( type == 'line' ) ? this.pconfig.lineGraphHeight : Math.max(n * 45, 130);
+    }
+
     removeGraph(event)
     {
         const id = event.target.id.substr(event.target.id.indexOf("-") + 1);
@@ -1385,7 +1393,7 @@ class HistoryCardState {
 
         }
 
-        const h = ( type == 'line' ) ? this.pconfig.lineGraphHeight : Math.max(entities.length * 45, 130);
+        const h = this.calcGraphHeight(type, entities.length);
 
         let html = '';
         html += `<div sytle='height:${h}px'>`;
@@ -1425,9 +1433,9 @@ class HistoryCardState {
 
         const chart = this.newGraph(canvas, type, datasets, config);
 
-        let w = chart.chartArea.right - chart.chartArea.left;
+        const h = this.calcGraphHeight(type, entities.length);
 
-        this.graphs.push({ "id": gid, "type": type, "canvas": canvas, "width": w, "chart": chart , "entities": entities });
+        this.graphs.push({ "id": gid, "type": type, "canvas": canvas, "graphHeight": h, "chart": chart , "entities": entities });
 
         canvas.addEventListener('pointerdown', this.pointerDown.bind(this));
         canvas.addEventListener('pointermove', this.pointerMove.bind(this));
@@ -1490,7 +1498,12 @@ class HistoryCardState {
 
     resize()
     {
-        for( let g of this.graphs ) g.chart.resize();
+        const w = this._this.querySelector('#maincard').clientWidth;
+
+        if( Math.abs(this.lastWidth - w) > 2 ) {
+            this.lastWidth = w;
+            for( let g of this.graphs ) g.chart.resize(undefined, g.graphHeight);
+        }        
     }
 
     createContent()
@@ -1807,7 +1820,7 @@ class HistoryExplorerCard extends HTMLElement
         for( let g of this.instance.pconfig.graphConfig ) {
             if( g.id > 0 ) html += '<br>';
             if( g.graph.title !== undefined ) html += `<div style='text-align:center;'>${g.graph.title}</div>`;
-            const h = ( g.graph.type == 'line' ) ? this.instance.pconfig.lineGraphHeight : Math.max(g.graph.entities.length * 45, 130);
+            const h = this.instance.calcGraphHeight(g.graph.type, g.graph.entities.length);
             html += `<div sytle='height:${h}px'>`;
             html += `<canvas id="graph${g.id}" height="${h}px" style='touch-action:pan-y'></canvas>`;
             html += `</div>`;
