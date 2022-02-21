@@ -4,9 +4,9 @@ import "./Chart.js";
 import "./timeline.js";
 import "./md5.min.js"
 
-const Version = '1.0.16';
+const Version = '1.0.17';
 
-var isMobile = ( navigator.appVersion.indexOf("Mobi") > -1 );
+var isMobile = ( navigator.appVersion.indexOf("Mobi") > -1 ) || ( navigator.userAgent.indexOf("HomeAssistant") > -1 );
 
 
 // --------------------------------------------------------------------------------------
@@ -237,6 +237,8 @@ class HistoryCardState {
         this.iid = 0;
         this.lastWidth = 0;
 
+        this.defocusCall = this.entitySelectorDefocus.bind(this);
+
     }
 
 
@@ -255,7 +257,7 @@ class HistoryCardState {
     {
         let c;
 
-        if( value === undefined || value === '' ) value = 'unknown';
+        if( value === undefined || value === null || value === '' ) value = 'unknown';
 
         // device_class.state override
         if( device_class ) {
@@ -1454,7 +1456,14 @@ class HistoryCardState {
                 <button id="b2_${i}" style="border:0px solid black;color:inherit;background-color:#00000000;height:30px">></button>
             </div>`;
 
-        if( selector ) html += `
+        if( selector && isMobile ) html += `
+            <div style="background-color:${bgcol};display:inline-block;padding-left:10px;padding-right:10px;">
+                <input id="b7_${i}" autoComplete="on" size=40 placeholder="Type to search for an entity to add"/>
+                <div id="es_${i}" style="display:none;position:absolute;text-align:left;min-width:260px;max-height:150px;overflow:auto;border:1px solid #444;z-index:1;color:var(--primary-text-color);background-color:var(--paper-listbox-background-color)"></div>
+                <button id="b8_${i}" style="border:0px solid black;color:inherit;background-color:#00000000;height:34px;margin-left:5px;">+</button>
+            </div>`;
+
+        if( selector && !isMobile ) html += `
             <div style="background-color:${bgcol};display:inline-block;padding-left:10px;padding-right:10px;">
                 <input id="b7_${i}" autoComplete="on" list="b6" size=40 placeholder="Type to search for an entity to add"/>
                 <button id="b8_${i}" style="border:0px solid black;color:inherit;background-color:#00000000;height:34px;margin-left:5px;">+</button>
@@ -1540,6 +1549,11 @@ class HistoryCardState {
                 this._this.querySelector(`#by_${i}`)?.addEventListener('change', this.timeRangeSelected.bind(this));
                 this._this.querySelector(`#bz_${i}`)?.addEventListener('click', this.toggleZoom.bind(this), false);
 
+                if( isMobile ) {
+                    this._this.querySelector(`#b7_${i}`)?.addEventListener('focusin', this.entitySelectorFocus.bind(this), true);
+                    this._this.querySelector(`#b7_${i}`)?.addEventListener('keyup', this.entitySelectorEntered.bind(this), true);
+                }
+
                 this.ui.dateSelector[i] = this._this.querySelector(`#bx_${i}`);
                 this.ui.rangeSelector[i] = this._this.querySelector(`#by_${i}`);
                 this.ui.zoomButton[i] = this._this.querySelector(`#bz_${i}`);
@@ -1578,19 +1592,108 @@ class HistoryCardState {
 
 
     // --------------------------------------------------------------------------------------
+    // Alternative compact dropdown list implementation for mobile browsers and apps
+    // --------------------------------------------------------------------------------------
+
+    setDropdownVisibility(input_idx, show)
+    {
+        let input = this._this.querySelector(`#b7_${input_idx}`);
+        let dropdown = this._this.querySelector(`#es_${input_idx}`);
+        if( !input || !dropdown ) return;
+        if( show ) {
+            dropdown.style['min-width'] = input.clientWidth + 'px';
+            dropdown.style.display = 'block';
+            for( let i of dropdown.getElementsByTagName('a') ) i.style.display = 'block';
+        } else
+            dropdown.style.display = 'none';
+    }
+
+    entitySelectorFocus(event)
+    {
+        if( !event.target ) return;
+
+        const idx = event.target.id.substr(3) * 1;
+
+        this.setDropdownVisibility(idx ^ 1, false);
+        this.setDropdownVisibility(idx, true);
+
+        this.focusClick = true;
+
+        if( !this.focusListener ) {
+            this.focusListener = true;
+            window.addEventListener('click', this.defocusCall);
+        }
+    }
+
+    entitySelectorDefocus(event)
+    {
+        if( !this.focusClick ) {
+            window.removeEventListener('click', this.defocusCall);
+            this.focusListener = undefined;
+            this.setDropdownVisibility(0, false);
+            this.setDropdownVisibility(1, false);
+        } else 
+            this.focusClick = undefined;
+    }
+
+    entitySelectorEntered(event)
+    {
+        if( !event.target ) return;
+
+        const idx = event.target.id.substr(3) * 1;
+
+        let dropdown = this._this.querySelector(`#es_${idx}`);
+        let input = this._this.querySelector(`#b7_${idx}`);
+        let filter = input.value.toLowerCase();
+        let tags = dropdown.getElementsByTagName('a');
+        for( let i of tags ) {
+            let txt = i.textContent;
+            if( txt.toLowerCase().indexOf(filter) >= 0 )
+                i.style.display = 'block';
+            else
+                i.style.display = 'none';
+        }
+    }
+
+    entitySelectorEntryClicked(event)
+    {
+        window.removeEventListener('click', this.defocusCall);
+        this.focusListener = undefined;
+        const idx = event.target.href.slice(-1);
+        let input = this._this.querySelector(`#b7_${idx}`);
+        let dropdown = this._this.querySelector(`#es_${idx}`);
+        input.value = event.target.id;
+        dropdown.style.display = 'none';
+    }
+
+
+    // --------------------------------------------------------------------------------------
     // Entity listbox populators
     // --------------------------------------------------------------------------------------
 
     entityCollectorCallback(result)
     { 
-        const datalist = this._this.querySelector('#b6');
+        for( let i = 0; i < (isMobile ? 2 : 1); ++i ) {
 
-        while( datalist.firstChild ) datalist.removeChild(datalist.firstChild);
+            const datalist = this._this.querySelector(isMobile ? `#es_${i}` : '#b6');
+            if( !datalist ) continue;
 
-        for( let r of result ) {
-            let o = document.createElement('option');
-            o.innerHTML = r[0].entity_id;
-            datalist.appendChild(o);
+            while( datalist.firstChild ) datalist.removeChild(datalist.firstChild);
+
+            for( let r of result ) {
+                let o;
+                if( isMobile ) {
+                    o = document.createElement('a');
+                    o.href = `#s_${i}`;
+                    o.id = r[0].entity_id;
+                    o.style = "display:block;padding:2px 5px;text-decoration:none;color:inherit";
+                    o.addEventListener('click', this.entitySelectorEntryClicked.bind(this), true);
+                } else 
+                    o = document.createElement('option');
+                o.innerHTML = r[0].entity_id;
+                datalist.appendChild(o);
+            }
+
         }
 
         for( let i of this.ui.inputField )
@@ -1609,14 +1712,30 @@ class HistoryCardState {
 
     entityCollectAll()
     {
-        let datalist = this._this.querySelector('#b6');
+        for( let i = 0; i < (isMobile ? 2 : 1); ++i ) {
 
-        while( datalist.firstChild ) datalist.removeChild(datalist.firstChild);
+            const datalist = this._this.querySelector(isMobile ? `#es_${i}` : '#b6');
+            if( !datalist ) continue;
 
-        for( let e in this._hass.states ) {
-            let o = document.createElement('option');
-            o.innerHTML = e;
-            datalist.appendChild(o);
+            while( datalist.firstChild ) datalist.removeChild(datalist.firstChild);
+
+            for( let e in this._hass.states ) {
+                const d = this.getDomainForEntity(e);
+                if( !['automation', 'script', 'zone', 'camera', 'persistent_notification', 'timer'].includes(d) ) {
+                    let o;
+                    if( isMobile ) {
+                        o = document.createElement('a');
+                        o.href = `#s_${i}`;
+                        o.id = e;
+                        o.style = "display:block;padding:2px 5px;text-decoration:none;color:inherit";
+                        o.addEventListener('click', this.entitySelectorEntryClicked.bind(this), true);
+                    } else 
+                        o = document.createElement('option');
+                    o.innerHTML = e;
+                    datalist.appendChild(o);
+                }
+            }
+
         }
     }
 
