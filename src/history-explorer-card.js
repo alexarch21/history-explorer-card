@@ -142,11 +142,19 @@ function parseColor(c)
 
 
 // --------------------------------------------------------------------------------------
+// Valid time ranges in hours
+// --------------------------------------------------------------------------------------
+
+const ranges = [1, 2, 6, 12, 24, 48, 72, 96, 120, 144, 168, 336, 504, 720];
+
+
+// --------------------------------------------------------------------------------------
 // Shared panning state
 // --------------------------------------------------------------------------------------
 
 var panstate = {};
     panstate.mx = 0;
+    panstate.lx = 0;
     panstate.tc = 0;
     panstate.g 	= null;
     panstate.overlay = null;
@@ -216,6 +224,7 @@ class HistoryCardState {
 
         this.activeRange = {};
         this.activeRange.timeRangeHours  = 24;
+        this.activeRange.timeRangeMinutes= 0;
         this.activeRange.tickStepSize    = 1;
         this.activeRange.dataClusterSize = 0;
 
@@ -306,10 +315,8 @@ class HistoryCardState {
 
             if( resetRange && this.activeRange.timeRangeHours < 24 ) this.setTimeRange(24, false);
 
-            const offset = ( this.activeRange.timeRangeHours < 24 ) ? 0 : 1;
-
-            this.endTime = moment().add(offset, 'hour').format('YYYY-MM-DDTHH[:00:00]');
-            this.startTime = moment(this.endTime).subtract(this.activeRange.timeRangeHours, "hour");
+            this.endTime = moment().format('YYYY-MM-DDTHH:mm[:00]');
+            this.startTime = moment(this.endTime).subtract(this.activeRange.timeRangeHours, "hour").subtract(this.activeRange.timeRangeMinutes, "minute");
 
             this.updateHistory();
 
@@ -363,23 +370,35 @@ class HistoryCardState {
 
     decZoom()
     {
-        const ranges = [1, 2, 6, 12, 24, 48, 72, 96, 120, 144, 168, 336, 504, 720];
-           
-        let i = ranges.findIndex(e => e >= this.activeRange.timeRangeHours);
-        if( i >= 0 ) {
-            if( ranges[i] > this.activeRange.timeRangeHours ) i--;
-            if( i < ranges.length-1 ) 
-                this.setTimeRange(ranges[i+1], true);
+        if( !this.activeRange.timeRangeHours ) {
+            this.activeRange.timeRangeMinutes *= 2;
+            if( this.activeRange.timeRangeMinutes >= 60 ) {
+                this.activeRange.timeRangeMinutes = 0;
+                this.activeRange.timeRangeHours = 0;
+            }
         }
+
+        if( !this.activeRange.timeRangeMinutes ) {
+               
+            let i = ranges.findIndex(e => e >= this.activeRange.timeRangeHours);
+            if( i >= 0 ) {
+                if( ranges[i] > this.activeRange.timeRangeHours ) i--;
+                if( i < ranges.length-1 ) 
+                    this.setTimeRange(ranges[i+1], true);
+            }
+
+        } else
+
+            this.setTimeRangeMinutes(this.activeRange.timeRangeMinutes, true, (moment(this.startTime) + moment(this.endTime)) / 2);
     }
 
     incZoom()
     {
-        const ranges = [1, 2, 6, 12, 24, 48, 72, 96, 120, 144, 168, 336, 504, 720];
-
         const i = ranges.findIndex(e => e >= this.activeRange.timeRangeHours);
         if( i > 0 ) 
             this.setTimeRange(ranges[i-1], true);
+        else
+            this.setTimeRangeMinutes((this.activeRange.timeRangeHours * 60 + this.activeRange.timeRangeMinutes) / 2, true, (moment(this.startTime) + moment(this.endTime)) / 2);
     }
 
     timeRangeSelected(event)
@@ -387,16 +406,29 @@ class HistoryCardState {
         this.setTimeRange(event.target.value, true);
     }
 
+
+    // --------------------------------------------------------------------------------------
+    // Activate a given time range
+    // --------------------------------------------------------------------------------------
+
+    validateRange(range)
+    {
+        const i = ranges.findIndex(e => e >= range);
+        if( i < ranges.length-1 && (i < 0 || ranges[i] != range) ) i++;
+        return ranges[i];
+    }
+
     setTimeRange(range, update, t_center = null)
     {
         if( this.state.loading ) return;
+
+        range = Math.max(range, 1);
 
         const stepSizes = { '1': 5, '2': 10, '3': 15, '4': 30, '5': 30, '6': 30, '7': 30, '8': 30, '9': 30, '10': 60, '11': 60, '12':60, '24': 2, '48': 2, '72': 6, '96': 6, '120':12, '144':12, '168':24, '336':24, '504':24, '720':48 };
 
         this.activeRange.tickStepSize = stepSizes[range];
 
         if( !this.activeRange.tickStepSize ) {
-            console.log(`Invalid user predefined time range ${range}, reverting to default 24h`);
             range = '24';
             this.activeRange.tickStepSize = stepSizes[range];
         }
@@ -409,6 +441,8 @@ class HistoryCardState {
         if( !this.pconfig.enableDataClustering ) this.activeRange.dataClusterSize = 0;
 
         this.activeRange.timeRangeHours = range;
+        this.activeRange.timeRangeMinutes = 0;
+
         for( let i of this.ui.rangeSelector ) if( i ) i.value = range;
 
         for( let g of this.graphs ) {
@@ -446,6 +480,58 @@ class HistoryCardState {
             this.updateHistory();
 
         }
+    }
+
+    setTimeRangeMinutes(range, update, t_center)
+    {
+        if( this.state.loading ) return;
+
+        range = Math.max(range, 1);
+
+        this.activeRange.tickStepSize = ( range <= 20 ) ? 1 : 5;
+        this.activeRange.dataClusterSize = 0;
+
+        this.activeRange.timeRangeHours = 0;
+        this.activeRange.timeRangeMinutes = range;
+
+        for( let i of this.ui.rangeSelector ) if( i ) i.value = "0";
+
+        for( let g of this.graphs ) {
+            g.chart.options.scales.xAxes[0].time.unit = 'minute';
+            g.chart.options.scales.xAxes[0].time.stepSize = this.activeRange.tickStepSize;
+            g.chart.update();
+        }
+
+        if( update ) {
+
+            let t1 = moment(t_center).add(this.activeRange.timeRangeMinutes / 2, "minute");
+            let t0 = moment(t1).subtract(this.activeRange.timeRangeMinutes, "minute");
+            this.startTime = t0.format("YYYY-MM-DDTHH:mm:ss");
+            this.endTime = t1.format("YYYY-MM-DDTHH:mm:ss");
+            this.updateHistory();
+
+        }
+    }
+
+    setTimeRangeFromString(range, update = false, t_center = null)
+    {
+        const s = range.slice(0, -1);
+
+        let t = 0;
+        switch( range.slice(-1)[0] ) {
+            case 'm': t = s*1; break;
+            case 'h': t = s*60; break;
+            case 'd': t = s*24*60; break;
+            case 'w': t = s*7*24*60; break;
+            default: t = range*60; break;
+        }
+
+        const h = Math.floor(t / 60);
+
+        if( h > 0 )
+            this.setTimeRange(this.validateRange(h), update, t_center);
+        else
+            this.setTimeRangeMinutes(t, update, t_center);
     }
 
 
@@ -1095,6 +1181,7 @@ class HistoryCardState {
         if( panstate.g ) {
 
             panstate.mx = event.clientX;
+            panstate.lx = event.clientX;
 
             event.target?.setPointerCapture(event.pointerId);
 
@@ -1140,20 +1227,22 @@ class HistoryCardState {
     {
         if( this.state.drag ) {
 
-            let w = panstate.g.chart.chartArea.right - panstate.g.chart.chartArea.left;
+            if( Math.abs(event.clientX - panstate.lx) > 0 ) {
 
-            let x = Math.floor((event.clientX - panstate.mx) * (60.0 * this.activeRange.timeRangeHours / w));
+                panstate.lx = event.clientX;
 
-            if( x ) {
+                const w = panstate.g.chart.chartArea.right - panstate.g.chart.chartArea.left;
+
+                const x = Math.floor((event.clientX - panstate.mx) * ((3600.0 * this.activeRange.timeRangeHours + 60.0 * this.activeRange.timeRangeMinutes) / w));
 
                 if( x < 0 ) {
-                    let t0 = moment(panstate.tc).add(-x, "minutes");
-                    let t1 = moment(t0).add(this.activeRange.timeRangeHours, "hour");
+                    let t0 = moment(panstate.tc).add(-x, "second");
+                    let t1 = moment(t0).add(this.activeRange.timeRangeHours, "hour").add(this.activeRange.timeRangeMinutes, "minute");
                     this.startTime = t0.format("YYYY-MM-DDTHH:mm:ss");
                     this.endTime = t1.format("YYYY-MM-DDTHH:mm:ss");			
                 } else if( x > 0 ) {
-                    let t0 = moment(panstate.tc).subtract(x, "minutes");
-                    let t1 = moment(t0).add(this.activeRange.timeRangeHours, "hour");
+                    let t0 = moment(panstate.tc).subtract(x, "second");
+                    let t1 = moment(t0).add(this.activeRange.timeRangeHours, "hour").add(this.activeRange.timeRangeMinutes, "minute");;
                     this.startTime = t0.format("YYYY-MM-DDTHH:mm:ss");
                     this.endTime = t1.format("YYYY-MM-DDTHH:mm:ss");
                 }
@@ -1220,19 +1309,24 @@ class HistoryCardState {
 
             const tm = (moment(panstate.st1) + moment(panstate.st0)) / 2;
 
-            let d = Math.ceil(moment.duration(panstate.st1 - panstate.st0).asMinutes() / 60.0);
+            // Time delta in minutes
+            const dt = moment.duration(panstate.st1 - panstate.st0).asMinutes();
+
+            // Time delta in hours, ceiled
+            let d = ( dt >= 60.0 ) ? Math.ceil(dt / 60.0) : 0;
             
             if( d < 12 ) {
 
-                if( d < 1 ) d = 1;
-
-                this.setTimeRange(d, true, tm);
+                if( d < 1 )
+                    this.setTimeRangeMinutes(Math.ceil(dt), true, tm);
+                else
+                    this.setTimeRange(d, true, tm);
 
             } else {
 
                 d = Math.ceil(d / 24.0);
 
-                if( d < 1 ) this.setTimeRange(12, true, tm); else
+                if( d < 1 ) this.setTimeRange(12, true, tm); else       // 12 hours
                 if( d < 2 ) this.setTimeRange(24, true, tm); else       // 1 day
                 if( d < 3 ) this.setTimeRange(48, true, tm); else       // 2 days
                 if( d < 4 ) this.setTimeRange(72, true, tm); else       // 3 days
@@ -1474,6 +1568,7 @@ class HistoryCardState {
                 <button id="bz_${i}" style="border:0px solid black;color:inherit;background-color:#00000000"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="24" height="24" viewBox="0 0 24 24" style="vertical-align:middle;"><path fill="var(--primary-text-color)" d="M15.5,14L20.5,19L19,20.5L14,15.5V14.71L13.73,14.43C12.59,15.41 11.11,16 9.5,16A6.5,6.5 0 0,1 3,9.5A6.5,6.5 0 0,1 9.5,3A6.5,6.5 0 0,1 16,9.5C16,11.11 15.41,12.59 14.43,13.73L14.71,14H15.5M9.5,14C12,14 14,12 14,9.5C14,7 12,5 9.5,5C7,5 5,7 5,9.5C5,12 7,14 9.5,14M12,10H10V12H9V10H7V9H9V7H10V9H12V10Z" /></svg></button>
                 <button id="b4_${i}" style="border:0px solid black;color:inherit;background-color:#00000000;height:30px">-</button>
                 <select id="by_${i}" style="border:0px solid black;color:inherit;background-color:#00000000;height:30px">
+                    <option value="0" ${optionStyle} hidden>< 1H</option>
                     <option value="1" ${optionStyle}>1 H</option>
                     <option value="2" ${optionStyle}>2 H</option>
                     <option value="3" ${optionStyle} hidden>3 H</option>
@@ -1567,7 +1662,7 @@ class HistoryCardState {
             } else
                 this.pconfig.entities = [];
 
-            this.setTimeRange(this.pconfig.defaultTimeRange, false);
+            this.setTimeRangeFromString(String(this.pconfig.defaultTimeRange));
 
             this.today(false);
 
