@@ -68,11 +68,14 @@ By default the UI entity dropdown will list all entities known to HA. This can b
 type: custom:history-explorer-card
 recordedEntitiesOnly: true
 ```
-When the dashboard is opened, the card will show the last 24 hours by default. You can select a different default time range in the YAML. The requested time range is in hours. Only the values available in the time range drop down are supported, converted to hours (for example, 5 days would be 120 hours). If an unsupported default time range is specified, the card will default to 24 hours and will log an error.
+When the dashboard is opened, the card will show the last 24 hours by default. You can select a different default time range in the YAML. Use m, h, d, and w to denote minutes, hours, days and weeks respectively. If no postfix is given, hours are assumed.
 
 ```yaml
 type: custom:history-explorer-card
-defaultTimeRange: 168  // show the last week when opening the card (1 week = 168 hours)
+defaultTimeRange: 4h   // show the last 4 hours when opening the card
+defaultTimeRange: 2d   // or 2 days...
+defaultTimeRange: 15m  // or 15 minutes...
+defaultTimeRange: 3w   // or 3 weeks
 ```
 
 ### Line interpolation modes
