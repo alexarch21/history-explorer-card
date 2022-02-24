@@ -4,6 +4,9 @@ import "./Chart.js";
 import "./timeline.js";
 import "./md5.min.js"
 
+var Chart = window.HXLocal_Chart;
+var moment = window.HXLocal_moment;
+
 const Version = '1.0.17';
 
 var isMobile = ( navigator.appVersion.indexOf("Mobi") > -1 ) || ( navigator.userAgent.indexOf("HomeAssistant") > -1 );
@@ -445,12 +448,6 @@ class HistoryCardState {
 
         for( let i of this.ui.rangeSelector ) if( i ) i.value = range;
 
-        for( let g of this.graphs ) {
-            g.chart.options.scales.xAxes[0].time.unit = ( this.activeRange.timeRangeHours < 24 ) ? 'minute' : 'hour';
-            g.chart.options.scales.xAxes[0].time.stepSize = this.activeRange.tickStepSize;
-            g.chart.update();
-        }
-
         if( update ) {
 
             if( t_center ) {
@@ -477,6 +474,14 @@ class HistoryCardState {
 
             }
 
+            for( let g of this.graphs ) {
+                g.chart.options.scales.xAxes[0].time.unit = ( this.activeRange.timeRangeHours < 24 ) ? 'minute' : 'hour';
+                g.chart.options.scales.xAxes[0].time.stepSize = this.activeRange.tickStepSize;
+                g.chart.options.scales.xAxes[0].time.min = this.startTime;
+                g.chart.options.scales.xAxes[0].time.max = this.endTime;
+                g.chart.update();
+            }
+
             this.updateHistory();
 
         }
@@ -496,18 +501,21 @@ class HistoryCardState {
 
         for( let i of this.ui.rangeSelector ) if( i ) i.value = "0";
 
-        for( let g of this.graphs ) {
-            g.chart.options.scales.xAxes[0].time.unit = 'minute';
-            g.chart.options.scales.xAxes[0].time.stepSize = this.activeRange.tickStepSize;
-            g.chart.update();
-        }
-
         if( update ) {
 
             let t1 = moment(t_center).add(this.activeRange.timeRangeMinutes / 2, "minute");
             let t0 = moment(t1).subtract(this.activeRange.timeRangeMinutes, "minute");
             this.startTime = t0.format("YYYY-MM-DDTHH:mm:ss");
             this.endTime = t1.format("YYYY-MM-DDTHH:mm:ss");
+
+            for( let g of this.graphs ) {
+                g.chart.options.scales.xAxes[0].time.unit = ( this.activeRange.timeRangeHours < 24 ) ? 'minute' : 'hour';
+                g.chart.options.scales.xAxes[0].time.stepSize = this.activeRange.tickStepSize;
+                g.chart.options.scales.xAxes[0].time.min = this.startTime;
+                g.chart.options.scales.xAxes[0].time.max = this.endTime;
+                g.chart.update();
+            }
+
             this.updateHistory();
 
         }
@@ -879,12 +887,11 @@ class HistoryCardState {
             }
 
             if( updated ) {
-
+                g.chart.options.scales.xAxes[0].time.unit = ( this.activeRange.timeRangeHours < 24 ) ? 'minute' : 'hour';
+                g.chart.options.scales.xAxes[0].time.stepSize = this.activeRange.tickStepSize;
                 g.chart.options.scales.xAxes[0].time.min = this.startTime;
                 g.chart.options.scales.xAxes[0].time.max = this.endTime;
-
                 g.chart.update();
-
             }
 
         }
