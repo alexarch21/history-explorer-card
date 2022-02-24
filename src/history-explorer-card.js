@@ -4,9 +4,6 @@ import "./Chart.js";
 import "./timeline.js";
 import "./md5.min.js"
 
-var Chart = window.HXLocal_Chart;
-var moment = window.HXLocal_moment;
-
 const Version = '1.0.17';
 
 var isMobile = ( navigator.appVersion.indexOf("Mobi") > -1 ) || ( navigator.userAgent.indexOf("HomeAssistant") > -1 );
