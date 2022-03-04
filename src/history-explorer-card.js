@@ -70,6 +70,7 @@ class HistoryCardState {
         this.pconfig.graphConfig          = [];
         this.pconfig.entityOptions        = undefined;
         this.pconfig.lockAllGraphs        = false;
+        this.pconfig.combineSameUnits     = false;
         this.pconfig.recordedEntitiesOnly = false;
         this.pconfig.enableDataClustering = true;
         this.pconfig.roundingPrecision    = 2;
@@ -1275,6 +1276,11 @@ class HistoryCardState {
         return this._hass.states[entity]?.attributes?.device_class;
     }
 
+    getUnitOfMeasure(entity, manualUnit)
+    {
+        return ( manualUnit === undefined ) ? this._hass.states[entity]?.attributes?.unit_of_measurement : manualUnit;
+    }
+
     getEntityOptions(entity)
     {
         const dc = this.getDeviceClass(entity);
@@ -1338,7 +1344,7 @@ class HistoryCardState {
     {
         if( this._hass.states[entity_id] == undefined ) return;
 
-        const type = ( this._hass.states[entity_id].attributes?.unit_of_measurement == undefined ) ? 'timeline' : 'line';
+        const type = ( this.getUnitOfMeasure(entity_id) == undefined ) ? 'timeline' : 'line';
 
         let entities = [{ "entity": entity_id, "color": "#000000", "fill": "#00000000" }];
 
@@ -1361,8 +1367,14 @@ class HistoryCardState {
 
         }
 
-        // Add to an existing timeline graph if possible (if it's the last in the list)
-        if( type == 'timeline' && this.graphs.length > 0 && this.graphs[this.graphs.length-1].type == 'timeline' ) {
+        const last = this.graphs.length - 1;
+
+        // Add to an existing timeline graph and compatible line graph if possible
+        let combine = last >= 0 && 
+                      this.graphs[last].type === type &&
+                      ( type == 'timeline' || this.pconfig.combineSameUnits && this.getUnitOfMeasure(entity_id) == this.getUnitOfMeasure(this.graphs[last].entities[0].entity) );
+
+        if( combine ) {
 
             // Add the new entity to the previous ones
             entities = this.graphs[this.graphs.length-1].entities.concat(entities);
@@ -1404,7 +1416,7 @@ class HistoryCardState {
                 "fillColor": parseColor(d.fill), 
                 "mode": d.lineMode || this.pconfig.defaultLineMode, 
                 "width": d.width || 2.0,
-                "unit": ( d.unit === undefined ) ? this._hass.states[d.entity].attributes.unit_of_measurement : d.unit,
+                "unit": this.getUnitOfMeasure(d.entity, d.unit),
                 "domain": this.getDomainForEntity(d.entity),
                 "device_class": this.getDeviceClass(d.entity),
                 "entity_id" : d.entity
@@ -1948,6 +1960,7 @@ class HistoryExplorerCard extends HTMLElement
         this.instance.pconfig.axisAddMarginMin = ( config.axisAddMarginMin !== undefined ) ? config.axisAddMarginMin : true;
         this.instance.pconfig.axisAddMarginMax = ( config.axisAddMarginMax !== undefined ) ? config.axisAddMarginMax : true;
         this.instance.pconfig.recordedEntitiesOnly = config.recordedEntitiesOnly ?? false;
+        this.instance.pconfig.combineSameUnits = config.combineSameUnits === true;
         this.instance.pconfig.defaultTimeRange = config.defaultTimeRange ?? '24';
 
         this.instance.id = config.cardName ?? "default";
