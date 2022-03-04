@@ -192,7 +192,7 @@ entityOptions:
 
 ### Exporting data as CSV
 
-The raw data for the currently displayed entities and time range can be exported as a CSV file by opening the entity options and selecting Export as CSV:
+The raw data for the currently displayed entities and time range can be exported as a CSV file by opening the entity options and selecting Export as CSV. Note that CSV exporting does not work in the HA Companion app.
 
 ![image](https://user-images.githubusercontent.com/60828821/156686793-c0cdace6-87c0-4c1e-bb7f-58dd04035be5.png)
 
