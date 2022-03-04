@@ -1,144 +1,13 @@
 
-import "./moment.min.js";
-import "./Chart.js";
-import "./timeline.js";
-import "./md5.min.js"
+import "./deps/moment.min.js";
+import "./deps/Chart.js";
+import "./deps/timeline.js";
+import "./deps/md5.min.js"
+import "./deps/FileSaver.js"
 
-const Version = '1.0.17';
+const Version = '1.0.18';
 
 var isMobile = ( navigator.appVersion.indexOf("Mobi") > -1 ) || ( navigator.userAgent.indexOf("HomeAssistant") > -1 );
-
-
-// --------------------------------------------------------------------------------------
-// Default colors for line graphs
-// --------------------------------------------------------------------------------------
-
-var defaultColors = [
-
-    { 'color': '#3e95cd', 'fill': 'rgba(151,187,205,0.15)' },
-    { 'color': '#95cd3e', 'fill': 'rgba(187,205,151,0.15)' },
-    { 'color': '#cd3e3e', 'fill': 'rgba(205,151,151,0.15)' },
-    { 'color': '#3ecd95', 'fill': 'rgba(151,205,187,0.15)' },
-    { 'color': '#cd953e', 'fill': 'rgba(205,187,151,0.15)' },
-
-];
-
-
-// --------------------------------------------------------------------------------------
-// Predefined state colors for timeline history
-// --------------------------------------------------------------------------------------
-
-const defaultGood = '#66a61e';
-const defaultBad = '#b5342d';
-const defaultMultiple = '#e5ad23';
-
-const activeRed = '#cd3e3e';
-const activeGreen = '#3ecd3e';
-const multipleRed = 'rgb(213, 142, 142)';
-const multipleGreen = 'rgb(142, 213, 142)';
-
-const stateColors = { 
-
-    // Special states
-
-    'unknown' : "#888888",
-    'unavailable' : "#aaaaaa",
-    'idle' : "#aaaaaa",
-
-    // on = red , off = inactive (default fallback used for all device classes not explicitely mentioned)
-
-    'on' : activeRed, 
-    'off' : '#dddddd',
-    'binary_sensor.multiple' : multipleRed,
-
-    // on = green , off = inactive
-
-    'battery_charging.on': activeGreen,
-    'battery_charging.multiple': multipleGreen,
-    'plug.on': activeGreen,
-    'plug.multiple': multipleGreen,
-    'running.on': activeGreen,
-    'running.multiple': multipleGreen,
-    'update.on': activeGreen,
-    'update.multiple': multipleGreen,
-
-    // on = good (green), off = bad (red)
-
-    'connectivity.on': defaultGood,
-    'connectivity.off': defaultBad,
-    'connectivity.multiple': defaultMultiple,
-    'power.on': defaultGood,
-    'power.off': defaultBad,
-    'power.multiple': defaultMultiple,
-    'presence.on': defaultGood,
-    'presence.off': defaultBad,
-    'presence.multiple': defaultMultiple,
-
-    // on = bad (red), off = good (green)
-
-    'gas.on': defaultBad,
-    'gas.off': defaultGood,
-    'gas.multiple': defaultMultiple,
-    'smoke.on': defaultBad,
-    'smoke.off': defaultGood,
-    'smoke.multiple': defaultMultiple,
-    'problem.on': defaultBad,
-    'problem.off': defaultGood,
-    'problem.multiple': defaultMultiple,
-    'safety.on': defaultBad,
-    'safety.off': defaultGood,
-    'safety.multiple': defaultMultiple,
-
-    // person domain
-
-    'person.home' : '#66a61e',
-    'person.not_home' : '#b5342d',
-    'person.arriving' : '#d5bd43',
-    'person.leaving' : '#d5bd43',
-    'person.multiple' : '#e5ad23',
-
-    // weather domain
-
-    'weather.cloudy' : '#91acce',
-    'weather.fog' : '#adadad',
-    'weather.rainy' : '#5285df',
-    'weather.partlycloudy' : '#11a3e9',
-    'weather.sunny' : '#e9db11',
-    'weather.multiple' : '#aaaaaa',
-
-    // automation domain
-
-    'automation.on': activeGreen,
-    'automation.multiple': multipleGreen,
-
-    // 
-
-    'input_select.Arret' : '#dddddd', 
-    'input_select.Eco' : '#44739e', 
-    'input_select.Confort - 2' : '#53b8ba', 
-    'input_select.Confort - 1' : '#984ea3', 
-    'input_select.Confort' : '#e99745',
-
-    // 
-
-    'sensor.WCDMA' : '#44739e', 
-    'sensor.LTE' : '#984ea3',
-
-};
-
-const stateColorsDark = { 
-
-    'off' : "#383838", 
-
-    'input_select.Arret' : '#383838', 
-
-};
-
-function parseColor(c)
-{
-    while( c && c.startsWith('--') ) c = getComputedStyle(document.body).getPropertyValue(c);
-    return c;
-}
 
 
 // --------------------------------------------------------------------------------------
@@ -173,12 +42,15 @@ class HistoryCardState {
 
         this.colorMap = new Map();
 
+        this.csvExporter = new HistoryCSVExporter();
+
         this.ui = {};
         this.ui.dateSelector  = [];
         this.ui.rangeSelector = [];
         this.ui.zoomButton    = [];
         this.ui.inputField    = [];
         this.ui.darkMode      = false;
+        this.ui.spinOverlay   = null;
 
         this.i18n = {};
         this.i18n.valid                = false;
@@ -316,7 +188,7 @@ class HistoryCardState {
             if( resetRange && this.activeRange.timeRangeHours < 24 ) this.setTimeRange(24, false);
 
             this.endTime = moment().format('YYYY-MM-DDTHH:mm[:00]');
-            this.startTime = moment(this.endTime).subtract(this.activeRange.timeRangeHours, "hour").subtract(this.activeRange.timeRangeMinutes, "minute");
+            this.startTime = moment(this.endTime).subtract(this.activeRange.timeRangeHours, "hour").subtract(this.activeRange.timeRangeMinutes, "minute").format('YYYY-MM-DDTHH:mm[:00]');
 
             this.updateHistory();
 
@@ -404,6 +276,14 @@ class HistoryCardState {
     timeRangeSelected(event)
     {
         this.setTimeRange(event.target.value, true);
+    }
+
+    exportFile()
+    {
+        this.menuSetVisibility(0, false);
+        this.menuSetVisibility(1, false);
+
+        this.csvExporter.exportFile(this);
     }
 
 
@@ -1548,7 +1428,7 @@ class HistoryCardState {
         let html = `<div style="margin-left:0px;width:100%;text-align:center;">`;
 
         if( timeline ) html += `
-            <div style="background-color:${bgcol};float:left;margin-left:10px;display:inline-block;padding-left:10px;padding-right:10px;">
+            <div id="dl_${i}" style="background-color:${bgcol};float:left;margin-left:10px;display:inline-block;padding-left:10px;padding-right:10px;">
                 <button id="b1_${i}" style="border:0px solid black;color:inherit;background-color:#00000000;height:30px"><</button>
                 <button id="bx_${i}" style="border:0px solid black;color:inherit;background-color:#00000000;height:30px"></button>
                 <button id="b2_${i}" style="border:0px solid black;color:inherit;background-color:#00000000;height:30px">></button>
@@ -1556,20 +1436,28 @@ class HistoryCardState {
 
         if( selector && isMobile ) html += `
             <div style="background-color:${bgcol};display:inline-block;padding-left:10px;padding-right:10px;">
-                <input id="b7_${i}" autoComplete="on" size=40 placeholder="Type to search for an entity to add"/>
+                <input id="b7_${i}" autoComplete="on" placeholder="Type to search for an entity to add"/>
                 <div id="es_${i}" style="display:none;position:absolute;text-align:left;min-width:260px;max-height:150px;overflow:auto;border:1px solid #444;z-index:1;color:var(--primary-text-color);background-color:var(--paper-listbox-background-color)"></div>
                 <button id="b8_${i}" style="border:0px solid black;color:inherit;background-color:#00000000;height:34px;margin-left:5px;">+</button>
+                <button id="bo_${i}" style="border:0px solid black;color:inherit;background-color:#00000000;height:30px;margin-left:1px;margin-right:0px;"><svg width="18" height="18" viewBox="0 0 24 24" style="vertical-align:middle;"><path fill="var(--primary-text-color)" d="M7.41,8.58L12,13.17L16.59,8.58L18,10L12,16L6,10L7.41,8.58Z" /></svg></button>
+                <div id="eo_${i}" style="display:none;position:absolute;text-align:left;min-width:150px;overflow:auto;border:1px solid #ddd;box-shadow:0px 8px 16px 0px rgba(0,0,0,0.2);z-index:1;color:var(--primary-text-color);background-color:var(--paper-listbox-background-color)">
+                    <a id="ef_${i}" href="#" style="display:block;padding:5px 5px;text-decoration:none;color:inherit">Export as CSV</a>
+                </div>
             </div>`;
 
         if( selector && !isMobile ) html += `
             <div style="background-color:${bgcol};display:inline-block;padding-left:10px;padding-right:10px;">
-                <input id="b7_${i}" autoComplete="on" list="b6" size=40 placeholder="Type to search for an entity to add"/>
+                <input id="b7_${i}" autoComplete="on" list="b6" placeholder="Type to search for an entity to add"/>
                 <button id="b8_${i}" style="border:0px solid black;color:inherit;background-color:#00000000;height:34px;margin-left:5px;">+</button>
+                <button id="bo_${i}" style="border:0px solid black;color:inherit;background-color:#00000000;height:30px;margin-left:1px;margin-right:0px;"><svg width="18" height="18" viewBox="0 0 24 24" style="vertical-align:middle;"><path fill="var(--primary-text-color)" d="M7.41,8.58L12,13.17L16.59,8.58L18,10L12,16L6,10L7.41,8.58Z" /></svg></button>
+                <div id="eo_${i}" style="display:none;position:absolute;text-align:left;min-width:150px;overflow:auto;border:1px solid #ddd;box-shadow:0px 8px 16px 0px rgba(0,0,0,0.2);z-index:1;color:var(--primary-text-color);background-color:var(--paper-listbox-background-color)">
+                    <a id="ef_${i}" href="#" style="display:block;padding:5px 5px;text-decoration:none;color:inherit">Export as CSV</a>
+                </div>
             </div>`;
 
         if( timeline ) html += `
-            <div style="background-color:${bgcol};float:right;margin-right:10px;display:inline-block;padding-left:10px;padding-right:10px;">
-                <button id="bz_${i}" style="border:0px solid black;color:inherit;background-color:#00000000"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="24" height="24" viewBox="0 0 24 24" style="vertical-align:middle;"><path fill="var(--primary-text-color)" d="M15.5,14L20.5,19L19,20.5L14,15.5V14.71L13.73,14.43C12.59,15.41 11.11,16 9.5,16A6.5,6.5 0 0,1 3,9.5A6.5,6.5 0 0,1 9.5,3A6.5,6.5 0 0,1 16,9.5C16,11.11 15.41,12.59 14.43,13.73L14.71,14H15.5M9.5,14C12,14 14,12 14,9.5C14,7 12,5 9.5,5C7,5 5,7 5,9.5C5,12 7,14 9.5,14M12,10H10V12H9V10H7V9H9V7H10V9H12V10Z" /></svg></button>
+            <div id="dr_${i}" style="background-color:${bgcol};float:right;margin-right:10px;display:inline-block;padding-left:10px;padding-right:10px;">
+                <button id="bz_${i}" style="border:0px solid black;color:inherit;background-color:#00000000"><svg width="24" height="24" viewBox="0 0 24 24" style="vertical-align:middle;"><path fill="var(--primary-text-color)" d="M15.5,14L20.5,19L19,20.5L14,15.5V14.71L13.73,14.43C12.59,15.41 11.11,16 9.5,16A6.5,6.5 0 0,1 3,9.5A6.5,6.5 0 0,1 9.5,3A6.5,6.5 0 0,1 16,9.5C16,11.11 15.41,12.59 14.43,13.73L14.71,14H15.5M9.5,14C12,14 14,12 14,9.5C14,7 12,5 9.5,5C7,5 5,7 5,9.5C5,12 7,14 9.5,14M12,10H10V12H9V10H7V9H9V7H10V9H12V10Z" /></svg></button>
                 <button id="b4_${i}" style="border:0px solid black;color:inherit;background-color:#00000000;height:30px">-</button>
                 <select id="by_${i}" style="border:0px solid black;color:inherit;background-color:#00000000;height:30px">
                     <option value="0" ${optionStyle} hidden>< 1H</option>
@@ -1612,6 +1500,26 @@ class HistoryCardState {
             this.lastWidth = w;
             for( let g of this.graphs ) g.chart.resize(undefined, g.graphHeight);
         }        
+
+        this.resizeSelector();
+    }
+
+    resizeSelector()
+    {
+        const button_size = 120;
+        const min_selector_size = 220;
+        const max_selector_size = 500;
+
+        const w = this._this.querySelector('#maincard').clientWidth;
+
+        for( let i = 0; i < 2; ++i ) {
+            const input = this._this.querySelector(`#b7_${i}`);
+            if( input ) {
+                let xw = w - button_size - (this._this.querySelector(`#dl_${i}`)?.clientWidth ?? 0) - (this._this.querySelector(`#dr_${i}`)?.clientWidth ?? 0);
+                xw = Math.max(Math.min(xw, max_selector_size), min_selector_size);
+                input.style.width = xw + "px";
+            }
+        }
     }
 
     createContent()
@@ -1636,6 +1544,8 @@ class HistoryCardState {
                 this.addGraphToCanvas(g.id, g.graph.type, g.graph.entities, g.graph.options);
             }
 
+            this.resizeSelector();
+
             /// 
             for( let i = 0; i < 2; i++ ) {
 
@@ -1647,6 +1557,8 @@ class HistoryCardState {
                 this._this.querySelector(`#bx_${i}`)?.addEventListener('click', this.today.bind(this), false);
                 this._this.querySelector(`#by_${i}`)?.addEventListener('change', this.timeRangeSelected.bind(this));
                 this._this.querySelector(`#bz_${i}`)?.addEventListener('click', this.toggleZoom.bind(this), false);
+                this._this.querySelector(`#ef_${i}`)?.addEventListener('click', this.exportFile.bind(this), false);
+                this._this.querySelector(`#bo_${i}`)?.addEventListener('click', this.menuClicked.bind(this), false);
 
                 if( isMobile ) {
                     this._this.querySelector(`#b7_${i}`)?.addEventListener('focusin', this.entitySelectorFocus.bind(this), true);
@@ -1687,6 +1599,35 @@ class HistoryCardState {
                 this.iid = null;
             }
         }
+    }
+
+
+    // --------------------------------------------------------------------------------------
+    // Entity option dropdown menu
+    // --------------------------------------------------------------------------------------
+
+    menuSetVisibility(idx, show)
+    {
+        const dropdown = this._this.querySelector(`#eo_${idx}`);
+        if( !dropdown ) return;
+
+        if( show ) {
+            dropdown.style.display = 'block';
+            const w = this._this.querySelector('#maincard').clientWidth - 4;
+            let p = this._this.querySelector(`#bo_${idx}`).offsetLeft - 30;
+            if( p + dropdown.clientWidth >= w ) {
+                p = w - dropdown.clientWidth;
+            }
+            dropdown.style.left = p + "px";
+        } else
+            dropdown.style.display = 'none';
+    }
+
+    menuClicked(event)
+    {
+        if( !event.currentTarget ) return;
+        const idx = event.currentTarget.id.substr(3) * 1;
+        this.menuSetVisibility(idx, this._this.querySelector(`#eo_${idx}`)?.style.display == 'none');
     }
 
 
@@ -2039,7 +1980,7 @@ class HistoryExplorerCard extends HTMLElement
             if( g.id > 0 ) html += '<br>';
             if( g.graph.title !== undefined ) html += `<div style='text-align:center;'>${g.graph.title}</div>`;
             const h = this.instance.calcGraphHeight(g.graph.type, g.graph.entities.length);
-            html += `<div sytle='height:${h}px'>`;
+            html += `<div style='height:${h}px'>`;
             html += `<canvas id="graph${g.id}" height="${h}px" style='touch-action:pan-y'></canvas>`;
             html += `</div>`;
         }
@@ -2055,6 +1996,11 @@ class HistoryExplorerCard extends HTMLElement
         `;
 
         this.innerHTML = html;
+
+        // Processing spinner (not added to DOM by default)
+        this.instance.ui.spinOverlay = document.createElement('div');
+        this.instance.ui.spinOverlay.style = 'position:fixed;display:block;width:100%;height:100%;top:0;left:0;right:0;bottom:0;background-color:rgba(0,0,0,0.5);z-index:2;backdrop-filter:blur(5px)';
+        this.instance.ui.spinOverlay.innerHTML = `<svg width="38" height="38" viewBox="0 0 38 38" stroke="#fff" style="position:fixed;left:calc(50% - 20px);top:calc(50% - 20px);"><g fill="none" fill-rule="evenodd"><g transform="translate(1 1)" stroke-width="2"><circle stroke-opacity="0.5" cx="18" cy="18" r="18"/><path d="M36 18c0-9.94-8.06-18-18-18"><animateTransform attributeName="transform" type="rotate" from="0 18 18" to="360 18 18" dur="1s" repeatCount="indefinite"/></path></g></g></svg>`;
 
     }
 
