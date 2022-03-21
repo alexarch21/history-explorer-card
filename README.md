@@ -204,7 +204,8 @@ The default *History Explorer* header can be changed or removed using the header
 ```yaml
 type: custom:history-explorer-card
 header: 'My sample history'
-header: ' '   # Using a single space will remove the header entirely
+header: ' '   # Using a single space will show a blank header row
+header: []   # Using [] will remove the header entirely
 ```
 
 #### Dark mode
