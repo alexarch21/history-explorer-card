@@ -3,7 +3,7 @@
 // Export CSV
 // --------------------------------------------------------------------------------------
 
-export default class HistoryCSVExporter {
+class HistoryCSVExporter {
 
     constructor() 
     {
