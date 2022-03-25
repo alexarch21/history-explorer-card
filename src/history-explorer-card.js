@@ -5,7 +5,7 @@ import "./deps/timeline.js";
 import "./deps/md5.min.js"
 import "./deps/FileSaver.js"
 
-const Version = '1.0.18';
+const Version = '1.0.19';
 
 var isMobile = ( navigator.appVersion.indexOf("Mobi") > -1 ) || ( navigator.userAgent.indexOf("HomeAssistant") > -1 );
 
@@ -65,6 +65,7 @@ class HistoryCardState {
         this.pconfig.lineGraphHeight      = 250;
         this.pconfig.labelAreaWidth       = 65;
         this.pconfig.labelsVisible        = true;
+        this.pconfig.closeButtonColor     = undefined;
         this.pconfig.customStateColors    = undefined;
         this.pconfig.colorSeed            = 137;
         this.pconfig.graphConfig          = [];
@@ -879,7 +880,7 @@ class HistoryCardState {
                             forceMax: config?.ymax ?? undefined,
                         },
                         gridLines: {
-                            color: this.pconfig.graphGridColor
+                            color: ( graphtype !== 'timeline' || datasets.length > 1 ) ? this.pconfig.graphGridColor : 'rgba(0,0,0,0)'
                         },
                         scaleLabel: {
                             display: scaleUnit !== undefined && scaleUnit !== '' && this.pconfig.labelsVisible,
@@ -1390,7 +1391,7 @@ class HistoryCardState {
         let html = '';
         html += `<div sytle='height:${h}px'>`;
         html += `<canvas id="graph${this.g_id}" height="${h}px" style='touch-action:pan-y'></canvas>`;
-        html += `<button id='bc-${this.g_id}' style="position:absolute;right:20px;margin-top:${-h+5}px;">x</button>`;
+        html += `<button id='bc-${this.g_id}' style="position:absolute;right:20px;margin-top:${-h+5}px;color:var(--primary-text-color);background-color:${this.pconfig.closeButtonColor};border:0px solid black;">×</button>`;
         html += `</div>`;
 
         let e = document.createElement('div');
@@ -1435,7 +1436,7 @@ class HistoryCardState {
         canvas.addEventListener('pointercancel', this.pointerCancel.bind(this));
     }
 
-    addUIHtml(timeline, selector, bgcol, optionStyle, i)
+    addUIHtml(timeline, selector, bgcol, optionStyle, inputStyle, i)
     {
         let html = `<div style="margin-left:0px;width:100%;text-align:center;">`;
 
@@ -1448,7 +1449,7 @@ class HistoryCardState {
 
         if( selector && isMobile ) html += `
             <div style="background-color:${bgcol};display:inline-block;padding-left:10px;padding-right:10px;">
-                <input id="b7_${i}" autoComplete="on" placeholder="Type to search for an entity to add"/>
+                <input id="b7_${i}" ${inputStyle} autoComplete="on" placeholder="Type to search for an entity to add"/>
                 <div id="es_${i}" style="display:none;position:absolute;text-align:left;min-width:260px;max-height:150px;overflow:auto;border:1px solid #444;z-index:1;color:var(--primary-text-color);background-color:var(--paper-listbox-background-color)"></div>
                 <button id="b8_${i}" style="border:0px solid black;color:inherit;background-color:#00000000;height:34px;margin-left:5px;">+</button>
                 <button id="bo_${i}" style="border:0px solid black;color:inherit;background-color:#00000000;height:30px;margin-left:1px;margin-right:0px;"><svg width="18" height="18" viewBox="0 0 24 24" style="vertical-align:middle;"><path fill="var(--primary-text-color)" d="M7.41,8.58L12,13.17L16.59,8.58L18,10L12,16L6,10L7.41,8.58Z" /></svg></button>
@@ -1459,7 +1460,7 @@ class HistoryCardState {
 
         if( selector && !isMobile ) html += `
             <div style="background-color:${bgcol};display:inline-block;padding-left:10px;padding-right:10px;">
-                <input id="b7_${i}" autoComplete="on" list="b6" placeholder="Type to search for an entity to add"/>
+                <input id="b7_${i}" ${inputStyle} autoComplete="on" list="b6" placeholder="Type to search for an entity to add"/>
                 <button id="b8_${i}" style="border:0px solid black;color:inherit;background-color:#00000000;height:34px;margin-left:5px;">+</button>
                 <button id="bo_${i}" style="border:0px solid black;color:inherit;background-color:#00000000;height:30px;margin-left:1px;margin-right:0px;"><svg width="18" height="18" viewBox="0 0 24 24" style="vertical-align:middle;"><path fill="var(--primary-text-color)" d="M7.41,8.58L12,13.17L16.59,8.58L18,10L12,16L6,10L7.41,8.58Z" /></svg></button>
                 <div id="eo_${i}" style="display:none;position:absolute;text-align:left;min-width:150px;overflow:auto;border:1px solid #ddd;box-shadow:0px 8px 16px 0px rgba(0,0,0,0.2);z-index:1;color:var(--primary-text-color);background-color:var(--paper-listbox-background-color)">
@@ -1952,6 +1953,7 @@ class HistoryExplorerCard extends HTMLElement
 
         this.instance.pconfig.labelAreaWidth = config.labelAreaWidth ?? 65;
         this.instance.pconfig.labelsVisible = config.labelsVisible ?? true;
+        this.instance.pconfig.closeButtonColor = parseColor(config.uiColors?.closeButton ?? '#0000001f');
         this.instance.pconfig.colorSeed = config.stateColorSeed ?? 137;
         this.instance.pconfig.enableDataClustering = ( config.decimation === undefined ) || config.decimation;
         this.instance.pconfig.roundingPrecision = config.rounding || 2;
@@ -1976,13 +1978,14 @@ class HistoryExplorerCard extends HTMLElement
         const selector = bitmask[config.uiLayout?.selector] ?? 2;
 
         const optionStyle = `style="color:var(--primary-text-color);background-color:var(--paper-listbox-background-color)"`;
+        const inputStyle = config.uiColors?.selector ? `style="color:var(--primary-text-color);background-color:${config.uiColors.selector};border:1px solid black;"` : '';
 
         // Generate card html
 
         // Header
         let html = `
-            <ha-card id="maincard" header="${header}">
-            ${this.instance.addUIHtml(tools & 1, selector & 1, bgcol, optionStyle, 0)}
+            <ha-card id="maincard" header="${(header === 'hide') ? '' : header}">
+            ${this.instance.addUIHtml(tools & 1, selector & 1, bgcol, optionStyle, inputStyle, 0)}
             ${(tools | selector) & 1 ? '<br>' : ''}
             <br>
             <div id='graphlist' class='card-content'>
@@ -2001,7 +2004,7 @@ class HistoryExplorerCard extends HTMLElement
         // Footer
         html += `
             </div>
-            ${this.instance.addUIHtml(tools & 2, selector & 2, bgcol, optionStyle, 1)}
+            ${this.instance.addUIHtml(tools & 2, selector & 2, bgcol, optionStyle, inputStyle, 1)}
             <datalist id="b6"></datalist>
             ${(tools | selector) & 2 ? '<br>' : ''}
             <br>
