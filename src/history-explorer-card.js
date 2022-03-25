@@ -1450,10 +1450,10 @@ class HistoryCardState {
         if( selector && isMobile ) html += `
             <div style="background-color:${bgcol};display:inline-block;padding-left:10px;padding-right:10px;">
                 <input id="b7_${i}" ${inputStyle} autoComplete="on" placeholder="Type to search for an entity to add"/>
-                <div id="es_${i}" style="display:none;position:absolute;text-align:left;min-width:260px;max-height:150px;overflow:auto;border:1px solid #444;z-index:1;color:var(--primary-text-color);background-color:var(--paper-listbox-background-color)"></div>
+                <div id="es_${i}" style="display:none;position:absolute;text-align:left;min-width:260px;max-height:150px;overflow:auto;border:1px solid #444;z-index:1;color:var(--primary-text-color);background-color:var(--card-background-color)"></div>
                 <button id="b8_${i}" style="border:0px solid black;color:inherit;background-color:#00000000;height:34px;margin-left:5px;">+</button>
                 <button id="bo_${i}" style="border:0px solid black;color:inherit;background-color:#00000000;height:30px;margin-left:1px;margin-right:0px;"><svg width="18" height="18" viewBox="0 0 24 24" style="vertical-align:middle;"><path fill="var(--primary-text-color)" d="M7.41,8.58L12,13.17L16.59,8.58L18,10L12,16L6,10L7.41,8.58Z" /></svg></button>
-                <div id="eo_${i}" style="display:none;position:absolute;text-align:left;min-width:150px;overflow:auto;border:1px solid #ddd;box-shadow:0px 8px 16px 0px rgba(0,0,0,0.2);z-index:1;color:var(--primary-text-color);background-color:var(--paper-listbox-background-color)">
+                <div id="eo_${i}" style="display:none;position:absolute;text-align:left;min-width:150px;overflow:auto;border:1px solid #ddd;box-shadow:0px 8px 16px 0px rgba(0,0,0,0.2);z-index:1;color:var(--primary-text-color);background-color:var(--card-background-color)">
                     <a id="ef_${i}" href="#" style="display:block;padding:5px 5px;text-decoration:none;color:inherit">Export as CSV</a>
                 </div>
             </div>`;
@@ -1463,7 +1463,7 @@ class HistoryCardState {
                 <input id="b7_${i}" ${inputStyle} autoComplete="on" list="b6" placeholder="Type to search for an entity to add"/>
                 <button id="b8_${i}" style="border:0px solid black;color:inherit;background-color:#00000000;height:34px;margin-left:5px;">+</button>
                 <button id="bo_${i}" style="border:0px solid black;color:inherit;background-color:#00000000;height:30px;margin-left:1px;margin-right:0px;"><svg width="18" height="18" viewBox="0 0 24 24" style="vertical-align:middle;"><path fill="var(--primary-text-color)" d="M7.41,8.58L12,13.17L16.59,8.58L18,10L12,16L6,10L7.41,8.58Z" /></svg></button>
-                <div id="eo_${i}" style="display:none;position:absolute;text-align:left;min-width:150px;overflow:auto;border:1px solid #ddd;box-shadow:0px 8px 16px 0px rgba(0,0,0,0.2);z-index:1;color:var(--primary-text-color);background-color:var(--paper-listbox-background-color)">
+                <div id="eo_${i}" style="display:none;position:absolute;text-align:left;min-width:150px;overflow:auto;border:1px solid #ddd;box-shadow:0px 8px 16px 0px rgba(0,0,0,0.2);z-index:1;color:var(--primary-text-color);background-color:var(--card-background-color)">
                     <a id="ef_${i}" href="#" style="display:block;padding:5px 5px;text-decoration:none;color:inherit">Export as CSV</a>
                 </div>
             </div>`;
@@ -1977,7 +1977,7 @@ class HistoryExplorerCard extends HTMLElement
         const tools = bitmask[config.uiLayout?.toolbar] ?? 1;
         const selector = bitmask[config.uiLayout?.selector] ?? 2;
 
-        const optionStyle = `style="color:var(--primary-text-color);background-color:var(--paper-listbox-background-color)"`;
+        const optionStyle = `style="color:var(--primary-text-color);background-color:var(--card-background-color)"`;
         const inputStyle = config.uiColors?.selector ? `style="color:var(--primary-text-color);background-color:${config.uiColors.selector};border:1px solid black;"` : '';
 
         // Generate card html
