@@ -2014,7 +2014,7 @@ class HistoryExplorerCard extends HTMLElement
             ${this.instance.addUIHtml(tools & 2, selector & 2, bgcol, optionStyle, inputStyle, 1)}
             <datalist id="b6"></datalist>
             ${(tools | selector) & 2 ? '<br>' : ''}
-            <br>
+            ${(tools & 2) && !(selector & 2) ? '<br>' : ''}
             </ha-card>
         `;
 
