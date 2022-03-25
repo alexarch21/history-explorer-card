@@ -1412,7 +1412,7 @@ class HistoryCardState {
         let datasets = [];
         for( let d of entities ) {
             datasets.push({
-                "name": ( d.name === undefined ) ? this._hass.states[d.entity].attributes.friendly_name : d.name,
+                "name": ( d.name === undefined ) ? this._hass.states[d.entity]?.attributes?.friendly_name : d.name,
                 "bColor": parseColor(d.color), 
                 "fillColor": parseColor(d.fill), 
                 "mode": d.lineMode || this.pconfig.defaultLineMode, 
@@ -1918,6 +1918,13 @@ class HistoryExplorerCard extends HTMLElement
         if( !this.instance.contentValid && !this.instance.iid )
             this.instance.iid = setInterval(this.instance.updateContent.bind(this.instance), 100);
 
+    }
+
+    set panel(panel)
+    {
+        console.log("Panel mode set");
+
+        this.setConfig(panel.config);
     }
 
     // The user supplied configuration. Throw an exception and Lovelace will render an error card.
