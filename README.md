@@ -78,6 +78,18 @@ defaultTimeRange: 15m  // or 15 minutes...
 defaultTimeRange: 3w   // or 3 weeks
 ```
 
+### Grouping multiple entities into a single graph
+
+For line graphs, each dynamically added entity will be displayed in its own graph by default. If you prefer having entities with compatible units of measure grouped into a single graph, then you can override this default behavior with the following YAML setting:
+
+```yaml
+type: custom:history-explorer-card
+combineSameUnits: true
+```
+Timeline graphs will always automatically group if possible. Graphs defined manually in the YAML will never auto-group, their grouping can be controlled in the YAML.
+
+![image](https://user-images.githubusercontent.com/60828821/156686448-919cbd9c-4e77-4efc-a725-e53a7049a092.png)
+
 ### Line interpolation modes
 
 Three modes are available for line charts: cubic splines, line segments and stepped. Cubic splines, the default, are the smoothest but can sometimes overshoot after steep gradients followed by longer constant sections. Line segments will connect your data points using straight lines. They are less smooth, but can't overshoot. Stepped mode will show the raw quantized data.
@@ -177,6 +189,12 @@ entityOptions:
     ymax: 1100
     width: 2
 ```
+
+### Exporting data as CSV
+
+The raw data for the currently displayed entities and time range can be exported as a CSV file by opening the entity options and selecting Export as CSV. Note that CSV exporting does not work in the HA Companion app.
+
+![image](https://user-images.githubusercontent.com/60828821/156686793-c0cdace6-87c0-4c1e-bb7f-58dd04035be5.png)
 
 ### Configuring the UI 
 
