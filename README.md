@@ -345,27 +345,6 @@ Replace the entities and structure as needed.
 
 ### Running as a panel in the sidebar
 
-The history explorer can be run as a sidebar panel instead of a card. 
+The history explorer can be run as a sidebar panel. Add a new empty dashboard with the `Show in sidebar` box checked. Set the view type to `Panel (1 card)` and add the history explorer card to the view.
 
-![image](https://user-images.githubusercontent.com/60828821/160277851-58c6f0d0-4234-4516-a67f-0c992954d930.png)
-
-You will need to use the panel_custom integration and configure it in configuration.yaml. See the docs for the [panel_custom integration](https://www.home-assistant.io/integrations/panel_custom) for more info. An example configuration is provided below. Adjust the module_url path to where the history explorer card is located on your system. The example below works for HACS installs.
-
-```yaml
-panel_custom:
-  - name: history-explorer-card
-    url_path: history-explorer-panel
-    sidebar_title: History Explorer
-    sidebar_icon: mdi:chart-line
-    module_url: /local/community/history-explorer-card/history-explorer-card.js   # This is valid if the card was installed over HACS
-    config:
-      header: 'Panel test'
-      graphs:
-        - type: line
-          entities:
-            - entity: sensor.outside_temperature
-              color: '#3e95cd'
-              fill: 'rgba(151,187,205,0.15)'
-            - entity: sensor.annexe_temperature
-              color: '#ee3452'
-```
+![image](https://user-images.githubusercontent.com/60828821/161340801-f1f97e90-73c4-44d9-8afa-ba858906a2c1.png)
