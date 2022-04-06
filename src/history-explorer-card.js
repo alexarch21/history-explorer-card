@@ -65,6 +65,7 @@ class HistoryCardState {
         this.pconfig.lineGraphHeight      = 250;
         this.pconfig.labelAreaWidth       = 65;
         this.pconfig.labelsVisible        = true;
+        this.pconfig.showTooltipColors    = [true, true];
         this.pconfig.closeButtonColor     = undefined;
         this.pconfig.customStateColors    = undefined;
         this.pconfig.colorSeed            = 137;
@@ -911,7 +912,8 @@ class HistoryCardState {
                         }
                     },
                     yAlign: ( graphtype == 'line' ) ? undefined : 'nocenter',
-                    caretPadding: 8
+                    caretPadding: 8,
+                    displayColors: ( graphtype == 'line' ) ? this.pconfig.showTooltipColors[0] : this.pconfig.showTooltipColors[1] 
                 },
                 hover: {
                     mode: 'nearest'
@@ -1960,6 +1962,8 @@ class HistoryExplorerCard extends HTMLElement
 
         this.instance.pconfig.labelAreaWidth = config.labelAreaWidth ?? 65;
         this.instance.pconfig.labelsVisible = config.labelsVisible ?? true;
+        this.instance.pconfig.showTooltipColors[0] = config.showTooltipColorsLine ?? true;
+        this.instance.pconfig.showTooltipColors[1] = config.showTooltipColorsTimeline ?? true;
         this.instance.pconfig.closeButtonColor = parseColor(config.uiColors?.closeButton ?? '#0000001f');
         this.instance.pconfig.colorSeed = config.stateColorSeed ?? 137;
         this.instance.pconfig.enableDataClustering = ( config.decimation === undefined ) || config.decimation;
