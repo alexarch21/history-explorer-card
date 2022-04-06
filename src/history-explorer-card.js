@@ -1264,6 +1264,15 @@ class HistoryCardState {
         panstate.g = null;
     }
 
+    wheelScrolled(event)
+    {
+        if( event.ctrlKey ) {
+            event.preventDefault();
+            if( event.deltaY < 0 ) this.incZoom(); else
+            if( event.deltaY > 0 ) this.decZoom();
+        }
+    }
+
 
     // --------------------------------------------------------------------------------------
     // HTML generation
@@ -1436,6 +1445,9 @@ class HistoryCardState {
         canvas.addEventListener('pointermove', this.pointerMove.bind(this));
         canvas.addEventListener('pointerup', this.pointerUp.bind(this));
         canvas.addEventListener('pointercancel', this.pointerCancel.bind(this));
+
+        if( !isMobile ) 
+            canvas.addEventListener('wheel', this.wheelScrolled.bind(this)); 
     }
 
     addUIHtml(timeline, selector, bgcol, optionStyle, inputStyle, i)
