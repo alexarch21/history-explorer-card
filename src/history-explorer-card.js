@@ -5,7 +5,7 @@ import "./deps/timeline.js";
 import "./deps/md5.min.js"
 import "./deps/FileSaver.js"
 
-const Version = '1.0.19';
+const Version = '1.0.20';
 
 var isMobile = ( navigator.appVersion.indexOf("Mobi") > -1 ) || ( navigator.userAgent.indexOf("HomeAssistant") > -1 );
 
@@ -988,7 +988,7 @@ class HistoryCardState {
             let n = 0;
             let t0 = this.loader.startTime.replace('+', '%2b');
             let t1 = this.loader.endTime.replace('+', '%2b');
-            let url = `history/period/${t0}?end_time=${t1}&minimal_response&filter_entity_id`;
+            let url = `history/period/${t0}?end_time=${t1}&minimal_response&no_attributes&filter_entity_id`;
             let separator = '=';
             for( let g of this.graphs ) {
                 for( let e of g.entities ) {
@@ -1805,7 +1805,7 @@ class HistoryCardState {
             for( let i of this.ui.inputField )
                 if( i ) i.placeholder = "Loading available entities...";
             const t0 = moment().subtract(1, "hour").format('YYYY-MM-DDTHH:mm:ss');
-            const url = `history/period/${t0}?minimal_response`;
+            const url = `history/period/${t0}?minimal_response&no_attributes`;
             this.callHassAPIGet(url).then(this.entityCollectorCallback.bind(this), this.entityCollectorFailed.bind(this));
         } else
             this.entityCollectAll();
