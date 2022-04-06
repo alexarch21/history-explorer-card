@@ -12,7 +12,7 @@ The history explorer card can be configured interactively through the UI or manu
 
 https://user-images.githubusercontent.com/60828821/147440026-13a5ba52-dc43-4ff7-a944-9c2784e4a2f7.mp4
 
-When the card is opened, it will display the history of the configured entities for the last 24 hours starting at the current date and time. On the top left you will find the date selector previous and next buttons, use them to quickly browse through the days. Your can use the right side time range selector (dropdown or plus / minus buttons) to zoom into or out of the history. You can also use the interactive zoom mode (magnifying glass icon) to select a region on a graph to zoom into.
+When the card is opened, it will display the history of the configured entities for the last 24 hours starting at the current date and time. On the top left you will find the date selector previous and next buttons, use them to quickly browse through the days. Your can use the right side time range selector (dropdown or plus / minus buttons) to zoom into or out of the history. You can also use the interactive zoom mode (magnifying glass icon) to select a region on a graph to zoom into. Another convenient way to zoom in and out of the graphs is by using the mouse wheel while holding the CTRL key.
 
 Click or tap on a graph and drag left or right to slide it through time. The card will stream in the database as you move along. If you have a slow DB (like on an SD card), you may see empty parts on the chart that will progressively fill as the data comes in. The larger the shown time range, the more the effect is visible. So scrolling through entire weeks will generate more database accesses than scrolling through days or hours at a time, especially on slower CPUs, like phones.
 
@@ -250,6 +250,14 @@ The width of the label area to the left of the graphs can be customized and the 
 type: custom:history-explorer-card
 labelsVisible: false   # this will hide the unit of measure labels and the entity names left of the graphs or timelines
 labelAreaWidth: 10     # the width of the label area in pixels, default is 65
+```
+
+The state color boxes in the tooltips can optionally be hidden for line graphs or timelines (or both):
+
+```yaml
+type: custom:history-explorer-card
+showTooltipColorsLine: false       # hide the color boxes in the tooltip popups for line graphs
+showTooltipColorsTimeline: false   # hide the color boxes in the tooltip popups for timeline graphs
 ```
 
 ### Multiple cards
