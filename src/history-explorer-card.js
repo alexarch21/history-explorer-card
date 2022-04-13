@@ -533,11 +533,15 @@ class HistoryCardState {
                 let j = 0;
                 for( let g of this.graphs ) {
                     for( let e of g.entities ) {
-                        const k = this.findCacheEntityIndex(c0-1, e.entity);
-                        if( k >= 0 ) {
-                            let n = this.cache[c0-1].data[k].length;
-                            if( n > 0 ) 
-                                result[j].unshift({ "last_changed": this.cache[c0].start, "state": this.cache[c0-1].data[k][n-1].state });
+                        for( let i = c0-1; i >= 0 && this.cache[i].valid; i-- ) {
+                            const k = this.findCacheEntityIndex(i, e.entity);
+                            if( k >= 0 ) {
+                                let n = this.cache[i].data[k].length;
+                                if( n > 0 ) {
+                                    result[j].unshift({ "last_changed": this.cache[c0].start, "state": this.cache[i].data[k][n-1].state });
+                                    break;
+                                }
+                            }
                         }
                         j++;
                     }
