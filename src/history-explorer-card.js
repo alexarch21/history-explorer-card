@@ -2,7 +2,6 @@
 import "./deps/moment.min.js";
 import "./deps/Chart.js";
 import "./deps/timeline.js";
-import "./deps/arrowline.js";
 import "./deps/md5.min.js"
 import "./deps/FileSaver.js"
 
@@ -67,6 +66,7 @@ class HistoryCardState {
         this.pconfig.labelAreaWidth       = 65;
         this.pconfig.labelsVisible        = true;
         this.pconfig.showTooltipColors    = [true, true];
+        this.pconfig.tooltipSize          = 'auto';
         this.pconfig.closeButtonColor     = undefined;
         this.pconfig.customStateColors    = undefined;
         this.pconfig.colorSeed            = 137;
@@ -789,6 +789,14 @@ class HistoryCardState {
     // New graph creation
     // --------------------------------------------------------------------------------------
 
+    generateTooltipContents(label, d, mode, n = 1)
+    {
+        if( mode == 'compact' || mode == 'slim' || ( mode == 'auto' && n < 2 ) )
+            return [label, moment(d[0]).format(this.i18n.styleDateTimeTooltip) + " -- " + moment(d[1]).format(this.i18n.styleDateTimeTooltip)];
+        else
+            return [label, moment(d[0]).format(this.i18n.styleDateTimeTooltip), moment(d[1]).format(this.i18n.styleDateTimeTooltip)];
+    }
+
     newGraph(canvas, graphtype, datasets, config)
     {
         const ctx = canvas.getContext('2d');
@@ -841,6 +849,8 @@ class HistoryCardState {
             }
 
         }
+
+        const tooltipSize = this.pconfig.tooltipSize;
 
         var chart = new Chart(ctx, { 
 
@@ -915,14 +925,26 @@ class HistoryCardState {
                                 return label;
                             } else if( graphtype == 'timeline' ) {
                                 const d = data.datasets[item.datasetIndex].data[item.index];
-                                return [d[2], moment(d[0]).format(this.i18n.styleDateTimeTooltip), moment(d[1]).format(this.i18n.styleDateTimeTooltip)];
+                                return this.generateTooltipContents(d[2], d, tooltipSize, datasets.length);
                             } else if( graphtype == 'arrowline' ) {
                                 const d = data.datasets[item.datasetIndex].data[item.index];
                                 const p = 10 ** this.pconfig.roundingPrecision;
                                 let label = Math.round(d[2] * p) / p;
                                 label += ' ' + (data.datasets[item.datasetIndex].unit || '');
-                                return [label, moment(d[0]).format(this.i18n.styleDateTimeTooltip), moment(d[1]).format(this.i18n.styleDateTimeTooltip)];
+                                return this.generateTooltipContents(label, d, 'slim');
                             }
+                        },
+                        title: function(tooltipItems, data) {
+                            let title = '';
+                            if( tooltipItems.length > 0 ) {
+                                if( graphtype == 'line' ) {
+                                    title = tooltipItems[0].xLabel;
+                                } else {
+                                    let d = data.labels[tooltipItems[0].datasetIndex];
+                                    title = ( tooltipSize !== 'slim' ) ? d : '';
+                                }
+                            }
+                            return title;
                         }
                     },
                     yAlign: ( graphtype == 'line' ) ? undefined : 'nocenter',
@@ -1318,7 +1340,8 @@ class HistoryCardState {
 
     calcGraphHeight(type, n)
     {
-        return ( type == 'line' ) ? this.pconfig.lineGraphHeight : Math.max(n * 45, 130);
+        const m = ( n >= 2 || this.pconfig.tooltipSize == 'full' ) ? 130 : ( this.pconfig.tooltipSize == 'slim' ) ? 90 : 115;
+        return ( type == 'line' ) ? this.pconfig.lineGraphHeight : Math.max(n * 45, m);
     }
 
     removeGraph(event)
@@ -1991,6 +2014,7 @@ class HistoryExplorerCard extends HTMLElement
         this.instance.pconfig.labelsVisible = config.labelsVisible ?? true;
         this.instance.pconfig.showTooltipColors[0] = config.showTooltipColorsLine ?? true;
         this.instance.pconfig.showTooltipColors[1] = config.showTooltipColorsTimeline ?? true;
+        this.instance.pconfig.tooltipSize = config.tooltipSize ?? 'auto';
         this.instance.pconfig.closeButtonColor = parseColor(config.uiColors?.closeButton ?? '#0000001f');
         this.instance.pconfig.colorSeed = config.stateColorSeed ?? 137;
         this.instance.pconfig.enableDataClustering = ( config.decimation === undefined ) || config.decimation;
