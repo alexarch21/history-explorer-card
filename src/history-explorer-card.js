@@ -2,10 +2,11 @@
 import "./deps/moment.min.js";
 import "./deps/Chart.js";
 import "./deps/timeline.js";
+import "./deps/arrowline.js";
 import "./deps/md5.min.js"
 import "./deps/FileSaver.js"
 
-const Version = '1.0.20';
+const Version = '1.0.21';
 
 var isMobile = ( navigator.appVersion.indexOf("Mobi") > -1 ) || ( navigator.userAgent.indexOf("HomeAssistant") > -1 );
 
@@ -695,11 +696,13 @@ class HistoryCardState {
                             s.push({ x: m_now, y: result[id][n-1].state});
                         }
 
-                    } else if( g.type == 'timeline' ) {				
+                    } else if( g.type == 'timeline' || g.type == 'arrowline' ) {
 
                         // Fill timeline chart buffer
 
-                        const enableClustering = g.entities[j].decimation == undefined || g.entities[j].decimation;
+                        let enableClustering = g.entities[j].decimation == undefined || g.entities[j].decimation;
+
+                        if( g.type == 'arrowline' ) enableClustering = false;
 
                         let merged = 0;
                         let mt0, mt1;
@@ -819,7 +822,7 @@ class HistoryCardState {
                 scaleUnit = scaleUnit ?? d.unit;
             }
 
-        } else if( graphtype == 'timeline' ) {
+        } else if( graphtype == 'timeline' || graphtype == 'arrowline' ) {
 
             datastructure = {
                 labels: [ ],
@@ -832,6 +835,7 @@ class HistoryCardState {
                     domain: d.domain,
                     device_class: d.device_class,
                     entity_id: d.entity_id,
+                    unit: d.unit,
                     data: [ ] 
                 });
             }
@@ -847,7 +851,7 @@ class HistoryCardState {
             options: {
                 scales: {
                     xAxes: [{ 
-                        type: ( graphtype == 'line' ) ? 'time' : 'timeline',
+                        type: ( graphtype == 'line' ) ? 'time' : ( graphtype == 'arrowline' ) ? 'arrowline' : 'timeline',
                         time: {
                             unit: ( this.activeRange.timeRangeHours < 24 ) ? 'minute' : 'hour',
                             stepSize: this.activeRange.tickStepSize,
@@ -885,7 +889,7 @@ class HistoryCardState {
                             forceMax: config?.ymax ?? undefined,
                         },
                         gridLines: {
-                            color: ( graphtype !== 'timeline' || datasets.length > 1 ) ? this.pconfig.graphGridColor : 'rgba(0,0,0,0)'
+                            color: ( graphtype == 'line' || datasets.length > 1 ) ? this.pconfig.graphGridColor : 'rgba(0,0,0,0)'
                         },
                         scaleLabel: {
                             display: scaleUnit !== undefined && scaleUnit !== '' && this.pconfig.labelsVisible,
@@ -907,17 +911,23 @@ class HistoryCardState {
                                 if( label ) label += ': ';
                                 const p = 10 ** this.pconfig.roundingPrecision;
                                 label += Math.round(item.yLabel * p) / p;
-                                label += ' ' + data.datasets[item.datasetIndex].unit || '';
+                                label += ' ' + (data.datasets[item.datasetIndex].unit || '');
                                 return label;
-                            } else {
+                            } else if( graphtype == 'timeline' ) {
                                 const d = data.datasets[item.datasetIndex].data[item.index];
                                 return [d[2], moment(d[0]).format(this.i18n.styleDateTimeTooltip), moment(d[1]).format(this.i18n.styleDateTimeTooltip)];
+                            } else if( graphtype == 'arrowline' ) {
+                                const d = data.datasets[item.datasetIndex].data[item.index];
+                                const p = 10 ** this.pconfig.roundingPrecision;
+                                let label = Math.round(d[2] * p) / p;
+                                label += ' ' + (data.datasets[item.datasetIndex].unit || '');
+                                return [label, moment(d[0]).format(this.i18n.styleDateTimeTooltip), moment(d[1]).format(this.i18n.styleDateTimeTooltip)];
                             }
                         }
                     },
                     yAlign: ( graphtype == 'line' ) ? undefined : 'nocenter',
                     caretPadding: 8,
-                    displayColors: ( graphtype == 'line' ) ? this.pconfig.showTooltipColors[0] : this.pconfig.showTooltipColors[1] 
+                    displayColors: ( graphtype == 'line' ) ? this.pconfig.showTooltipColors[0] : ( graphtype == 'timeline' ) ? this.pconfig.showTooltipColors[1] : false
                 },
                 hover: {
                     mode: 'nearest'
@@ -938,7 +948,8 @@ class HistoryCardState {
                     },
                     showText: true,
                     font: 'normal 13px "Helvetica Neue", Helvetica, Arial, sans-serif',
-                    textPadding: 4
+                    textPadding: 4,
+                    arrowColor: getComputedStyle(document.body).getPropertyValue('--primary-text-color')
                 },
                 responsive: true,
                 maintainAspectRatio: false
@@ -1360,14 +1371,14 @@ class HistoryCardState {
     {
         if( this._hass.states[entity_id] == undefined ) return;
 
-        const type = ( this.getUnitOfMeasure(entity_id) == undefined ) ? 'timeline' : 'line';
+        var entityOptions = this.getEntityOptions(entity_id);
+
+        const type = entityOptions?.type ? entityOptions.type : ( this.getUnitOfMeasure(entity_id) == undefined ) ? 'timeline' : 'line';
 
         let entities = [{ "entity": entity_id, "color": "#000000", "fill": "#00000000" }];
 
         // Get the options for line graphs (use per device_class options if available, otherwise use defaults)
         if( type == 'line' ) {
-
-            var entityOptions = this.getEntityOptions(entity_id);
 
             if( entityOptions?.color || entityOptions?.fill ) {
                 entities[0].color = entityOptions?.color;
