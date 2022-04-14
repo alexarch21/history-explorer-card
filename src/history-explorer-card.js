@@ -871,7 +871,7 @@ class HistoryCardState {
                             tooltipFormat: this.i18n.styleDateTimeTooltip,
                         },
                         ticks: {
-                            fontColor: this.pconfig.graphLabelColor,
+                            fontColor: ( config?.showTimeLabels === false ) ? 'rgba(0,0,0,0)' : this.pconfig.graphLabelColor,
                             major: {
                                 enabled: true,
                                 unit: 'day',
@@ -2056,13 +2056,15 @@ class HistoryExplorerCard extends HTMLElement
         `;
 
         // Graph area
+        let spacing = true;
         for( let g of this.instance.pconfig.graphConfig ) {
-            if( g.id > 0 ) html += '<br>';
+            if( g.id > 0 && spacing ) html += '<br>';
             if( g.graph.title !== undefined ) html += `<div style='text-align:center;'>${g.graph.title}</div>`;
             const h = this.instance.calcGraphHeight(g.graph.type, g.graph.entities.length);
             html += `<div style='height:${h}px'>`;
             html += `<canvas id="graph${g.id}" height="${h}px" style='touch-action:pan-y'></canvas>`;
             html += `</div>`;
+            spacing = !( g.graph.options?.showTimeLabels === false );
         }
 
         // Footer
