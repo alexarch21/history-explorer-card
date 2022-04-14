@@ -844,6 +844,8 @@ class HistoryCardState {
                     device_class: d.device_class,
                     entity_id: d.entity_id,
                     unit: d.unit,
+                    arrowColor: d.bColor,
+                    arrowBackground: d.fillColor,
                     data: [ ] 
                 });
             }
@@ -1400,8 +1402,8 @@ class HistoryCardState {
 
         let entities = [{ "entity": entity_id, "color": "#000000", "fill": "#00000000" }];
 
-        // Get the options for line graphs (use per device_class options if available, otherwise use defaults)
-        if( type == 'line' ) {
+        // Get the options for line and arrow graphs (use per device_class options if available, otherwise use defaults)
+        if( type == 'line' || type == 'arrowline' ) {
 
             if( entityOptions?.color || entityOptions?.fill ) {
                 entities[0].color = entityOptions?.color;
