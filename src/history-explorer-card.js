@@ -244,7 +244,35 @@ class HistoryCardState {
         }
     }
 
-    decZoom(t_center = null, t_position = 0.5)
+    decZoom()
+    {
+        this.decZoomStep();
+    }
+
+    incZoom()
+    {
+        this.incZoomStep();
+    }
+
+    timeRangeSelected(event)
+    {
+        this.setTimeRange(event.target.value, true);
+    }
+
+    exportFile()
+    {
+        this.menuSetVisibility(0, false);
+        this.menuSetVisibility(1, false);
+
+        this.csvExporter.exportFile(this);
+    }
+
+
+    // --------------------------------------------------------------------------------------
+    // Stepped zooming
+    // --------------------------------------------------------------------------------------
+
+    decZoomStep(t_center = null, t_position = 0.5)
     {
         if( !this.activeRange.timeRangeHours ) {
             this.activeRange.timeRangeMinutes *= 2;
@@ -268,26 +296,13 @@ class HistoryCardState {
             this.setTimeRangeMinutes(this.activeRange.timeRangeMinutes, true, t_center, t_position);
     }
 
-    incZoom(t_center = null, t_position = 0.5)
+    incZoomStep(t_center = null, t_position = 0.5)
     {
         const i = ranges.findIndex(e => e >= this.activeRange.timeRangeHours);
         if( i > 0 ) 
             this.setTimeRange(ranges[i-1], true, t_center, t_position);
         else
             this.setTimeRangeMinutes((this.activeRange.timeRangeHours * 60 + this.activeRange.timeRangeMinutes) / 2, true, t_center, t_position);
-    }
-
-    timeRangeSelected(event)
-    {
-        this.setTimeRange(event.target.value, true);
-    }
-
-    exportFile()
-    {
-        this.menuSetVisibility(0, false);
-        this.menuSetVisibility(1, false);
-
-        this.csvExporter.exportFile(this);
     }
 
 
@@ -1325,8 +1340,8 @@ class HistoryCardState {
             const x0 = event.clientX - rect.left - chartArea.left;
             const f = x0 / (chartArea.right - chartArea.left);
             const tc = this.factorToTimecode(f);
-            if( event.deltaY < 0 ) this.incZoom(tc, f); else
-            if( event.deltaY > 0 ) this.decZoom(tc, f);
+            if( event.deltaY < 0 ) this.incZoomStep(tc, f); else
+            if( event.deltaY > 0 ) this.decZoomStep(tc, f);
         }
     }
 
