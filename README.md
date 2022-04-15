@@ -135,6 +135,14 @@ type: custom:history-explorer-card
 showUnavailable: false
 ```
 
+### Compass arrow graphs
+
+Entities representing a directional angle value, like a bearing or direction, can be displayed using a timeline of compass arrows. This is especially useful for visualizing wind directions:
+
+.. image ..
+
+Compass arrow graphs use the `arrowline` type and can be used in both dynamically and statically added entities. See the *Customizing dynamically added graphs* section for an example of the former and the advanced YAML example for the latter.
+
 ### Customizing state colors
 
 The default colors used for the states shown on timeline graphs can be customized in many different ways. Customizing is done by adding the statesColor key to the card YAML. Colors act on device classes, domains or global states. You can, for example, have distinct colors for the on and off states of your motion sensors and your door sensors, even if they're both binary sensors.
@@ -169,7 +177,7 @@ stateColors:
 
 There is a special virtual state that is added to all entities, the *multiple* state. This state substitutes an aggregation of multiple states on the timeline when they were merged due to data decimation. Like normal states, you can specify the color for this special state for device classes, domains or globally.
 
-### Customizing dynamically added line graphs
+### Customizing dynamically added graphs
 
 When you add a new line graph using the add entity dropdown, the graph will use the default settings and an automatically picked color. You can override these settings either for specific entities or for entire device classes. For example, you could set a fixed Y axis range for all your humidity sensors or a specific color or line interpolation mode for your power graphs.
 
@@ -188,6 +196,17 @@ entityOptions:
     ymin: 900
     ymax: 1100
     width: 2
+```
+
+You can also change the graph type for certain entities or domains. For example, you could display a numeric entity, which would normally be shown as a linegraph, with a timeline. Or you could default to the directional arrow graph mode for your wind direction sensors:
+
+```yaml
+type: custom:history-explorer-card
+entityOptions:
+  sensor.wind_bearing:      # This sensor should be shown as compass arrows instead of a line graph
+    type: arrowline
+    color: black            # Optional color for the arrows, remove for auto selection based on the theme
+    fill: rgba(0,0,0,0.2)   # Optional background color for the arrows
 ```
 
 ### Exporting data as CSV
@@ -250,6 +269,15 @@ The width of the label area to the left of the graphs can be customized and the 
 type: custom:history-explorer-card
 labelsVisible: false   # this will hide the unit of measure labels and the entity names left of the graphs or timelines
 labelAreaWidth: 10     # the width of the label area in pixels, default is 65
+```
+
+#### Configuring the tooltip popup
+
+The tooltip popups used in timelines and arrowlines support three different sizes and layout modes: full, compact and slim. By default, the mode is selected automatically depending on the available space around the graph. The mode can be overidden manually too:
+
+```yaml
+type: custom:history-explorer-card
+tooltipSize: slim       # Supported modes are full, compact, slim or auto
 ```
 
 The state color boxes in the tooltips can optionally be hidden for line graphs or timelines (or both):
@@ -322,6 +350,7 @@ graphs:
     options:
       ymin: -10
       ymax: 30
+      showTimeLabels: true   # false will hide the time ticks on this graph
     entities:
       - entity: sensor.outside_temperature
         color: '#3e95cd'
@@ -346,7 +375,12 @@ graphs:
         name: Barn door
       - entity: input_select.qubino2_3
         name: Heater
-
+  - type: arrowline
+    title: Wind bearing
+    entities:
+      - entity: sensor.wind_bearing
+        color: black
+        fill: rgba(0,0,0,0.2)
 ```
 
 Replace the entities and structure as needed.
