@@ -273,11 +273,11 @@ labelAreaWidth: 10     # the width of the label area in pixels, default is 65
 
 #### Configuring the tooltip popup
 
-The tooltip popups used in timelines and arrowlines support three different sizes and layout modes: full, compact and slim. By default, the mode is selected automatically depending on the available space around the graph. The mode can be overidden manually too:
+The tooltip popups used in timelines and arrowlines support three different sizes: full, compact and slim. By default, the size is selected automatically depending on the available space around the graph. The size can be overidden manually:
 
 ```yaml
 type: custom:history-explorer-card
-tooltipSize: slim       # Supported modes are full, compact, slim or auto
+tooltipSize: slim       # Supported sizes are full, compact, slim. Use auto for automatic size (this is the default).
 ```
 
 The state color boxes in the tooltips can optionally be hidden for line graphs or timelines (or both):
