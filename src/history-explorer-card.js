@@ -244,7 +244,7 @@ class HistoryCardState {
         }
     }
 
-    decZoom()
+    decZoom(t_center = null, t_position = 0.5)
     {
         if( !this.activeRange.timeRangeHours ) {
             this.activeRange.timeRangeMinutes *= 2;
@@ -260,21 +260,21 @@ class HistoryCardState {
             if( i >= 0 ) {
                 if( ranges[i] > this.activeRange.timeRangeHours ) i--;
                 if( i < ranges.length-1 ) 
-                    this.setTimeRange(ranges[i+1], true);
+                    this.setTimeRange(ranges[i+1], true, t_center, t_position);
             }
 
         } else
 
-            this.setTimeRangeMinutes(this.activeRange.timeRangeMinutes, true, (moment(this.startTime) + moment(this.endTime)) / 2);
+            this.setTimeRangeMinutes(this.activeRange.timeRangeMinutes, true, t_center, t_position);
     }
 
-    incZoom()
+    incZoom(t_center = null, t_position = 0.5)
     {
         const i = ranges.findIndex(e => e >= this.activeRange.timeRangeHours);
         if( i > 0 ) 
-            this.setTimeRange(ranges[i-1], true);
+            this.setTimeRange(ranges[i-1], true, t_center, t_position);
         else
-            this.setTimeRangeMinutes((this.activeRange.timeRangeHours * 60 + this.activeRange.timeRangeMinutes) / 2, true, (moment(this.startTime) + moment(this.endTime)) / 2);
+            this.setTimeRangeMinutes((this.activeRange.timeRangeHours * 60 + this.activeRange.timeRangeMinutes) / 2, true, t_center, t_position);
     }
 
     timeRangeSelected(event)
@@ -302,9 +302,11 @@ class HistoryCardState {
         return ranges[i];
     }
 
-    setTimeRange(range, update, t_center = null)
+    setTimeRange(range, update, t_center = null, t_position = 0.5)
     {
         if( this.state.loading ) return;
+
+        t_position = Math.min(Math.max(t_position, 0.0), 1.0);
 
         range = Math.max(range, 1);
 
@@ -333,7 +335,7 @@ class HistoryCardState {
 
             if( t_center ) {
 
-                let t1 = moment(t_center).add(this.activeRange.timeRangeHours / 2, "hour");
+                let t1 = moment(t_center).add(this.activeRange.timeRangeHours * (1.0 - t_position), "hour");
                 let t0 = moment(t1).subtract(this.activeRange.timeRangeHours, "hour");
                 this.startTime = t0.format("YYYY-MM-DDTHH:mm:ss");
                 this.endTime = t1.format("YYYY-MM-DDTHH:mm:ss");
@@ -368,9 +370,11 @@ class HistoryCardState {
         }
     }
 
-    setTimeRangeMinutes(range, update, t_center)
+    setTimeRangeMinutes(range, update, t_center, t_position = 0.5)
     {
         if( this.state.loading ) return;
+
+        t_position = Math.min(Math.max(t_position, 0.0), 1.0);
 
         range = Math.max(range, 1);
 
@@ -384,7 +388,10 @@ class HistoryCardState {
 
         if( update ) {
 
-            let t1 = moment(t_center).add(this.activeRange.timeRangeMinutes / 2, "minute");
+            if( !t_center ) 
+                t_center = (moment(this.startTime) + moment(this.endTime)) / 2;
+
+            let t1 = moment(t_center).add(this.activeRange.timeRangeMinutes * (1.0 - t_position), "minute");
             let t0 = moment(t1).subtract(this.activeRange.timeRangeMinutes, "minute");
             this.startTime = t0.format("YYYY-MM-DDTHH:mm:ss");
             this.endTime = t1.format("YYYY-MM-DDTHH:mm:ss");
@@ -1086,6 +1093,11 @@ class HistoryCardState {
     {
         const f = (x - panstate.g.chart.chartArea.left) / (panstate.g.chart.chartArea.right - panstate.g.chart.chartArea.left);
 
+        return this.factorToTimecode(f);
+    }
+
+    factorToTimecode(f)
+    {
         return moment(this.startTime) + moment(this.endTime).diff(this.startTime) * f;
     }
 
@@ -1307,8 +1319,14 @@ class HistoryCardState {
     {
         if( event.ctrlKey ) {
             event.preventDefault();
-            if( event.deltaY < 0 ) this.incZoom(); else
-            if( event.deltaY > 0 ) this.decZoom();
+            if( !this.graphs.length || this.state.loading ) return;
+            const rect = this.graphs[0].canvas.getBoundingClientRect();
+            const chartArea = this.graphs[0].chart.chartArea;
+            const x0 = event.clientX - rect.left - chartArea.left;
+            const f = x0 / (chartArea.right - chartArea.left);
+            const tc = this.factorToTimecode(f);
+            if( event.deltaY < 0 ) this.incZoom(tc, f); else
+            if( event.deltaY > 0 ) this.decZoom(tc, f);
         }
     }
 
@@ -1485,9 +1503,6 @@ class HistoryCardState {
         canvas.addEventListener('pointermove', this.pointerMove.bind(this));
         canvas.addEventListener('pointerup', this.pointerUp.bind(this));
         canvas.addEventListener('pointercancel', this.pointerCancel.bind(this));
-
-        if( !isMobile ) 
-            canvas.addEventListener('wheel', this.wheelScrolled.bind(this)); 
     }
 
     addUIHtml(timeline, selector, bgcol, optionStyle, inputStyle, i)
@@ -1637,6 +1652,9 @@ class HistoryCardState {
                 this.ui.zoomButton[i] = this._this.querySelector(`#bz_${i}`);
 
             }
+
+            if( !isMobile ) 
+                this._this.querySelector('#maincard').addEventListener('wheel', this.wheelScrolled.bind(this), { passive: false }); 
 
             this.readLocalState();
             
