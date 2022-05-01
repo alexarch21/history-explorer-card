@@ -1965,10 +1965,15 @@ class HistoryCardState {
     {
         if( this.i18n.valid ) return;
 
-        const locale = this._hass.language ? this._hass.language : 'en-GB';
+        let locale = this._hass.language ? this._hass.language : 'en-GB';
+
         this.i18n.styleDateSelector = getLocalizedDateString(locale, { dateStyle: 'medium' });
-        this.i18n.styleTimeTicks = getLocalizedDateString(locale, { timeStyle: 'short' });
         this.i18n.styleDateTicks = ( this.i18n.styleDateSelector[0] == 'D' ) ? 'D MMM' : 'MMM D';
+
+        if( this._hass.locale?.time_format === '24' ) locale = 'en-GB';
+        if( this._hass.locale?.time_format === '12' ) locale = 'en-US';
+
+        this.i18n.styleTimeTicks = getLocalizedDateString(locale, { timeStyle: 'short' });
         this.i18n.styleDateTimeTooltip = this.i18n.styleDateTicks + ', ' + getLocalizedDateString(locale, { timeStyle: 'medium' });
 
         this.i18n.valid = true;
