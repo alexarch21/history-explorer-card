@@ -1575,7 +1575,7 @@ class HistoryCardState {
         canvas.addEventListener('pointercancel', this.pointerCancel.bind(this));
     }
 
-    addUIHtml(timeline, selector, bgcol, optionStyle, inputStyle, i)
+    addUIHtml(timeline, selector, bgcol, optionStyle, inputStyle, invertZoom, i)
     {
         let html = `<div style="margin-left:0px;width:100%;text-align:center;">`;
 
@@ -1610,7 +1610,7 @@ class HistoryCardState {
         if( timeline ) html += `
             <div id="dr_${i}" style="background-color:${bgcol};float:right;margin-right:10px;display:inline-block;padding-left:10px;padding-right:10px;">
                 <button id="bz_${i}" style="border:0px solid black;color:inherit;background-color:#00000000"><svg width="24" height="24" viewBox="0 0 24 24" style="vertical-align:middle;"><path fill="var(--primary-text-color)" d="M15.5,14L20.5,19L19,20.5L14,15.5V14.71L13.73,14.43C12.59,15.41 11.11,16 9.5,16A6.5,6.5 0 0,1 3,9.5A6.5,6.5 0 0,1 9.5,3A6.5,6.5 0 0,1 16,9.5C16,11.11 15.41,12.59 14.43,13.73L14.71,14H15.5M9.5,14C12,14 14,12 14,9.5C14,7 12,5 9.5,5C7,5 5,7 5,9.5C5,12 7,14 9.5,14M12,10H10V12H9V10H7V9H9V7H10V9H12V10Z" /></svg></button>
-                <button id="b4_${i}" style="border:0px solid black;color:inherit;background-color:#00000000;height:30px">-</button>
+                <button id="b${invertZoom ? 5 : 4}_${i}" style="border:0px solid black;color:inherit;background-color:#00000000;height:30px">-</button>
                 <select id="by_${i}" style="border:0px solid black;color:inherit;background-color:#00000000;height:30px">
                     <option value="0" ${optionStyle} hidden>< 1H</option>
                     <option value="1" ${optionStyle}>1 H</option>
@@ -1636,7 +1636,7 @@ class HistoryCardState {
                     <option value="504" ${optionStyle}>3 Weeks</option>
                     <option value="720" ${optionStyle}>1 Month</option>
                 </select>
-                <button id="b5_${i}" style="border:0px solid black;color:inherit;background-color:#00000000;height:30px">+</button>
+                <button id="b${invertZoom ? 4 : 5}_${i}" style="border:0px solid black;color:inherit;background-color:#00000000;height:30px">+</button>
             </div>`;
 
         html += `</div>`;
@@ -2132,6 +2132,8 @@ class HistoryExplorerCard extends HTMLElement
         const tools = bitmask[config.uiLayout?.toolbar] ?? 1;
         const selector = bitmask[config.uiLayout?.selector] ?? 2;
 
+        const invertZoom = config.uiLayout?.invertZoom === true;
+
         const optionStyle = `style="color:var(--primary-text-color);background-color:var(--card-background-color)"`;
         const inputStyle = config.uiColors?.selector ? `style="color:var(--primary-text-color);background-color:${config.uiColors.selector};border:1px solid black;"` : '';
 
@@ -2140,7 +2142,7 @@ class HistoryExplorerCard extends HTMLElement
         // Header
         let html = `
             <ha-card id="maincard" header="${(header === 'hide') ? '' : header}">
-            ${this.instance.addUIHtml(tools & 1, selector & 1, bgcol, optionStyle, inputStyle, 0)}
+            ${this.instance.addUIHtml(tools & 1, selector & 1, bgcol, optionStyle, inputStyle, invertZoom, 0)}
             ${(tools | selector) & 1 ? '<br>' : ''}
             <br>
             <div id='graphlist' class='card-content'>
@@ -2161,7 +2163,7 @@ class HistoryExplorerCard extends HTMLElement
         // Footer
         html += `
             </div>
-            ${this.instance.addUIHtml(tools & 2, selector & 2, bgcol, optionStyle, inputStyle, 1)}
+            ${this.instance.addUIHtml(tools & 2, selector & 2, bgcol, optionStyle, inputStyle, invertZoom, 1)}
             <datalist id="b6"></datalist>
             ${(tools | selector) & 2 ? '<br>' : ''}
             ${(tools & 2) && !(selector & 2) ? '<br>' : ''}
