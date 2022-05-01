@@ -5,7 +5,7 @@ import "./deps/timeline.js";
 import "./deps/md5.min.js"
 import "./deps/FileSaver.js"
 
-const Version = '1.0.21';
+const Version = '1.0.22b';
 
 var isMobile = ( navigator.appVersion.indexOf("Mobi") > -1 ) || ( navigator.userAgent.indexOf("HomeAssistant") > -1 );
 
@@ -83,6 +83,7 @@ class HistoryCardState {
         this.pconfig.axisAddMarginMin     = true;
         this.pconfig.axisAddMarginMax     = true;
         this.pconfig.defaultTimeRange     = '24';
+        this.pconfig.timeTickDensity      = 'high';
         this.pconfig.entities             = [];
 
         this.loader = {};
@@ -102,6 +103,7 @@ class HistoryCardState {
         this.activeRange.timeRangeHours  = 24;
         this.activeRange.timeRangeMinutes= 0;
         this.activeRange.tickStepSize    = 1;
+        this.activeRange.tickStepUnit    = 'hour';
         this.activeRange.dataClusterSize = 0;
 
         this.id = "";
@@ -307,12 +309,70 @@ class HistoryCardState {
 
 
     // --------------------------------------------------------------------------------------
+    // Time ticks and step size
+    // --------------------------------------------------------------------------------------
+
+    computeTickDensity(width)
+    {
+        const densityLimit = ( this.pconfig.timeTickDensity == 'low' ) ? 2 : ( this.pconfig.timeTickDensity == 'medium' ) ? 1 : 0;
+        return Math.max(( width < 650 ) ? 2 : ( width < 1100 ) ? 1 : 0, densityLimit);
+    }
+
+    setStepSize(update = false)
+    {
+        const width = this._this.querySelector('#maincard').clientWidth;
+
+        const tdensity = this.computeTickDensity(width);
+
+        if( this.activeRange.timeRangeHours ) {
+
+            const range = this.activeRange.timeRangeHours;
+
+            const stepSizes = [];
+            stepSizes.push({ '1': '5m', '2': '10m', '3': '15m', '4': '30m', '5': '30m', '6': '30m', '7': '30m', '8': '30m', '9': '30m', '10': '1h', '11': '1h', '12': '1h', '24': '2h', '48': '4h', '72': '6h', '96': '6h', '120': '12h', '144': '12h', '168': '1d', '336': '1d', '504': '2d', '720': '2d' });
+            stepSizes.push({ '1': '10m', '2': '20m', '3': '30m', '4': '1h', '5': '1h', '6': '1h', '7': '1h', '8': '1h', '9': '1h', '10': '2h', '11': '2h', '12': '2h', '24': '4h', '48': '8h', '72': '12h', '96': '1d', '120': '1d', '144': '1d', '168': '2d', '336': '3d', '504': '4d', '720': '7d' });
+            stepSizes.push({ '1': '20m', '2': '30m', '3': '1h', '4': '2h', '5': '2h', '6': '2h', '7': '2h', '8': '2h', '9': '2h', '10': '4h', '11': '4h', '12': '4h', '24': '6h', '48': '12h', '72': '1d', '96': '2d', '120': '2d', '144': '2d', '168': '4d', '336': '7d', '504': '7d', '720': '14d' });
+
+            this.activeRange.tickStepSize = stepSizes[tdensity][range].slice(0, -1);
+            switch( stepSizes[tdensity][range].slice(-1)[0] ) {
+                case 'm': this.activeRange.tickStepUnit = 'minute'; break;
+                case 'h': this.activeRange.tickStepUnit = 'hour'; break;
+                case 'd': this.activeRange.tickStepUnit = 'day';  break;
+            }
+
+        } else if( this.activeRange.timeRangeMinutes ) {
+
+            switch( tdensity ) {
+                case 0: this.activeRange.tickStepSize = ( this.activeRange.timeRangeMinutes <= 20 ) ? 1 : 5; break;
+                case 1: this.activeRange.tickStepSize = ( this.activeRange.timeRangeMinutes <= 10 ) ? 1 : ( this.activeRange.timeRangeMinutes < 30 ) ? 5 : 10; break;
+                case 2: this.activeRange.tickStepSize = ( this.activeRange.timeRangeMinutes <= 5 ) ? 1 : ( this.activeRange.timeRangeMinutes < 25 ) ? 5 : 10; break;
+            }
+            this.activeRange.tickStepUnit = 'minute';
+
+        } else {
+
+            this.activeRange.tickStepSize = 24;
+            this.activeRange.tickStepUnit = 'hour';
+
+        }
+
+        if( update ) {
+            for( let g of this.graphs ) {
+                g.chart.options.scales.xAxes[0].time.unit = this.activeRange.tickStepUnit;
+                g.chart.options.scales.xAxes[0].time.stepSize = this.activeRange.tickStepSize;
+                g.chart.update();
+            }
+        }
+    }
+
+
+    // --------------------------------------------------------------------------------------
     // Activate a given time range
     // --------------------------------------------------------------------------------------
 
     validateRange(range)
     {
-        const i = ranges.findIndex(e => e >= range);
+        let i = ranges.findIndex(e => e >= range);
         if( i < ranges.length-1 && (i < 0 || ranges[i] != range) ) i++;
         return ranges[i];
     }
@@ -325,15 +385,6 @@ class HistoryCardState {
 
         range = Math.max(range, 1);
 
-        const stepSizes = { '1': 5, '2': 10, '3': 15, '4': 30, '5': 30, '6': 30, '7': 30, '8': 30, '9': 30, '10': 60, '11': 60, '12':60, '24': 2, '48': 2, '72': 6, '96': 6, '120':12, '144':12, '168':24, '336':24, '504':24, '720':48 };
-
-        this.activeRange.tickStepSize = stepSizes[range];
-
-        if( !this.activeRange.tickStepSize ) {
-            range = '24';
-            this.activeRange.tickStepSize = stepSizes[range];
-        }
-
         const dataClusterSizes = { '48': 2, '72': 5, '96': 10, '120': 30, '144': 30, '168': 60, '336': 60, '504': 120, '720': 240 };
         const minute = 60000;
 
@@ -343,6 +394,8 @@ class HistoryCardState {
 
         this.activeRange.timeRangeHours = range;
         this.activeRange.timeRangeMinutes = 0;
+
+        this.setStepSize(!update);
 
         for( let i of this.ui.rangeSelector ) if( i ) i.value = range;
 
@@ -373,7 +426,7 @@ class HistoryCardState {
             }
 
             for( let g of this.graphs ) {
-                g.chart.options.scales.xAxes[0].time.unit = ( this.activeRange.timeRangeHours < 24 ) ? 'minute' : 'hour';
+                g.chart.options.scales.xAxes[0].time.unit = this.activeRange.tickStepUnit;
                 g.chart.options.scales.xAxes[0].time.stepSize = this.activeRange.tickStepSize;
                 g.chart.options.scales.xAxes[0].time.min = this.startTime;
                 g.chart.options.scales.xAxes[0].time.max = this.endTime;
@@ -393,11 +446,12 @@ class HistoryCardState {
 
         range = Math.max(range, 1);
 
-        this.activeRange.tickStepSize = ( range <= 20 ) ? 1 : 5;
         this.activeRange.dataClusterSize = 0;
 
         this.activeRange.timeRangeHours = 0;
         this.activeRange.timeRangeMinutes = range;
+
+        this.setStepSize(!update);
 
         for( let i of this.ui.rangeSelector ) if( i ) i.value = "0";
 
@@ -412,7 +466,7 @@ class HistoryCardState {
             this.endTime = t1.format("YYYY-MM-DDTHH:mm:ss");
 
             for( let g of this.graphs ) {
-                g.chart.options.scales.xAxes[0].time.unit = ( this.activeRange.timeRangeHours < 24 ) ? 'minute' : 'hour';
+                g.chart.options.scales.xAxes[0].time.unit = this.activeRange.tickStepUnit;
                 g.chart.options.scales.xAxes[0].time.stepSize = this.activeRange.tickStepSize;
                 g.chart.options.scales.xAxes[0].time.min = this.startTime;
                 g.chart.options.scales.xAxes[0].time.max = this.endTime;
@@ -796,7 +850,7 @@ class HistoryCardState {
             }
 
             if( updated ) {
-                g.chart.options.scales.xAxes[0].time.unit = ( this.activeRange.timeRangeHours < 24 ) ? 'minute' : 'hour';
+                g.chart.options.scales.xAxes[0].time.unit = this.activeRange.tickStepUnit;
                 g.chart.options.scales.xAxes[0].time.stepSize = this.activeRange.tickStepSize;
                 g.chart.options.scales.xAxes[0].time.min = this.startTime;
                 g.chart.options.scales.xAxes[0].time.max = this.endTime;
@@ -887,7 +941,7 @@ class HistoryCardState {
                     xAxes: [{ 
                         type: ( graphtype == 'line' ) ? 'time' : ( graphtype == 'arrowline' ) ? 'arrowline' : 'timeline',
                         time: {
-                            unit: ( this.activeRange.timeRangeHours < 24 ) ? 'minute' : 'hour',
+                            unit: this.activeRange.tickStepUnit,
                             stepSize: this.activeRange.tickStepSize,
                             displayFormats: { 'minute': this.i18n.styleTimeTicks, 'hour': this.i18n.styleTimeTicks, 'day': this.i18n.styleDateTicks },
                             tooltipFormat: this.i18n.styleDateTimeTooltip,
@@ -900,7 +954,8 @@ class HistoryCardState {
                                 fontStyle: 'bold',
                                 unitStepSize: 1,
                                 displayFormats: { 'day': this.i18n.styleDateTicks },
-                            }
+                            },
+                            maxRotation: 0
                         },
                         gridLines: {
                             color: this.pconfig.graphGridColor
@@ -1594,8 +1649,10 @@ class HistoryCardState {
         const w = this._this.querySelector('#maincard').clientWidth;
 
         if( Math.abs(this.lastWidth - w) > 2 ) {
+            const tickChanged = this.computeTickDensity(w) != this.computeTickDensity(this.lastWidth);
             this.lastWidth = w;
             for( let g of this.graphs ) g.chart.resize(undefined, g.graphHeight);
+            if( tickChanged ) this.setStepSize(true);
         }        
 
         this.resizeSelector();
@@ -2061,6 +2118,7 @@ class HistoryExplorerCard extends HTMLElement
         this.instance.pconfig.recordedEntitiesOnly = config.recordedEntitiesOnly ?? false;
         this.instance.pconfig.combineSameUnits = config.combineSameUnits === true;
         this.instance.pconfig.defaultTimeRange = config.defaultTimeRange ?? '24';
+        this.instance.pconfig.timeTickDensity = config.timeTickDensity ?? 'high';
 
         this.instance.id = config.cardName ?? "default";
 
