@@ -5,7 +5,7 @@ import "./deps/timeline.js";
 import "./deps/md5.min.js"
 import "./deps/FileSaver.js"
 
-const Version = '1.0.22';
+const Version = '1.0.23';
 
 var isMobile = ( navigator.appVersion.indexOf("Mobi") > -1 ) || ( navigator.userAgent.indexOf("HomeAssistant") > -1 );
 
@@ -1587,7 +1587,7 @@ class HistoryCardState {
             </div>`;
 
         if( selector && isMobile ) html += `
-            <div style="background-color:${bgcol};display:inline-block;padding-left:10px;padding-right:10px;">
+            <div id='sl_${i}' style="background-color:${bgcol};display:inline-block;padding-left:10px;padding-right:10px;">
                 <input id="b7_${i}" ${inputStyle} autoComplete="on" placeholder="Type to search for an entity to add"/>
                 <div id="es_${i}" style="display:none;position:absolute;text-align:left;min-width:260px;max-height:150px;overflow:auto;border:1px solid #444;z-index:1;color:var(--primary-text-color);background-color:var(--card-background-color)"></div>
                 <button id="b8_${i}" style="border:0px solid black;color:inherit;background-color:#00000000;height:34px;margin-left:5px;">+</button>
@@ -1598,7 +1598,7 @@ class HistoryCardState {
             </div>`;
 
         if( selector && !isMobile ) html += `
-            <div style="background-color:${bgcol};display:inline-block;padding-left:10px;padding-right:10px;">
+            <div id='sl_${i}' style="background-color:${bgcol};display:inline-block;padding-left:10px;padding-right:10px;">
                 <input id="b7_${i}" ${inputStyle} autoComplete="on" list="b6" placeholder="Type to search for an entity to add"/>
                 <button id="b8_${i}" style="border:0px solid black;color:inherit;background-color:#00000000;height:34px;margin-left:5px;">+</button>
                 <button id="bo_${i}" style="border:0px solid black;color:inherit;background-color:#00000000;height:30px;margin-left:1px;margin-right:0px;"><svg width="18" height="18" viewBox="0 0 24 24" style="vertical-align:middle;"><path fill="var(--primary-text-color)" d="M7.41,8.58L12,13.17L16.59,8.58L18,10L12,16L6,10L7.41,8.58Z" /></svg></button>
@@ -1641,6 +1641,8 @@ class HistoryCardState {
 
         html += `</div>`;
 
+        html += `<div id='rf_${i}' style="margin-left:0px;margin-top:10px;margin-bottom:15px;width:100%;text-align:center;display:none"></div>`;
+
         return html;
     }
 
@@ -1658,6 +1660,24 @@ class HistoryCardState {
         this.resizeSelector();
     }
 
+    adjustSelectorPosition(reflow, i)
+    {
+        const rfdiv = this._this.querySelector(`#rf_${i}`);
+
+        const isReflown = rfdiv.style.display !== 'none';
+
+        if( !reflow && isReflown ) {
+            rfdiv.style.display = 'none';
+            const selector = this._this.querySelector(`#sl_${i}`);
+            const anchor = this._this.querySelector(`#dl_${i}`);
+            anchor.after(selector);
+        } else if( reflow && !isReflown ) {
+            rfdiv.style.display = 'inline-block';
+            const selector = this._this.querySelector(`#sl_${i}`);
+            rfdiv.appendChild(selector);
+        }
+    }
+
     resizeSelector()
     {
         const button_size = 120;
@@ -1670,8 +1690,13 @@ class HistoryCardState {
             const input = this._this.querySelector(`#b7_${i}`);
             if( input ) {
                 let xw = w - button_size - (this._this.querySelector(`#dl_${i}`)?.clientWidth ?? 0) - (this._this.querySelector(`#dr_${i}`)?.clientWidth ?? 0);
-                xw = Math.max(Math.min(xw, max_selector_size), min_selector_size);
-                input.style.width = xw + "px";
+                const reflow = ( xw < min_selector_size && this._this.querySelector(`#dl_${i}`) != null );
+                this.adjustSelectorPosition(reflow, i);
+                if( !reflow ) {
+                    xw = Math.min(xw, max_selector_size);
+                    input.style.width = xw + "px";
+                } else
+                    input.style.width = (w - 108) + "px";
             }
         }
     }
@@ -2071,8 +2096,6 @@ class HistoryExplorerCard extends HTMLElement
 
     set panel(panel)
     {
-        console.log("Panel mode set");
-
         this.setConfig(panel.config);
     }
 
@@ -2149,7 +2172,7 @@ class HistoryExplorerCard extends HTMLElement
             <ha-card id="maincard" header="${(header === 'hide') ? '' : header}">
             ${this.instance.addUIHtml(tools & 1, selector & 1, bgcol, optionStyle, inputStyle, invertZoom, 0)}
             ${(tools | selector) & 1 ? '<br>' : ''}
-            <br>
+            ${((tools & 1) && !(selector & 1)) ? '<br>' : ''}
             <div id='graphlist' class='card-content'>
         `;
 
@@ -2169,9 +2192,9 @@ class HistoryExplorerCard extends HTMLElement
         html += `
             </div>
             ${this.instance.addUIHtml(tools & 2, selector & 2, bgcol, optionStyle, inputStyle, invertZoom, 1)}
-            <datalist id="b6"></datalist>
             ${(tools | selector) & 2 ? '<br>' : ''}
-            ${(tools & 2) && !(selector & 2) ? '<br>' : ''}
+            ${((tools & 2) && !(selector & 2)) ? '<br>' : ''}
+            <datalist id="b6"></datalist>
             </ha-card>
         `;
 
