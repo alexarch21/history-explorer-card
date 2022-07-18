@@ -1635,12 +1635,12 @@ class HistoryCardState {
         if( timeline ) html += `
             <div id="dl_${i}" style="background-color:${bgcol};float:left;margin-left:10px;display:inline-block;padding-left:10px;padding-right:10px;">
                 <button id="b1_${i}" style="border:0px solid black;color:inherit;background-color:#00000000;height:30px"><</button>
-                <button id="bx_${i}" style="border:0px solid black;color:inherit;background-color:#00000000;height:30px"></button>
+                <button id="bx_${i}" style="border:0px solid black;color:inherit;background-color:#00000000;height:30px">-</button>
                 <button id="b2_${i}" style="border:0px solid black;color:inherit;background-color:#00000000;height:30px">></button>
             </div>`;
 
         if( selector && isMobile ) html += `
-            <div id='sl_${i}' style="background-color:${bgcol};display:inline-block;padding-left:10px;padding-right:10px;">
+            <div id='sl_${i}' style="background-color:${bgcol};display:none;padding-left:10px;padding-right:10px;">
                 <input id="b7_${i}" ${inputStyle} autoComplete="on" placeholder="Type to search for an entity to add"/>
                 <div id="es_${i}" style="display:none;position:absolute;text-align:left;min-width:260px;max-height:150px;overflow:auto;border:1px solid #444;z-index:1;color:var(--primary-text-color);background-color:var(--card-background-color)"></div>
                 <button id="b8_${i}" style="border:0px solid black;color:inherit;background-color:#00000000;height:34px;margin-left:5px;">+</button>
@@ -1652,7 +1652,7 @@ class HistoryCardState {
             </div>`;
 
         if( selector && !isMobile ) html += `
-            <div id='sl_${i}' style="background-color:${bgcol};display:inline-block;padding-left:10px;padding-right:10px;">
+            <div id='sl_${i}' style="background-color:${bgcol};display:none;padding-left:10px;padding-right:10px;">
                 <input id="b7_${i}" ${inputStyle} autoComplete="on" list="b6" placeholder="Type to search for an entity to add"/>
                 <button id="b8_${i}" style="border:0px solid black;color:inherit;background-color:#00000000;height:34px;margin-left:5px;">+</button>
                 <button id="bo_${i}" style="border:0px solid black;color:inherit;background-color:#00000000;height:30px;margin-left:1px;margin-right:0px;"><svg width="18" height="18" viewBox="0 0 24 24" style="vertical-align:middle;"><path fill="var(--primary-text-color)" d="M7.41,8.58L12,13.17L16.59,8.58L18,10L12,16L6,10L7.41,8.58Z" /></svg></button>
@@ -1718,17 +1718,18 @@ class HistoryCardState {
     adjustSelectorPosition(reflow, i)
     {
         const rfdiv = this._this.querySelector(`#rf_${i}`);
+        const selector = this._this.querySelector(`#sl_${i}`);
+
+        selector.style.display = 'inline-block';
 
         const isReflown = rfdiv.style.display !== 'none';
 
         if( !reflow && isReflown ) {
-            rfdiv.style.display = 'none';
-            const selector = this._this.querySelector(`#sl_${i}`);
+            rfdiv.style.display = 'none';     
             const anchor = this._this.querySelector(`#dl_${i}`);
             anchor.after(selector);
         } else if( reflow && !isReflown ) {
             rfdiv.style.display = 'inline-block';
-            const selector = this._this.querySelector(`#sl_${i}`);
             rfdiv.appendChild(selector);
         }
     }
