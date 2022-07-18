@@ -67,6 +67,7 @@ class HistoryCardState {
         this.pconfig.labelsVisible        = true;
         this.pconfig.showTooltipColors    = [true, true];
         this.pconfig.tooltipSize          = 'auto';
+        this.pconfig.tooltipShowDuration  = false;
         this.pconfig.closeButtonColor     = undefined;
         this.pconfig.customStateColors    = undefined;
         this.pconfig.colorSeed            = 137;
@@ -868,6 +869,12 @@ class HistoryCardState {
 
     generateTooltipContents(label, d, mode, n = 1)
     {
+        if( this.pconfig.tooltipShowDuration ) {
+            const duration = moment(d[1]).diff(moment(d[0]));
+            const s = moment.utc(duration).format('HH:mm:ss');
+            label = `${label}  (for ${s})`;
+        }
+
         if( mode == 'compact' || mode == 'slim' || ( mode == 'auto' && n < 2 ) )
             return [label, moment(d[0]).format(this.i18n.styleDateTimeTooltip) + " -- " + moment(d[1]).format(this.i18n.styleDateTimeTooltip)];
         else
@@ -2194,6 +2201,7 @@ class HistoryExplorerCard extends HTMLElement
         this.instance.pconfig.showTooltipColors[0] = config.showTooltipColorsLine ?? true;
         this.instance.pconfig.showTooltipColors[1] = config.showTooltipColorsTimeline ?? true;
         this.instance.pconfig.tooltipSize = config.tooltipSize ?? 'auto';
+        this.instance.pconfig.tooltipShowDuration = config.tooltipShowDuration ?? false;
         this.instance.pconfig.closeButtonColor = parseColor(config.uiColors?.closeButton ?? '#0000001f');
         this.instance.pconfig.colorSeed = config.stateColorSeed ?? 137;
         this.instance.pconfig.enableDataClustering = ( config.decimation === undefined ) || config.decimation;
