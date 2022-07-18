@@ -2206,6 +2206,7 @@ class HistoryExplorerCard extends HTMLElement
         this.instance.pconfig.combineSameUnits = config.combineSameUnits === true;
         this.instance.pconfig.defaultTimeRange = config.defaultTimeRange ?? '24';
         this.instance.pconfig.timeTickDensity = config.timeTickDensity ?? 'high';
+        this.instance.pconfig.lineGraphHeight = ( config.lineGraphHeight ?? 250 ) * 1;
 
         this.instance.id = config.cardName ?? "default";
 
