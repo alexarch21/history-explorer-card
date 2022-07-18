@@ -111,6 +111,7 @@ class HistoryCardState {
         this.graphs = [];
 
         this.g_id = 0;
+        this.firstDynamicId = 0;
 
         this.startTime;
         this.endTime;
@@ -1402,6 +1403,83 @@ class HistoryCardState {
 
 
     // --------------------------------------------------------------------------------------
+    // Dynamic entity adding
+    // --------------------------------------------------------------------------------------
+
+    matchWildcardPattern(s)
+    {
+        s = s.replace(new RegExp('[.\\\\+*?\\[\\^\\]$(){}=!<>|:\\-]', 'g'), '\\$&');
+        s = s.replace(/\\\*/g, '.*')
+        return new RegExp('^'+s+'$', 'i');
+    }
+
+    addEntitySelected(event)
+    {
+        if( this.state.loading ) return;
+
+        let ii = event.target ? ( event.target.id == 'b8_0' ) ? 0 : 1 : -1;
+        if( ii < 0 ) return;
+
+        const entity_id = this.ui.inputField[ii]?.value;
+
+        for( let i of this.ui.inputField ) if( i ) i.value = "";
+
+        // Single entity or wildcard ?
+        if( entity_id.indexOf('*') >= 0 ) {
+
+            const datalist = this._this.querySelector(isMobile ? `#es_${ii}` : '#b6');
+            if( !datalist ) return;
+
+            // Convert wildcard to regex
+            const regex = this.matchWildcardPattern(entity_id);
+
+            for( let e of Array.from(datalist.children) ) {
+                const entity_id = e.innerText;
+                console.log(entity_id);
+                if( regex.test(entity_id) ) {
+                    if( this._hass.states[entity_id] == undefined ) continue;
+                    this.addEntityGraph(entity_id);
+                    this.pconfig.entities.push(entity_id);
+                }
+            }
+
+        } else {
+
+            if( this._hass.states[entity_id] == undefined ) return;
+
+            this.addEntityGraph(entity_id);
+
+            this.pconfig.entities.push(entity_id);
+
+        }
+
+        this.updateHistoryWithClearCache();
+
+        this.writeLocalState();
+    }
+
+    removeAllEntities()
+    {
+        this.menuSetVisibility(0, false);
+        this.menuSetVisibility(1, false);
+
+        if( !confirm('Remove all dynamically added graphs ?') ) return;
+
+        let a = 0;
+        for( a = 0; a < this.graphs.length; a++ ) 
+            if( this.graphs[a].id >= this.firstDynamicId ) break;
+
+        for( let i = a; i < this.graphs.length; i++ )
+            this.graphs[i].canvas.parentNode.remove();
+
+        this.graphs.splice(a);
+        this.pconfig.entities = [];
+
+        this.writeLocalState();
+    }
+
+
+    // --------------------------------------------------------------------------------------
     // HTML generation
     // --------------------------------------------------------------------------------------
 
@@ -1451,31 +1529,6 @@ class HistoryCardState {
         }
 
         this.updateHistoryWithClearCache();
-
-        this.writeLocalState();
-    }
-
-    addEntitySelected(event)
-    {
-        if( this.state.loading ) return;
-
-        let ii = event.target ? ( event.target.id == 'b8_0' ) ? 0 : 1 : -1;
-        if( ii < 0 ) return;
-
-        const entity_id = this.ui.inputField[ii]?.value;
-
-        for( let i of this.ui.inputField ) if( i ) i.value = "";
-
-        if( this._hass.states[entity_id] == undefined ) {
-            // TODO: let the user know
-            return;
-        }
-
-        this.addEntityGraph(entity_id);
-
-        this.updateHistoryWithClearCache();
-
-        this.pconfig.entities.push(entity_id);
 
         this.writeLocalState();
     }
@@ -1594,6 +1647,7 @@ class HistoryCardState {
                 <button id="bo_${i}" style="border:0px solid black;color:inherit;background-color:#00000000;height:30px;margin-left:1px;margin-right:0px;"><svg width="18" height="18" viewBox="0 0 24 24" style="vertical-align:middle;"><path fill="var(--primary-text-color)" d="M7.41,8.58L12,13.17L16.59,8.58L18,10L12,16L6,10L7.41,8.58Z" /></svg></button>
                 <div id="eo_${i}" style="display:none;position:absolute;text-align:left;min-width:150px;overflow:auto;border:1px solid #ddd;box-shadow:0px 8px 16px 0px rgba(0,0,0,0.2);z-index:1;color:var(--primary-text-color);background-color:var(--card-background-color)">
                     <a id="ef_${i}" href="#" style="display:block;padding:5px 5px;text-decoration:none;color:inherit">Export as CSV</a>
+                    <a id="eg_${i}" href="#" style="display:block;padding:5px 5px;text-decoration:none;color:inherit">Remove all added graphs</a>
                 </div>
             </div>`;
 
@@ -1604,6 +1658,7 @@ class HistoryCardState {
                 <button id="bo_${i}" style="border:0px solid black;color:inherit;background-color:#00000000;height:30px;margin-left:1px;margin-right:0px;"><svg width="18" height="18" viewBox="0 0 24 24" style="vertical-align:middle;"><path fill="var(--primary-text-color)" d="M7.41,8.58L12,13.17L16.59,8.58L18,10L12,16L6,10L7.41,8.58Z" /></svg></button>
                 <div id="eo_${i}" style="display:none;position:absolute;text-align:left;min-width:150px;overflow:auto;border:1px solid #ddd;box-shadow:0px 8px 16px 0px rgba(0,0,0,0.2);z-index:1;color:var(--primary-text-color);background-color:var(--card-background-color)">
                     <a id="ef_${i}" href="#" style="display:block;padding:5px 5px;text-decoration:none;color:inherit">Export as CSV</a>
+                    <a id="eg_${i}" href="#" style="display:block;padding:5px 5px;text-decoration:none;color:inherit">Remove all added graphs</a>
                 </div>
             </div>`;
 
@@ -1737,6 +1792,7 @@ class HistoryCardState {
                 this._this.querySelector(`#by_${i}`)?.addEventListener('change', this.timeRangeSelected.bind(this));
                 this._this.querySelector(`#bz_${i}`)?.addEventListener('click', this.toggleZoom.bind(this), false);
                 this._this.querySelector(`#ef_${i}`)?.addEventListener('click', this.exportFile.bind(this), false);
+                this._this.querySelector(`#eg_${i}`)?.addEventListener('click', this.removeAllEntities.bind(this), false);
                 this._this.querySelector(`#bo_${i}`)?.addEventListener('click', this.menuClicked.bind(this), false);
 
                 if( isMobile ) {
@@ -2119,6 +2175,8 @@ class HistoryExplorerCard extends HTMLElement
                 this.instance.pconfig.graphConfig.push({ graph: config.graphs[i], id:this.instance.g_id++ });
             }
         }
+
+        this.instance.firstDynamicId = this.instance.g_id;
 
         this.instance.pconfig.customStateColors = {};
 
