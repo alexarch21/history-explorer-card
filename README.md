@@ -75,6 +75,12 @@ person.*      - Add all entities from the person domain
 sensor.*door* - Add all entities that contain the term ‘door’ in the name, but only from the sensor domain
 *             - Add all available entities in the list
 ```
+The entities shown in the list can be further filtered using the `filterEntities` option. The same wildcard syntax applies here. For example:
+```yaml
+type: custom:history-explorer-card
+filterEntities: 'binary_sensor.*'
+```
+
 Dynamically added entities can be individually removed by clicking the `x` close button next to them or all together using the option in the entity action dropdown menu:
 
 ![image](https://user-images.githubusercontent.com/60828821/186549959-cd3705b6-229a-46c5-abcf-6a9f3b675f0b.png)
