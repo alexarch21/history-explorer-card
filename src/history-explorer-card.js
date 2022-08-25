@@ -1572,13 +1572,13 @@ class HistoryCardState {
         // Get the options for line and arrow graphs (use per device_class options if available, otherwise use defaults)
         if( type == 'line' || type == 'arrowline' ) {
 
-            if( entityOptions?.color || entityOptions?.fill ) {
+            if( entityOptions?.color ) {
                 entities[0].color = entityOptions?.color;
-                entities[0].fill = entityOptions?.fill;
+                entities[0].fill = entityOptions?.fill ?? 'rgba(0,0,0,0)';
             } else {
                 const c = this.getNextDefaultColor();
                 entities[0].color = c.color;
-                entities[0].fill = c.fill;
+                entities[0].fill = entityOptions?.fill ?? c.fill;
             }
 
             entities[0].width = entityOptions?.width;
