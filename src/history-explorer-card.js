@@ -5,7 +5,7 @@ import "./deps/timeline.js";
 import "./deps/md5.min.js"
 import "./deps/FileSaver.js"
 
-const Version = '1.0.23';
+const Version = '1.0.24';
 
 var isMobile = ( navigator.appVersion.indexOf("Mobi") > -1 ) || ( navigator.userAgent.indexOf("HomeAssistant") > -1 );
 
@@ -142,30 +142,50 @@ class HistoryCardState {
         return defaultColors[i];
     }
 
-    getStateColor(domain, device_class, value)
+    getStateColor(domain, device_class, entity_id, value)
     {
         let c;
 
         if( value === undefined || value === null || value === '' ) value = 'unknown';
 
+        // entity_id.state override
+        if( entity_id ) {
+            const v = entity_id + '.' + value;
+            c = this.pconfig.customStateColors?.[v];
+        }
+
         // device_class.state override
-        if( device_class ) {
+        if( !c && device_class ) {
             const v = device_class + '.' + value;
             c = this.pconfig.customStateColors?.[v];
-            c = c ?? (( this.ui.darkMode && stateColorsDark[v] ) ? stateColorsDark[v] : stateColors[v]);
         }
 
         // domain.state override
         if( !c && domain ) {
             const v = domain + '.' + value;
             c = this.pconfig.customStateColors?.[v];
-            c = c ?? (( this.ui.darkMode && stateColorsDark[v] ) ? stateColorsDark[v] : stateColors[v]);
         }
 
         // global state override
         if( !c ) {
             c = this.pconfig.customStateColors?.[value];
-            c = c ?? (( this.ui.darkMode && stateColorsDark[value] ) ? stateColorsDark[value] : stateColors[value]);
+        }
+
+        // device_class.state defaults
+        if( !c && device_class ) {
+            const v = device_class + '.' + value;
+            c = (( this.ui.darkMode && stateColorsDark[v] ) ? stateColorsDark[v] : stateColors[v]);
+        }
+
+        // domain.state defaults
+        if( !c && domain ) {
+            const v = domain + '.' + value;
+            c = (( this.ui.darkMode && stateColorsDark[v] ) ? stateColorsDark[v] : stateColors[v]);
+        }
+
+        // global state defaults
+        if( !c ) {
+            c = (( this.ui.darkMode && stateColorsDark[value] ) ? stateColorsDark[value] : stateColors[value]);
         }
 
         // general fallback if state color is not defined anywhere, generate color from the MD5 hash of the state name
@@ -1053,7 +1073,7 @@ class HistoryCardState {
                         // * check device_class.state first (if it exists)
                         // * if not found, then check domain.state
                         // * if not found, check global state
-                        return this.getStateColor(datasets[index].domain, datasets[index].device_class, data[2]);
+                        return this.getStateColor(datasets[index].domain, datasets[index].device_class, datasets[index].entity_id, data[2]);
                     },
                     showText: true,
                     font: 'normal 13px "Helvetica Neue", Helvetica, Arial, sans-serif',
@@ -1442,7 +1462,6 @@ class HistoryCardState {
 
             for( let e of Array.from(datalist.children) ) {
                 const entity_id = e.innerText;
-                console.log(entity_id);
                 if( regex.test(entity_id) ) {
                     if( this._hass.states[entity_id] == undefined ) continue;
                     this.addEntityGraph(entity_id);
