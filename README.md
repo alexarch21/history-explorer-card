@@ -162,7 +162,7 @@ Compass arrow graphs use the `arrowline` type and can be used in both dynamicall
 
 ### Customizing state colors
 
-The default colors used for the states shown on timeline graphs can be customized in many different ways. Customizing is done by adding the statesColor key to the card YAML. Colors act on device classes, domains or global states. You can, for example, have distinct colors for the on and off states of your motion sensors and your door sensors, even if they're both binary sensors.
+The default colors used for the states shown on timeline graphs can be customized in many different ways. Customizing is done by adding the statesColor key to the card YAML. Colors act on individual entities, entire device classes, domains or global states. You can, for example, have distinct colors for the on and off states of your motion sensors and your door sensors, even if they're both binary sensors.
 
 The card accepts all normal HTML color definition strings as well as CSS variables. The latter need to be provided as-is (for example `--primary-color`, without the CSS var function).
 
@@ -190,6 +190,14 @@ Finally, you can color a specific state globally through all device classes and 
 type: custom:history-explorer-card
 stateColors:
   off: '#ff0000'
+```
+
+Customizable states aren't limited to `on` or `off` values. Any raw state value may be used, such as values assigned by template or MQTT sensors. For example:
+```yaml
+type: custom:history-explorer-card
+stateColors:
+  sensor.Dry: tan
+  sensor.Wet: green
 ```
 
 There is a special virtual state that is added to all entities, the *multiple* state. This state substitutes an aggregation of multiple states on the timeline when they were merged due to data decimation. Like normal states, you can specify the color for this special state for device classes, domains or globally.
