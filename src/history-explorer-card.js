@@ -76,6 +76,7 @@ class HistoryCardState {
         this.pconfig.lockAllGraphs        = false;
         this.pconfig.combineSameUnits     = false;
         this.pconfig.recordedEntitiesOnly = false;
+        this.pconfig.filterEntities       = undefined;
         this.pconfig.enableDataClustering = true;
         this.pconfig.roundingPrecision    = 2;
         this.pconfig.defaultLineMode      = undefined;
@@ -1985,7 +1986,10 @@ class HistoryCardState {
 
             while( datalist.firstChild ) datalist.removeChild(datalist.firstChild);
 
+            const regex = this.pconfig.filterEntities ? this.matchWildcardPattern(this.pconfig.filterEntities) : undefined;
+
             for( let r of result ) {
+                if( regex && !regex.test(r[0].entity_id) ) continue;
                 let o;
                 if( isMobile ) {
                     o = document.createElement('a');
@@ -2024,7 +2028,10 @@ class HistoryCardState {
 
             while( datalist.firstChild ) datalist.removeChild(datalist.firstChild);
 
+            const regex = this.pconfig.filterEntities ? this.matchWildcardPattern(this.pconfig.filterEntities) : undefined;
+
             for( let e in this._hass.states ) {
+                if( regex && !regex.test(e) ) continue;
                 const d = this.getDomainForEntity(e);
                 if( !['automation', 'script', 'zone', 'camera', 'persistent_notification', 'timer'].includes(d) ) {
                     let o;
@@ -2230,6 +2237,7 @@ class HistoryExplorerCard extends HTMLElement
         this.instance.pconfig.axisAddMarginMin = ( config.axisAddMarginMin !== undefined ) ? config.axisAddMarginMin : true;
         this.instance.pconfig.axisAddMarginMax = ( config.axisAddMarginMax !== undefined ) ? config.axisAddMarginMax : true;
         this.instance.pconfig.recordedEntitiesOnly = config.recordedEntitiesOnly ?? false;
+        this.instance.pconfig.filterEntities  = config.filterEntities;
         this.instance.pconfig.combineSameUnits = config.combineSameUnits === true;
         this.instance.pconfig.defaultTimeRange = config.defaultTimeRange ?? '24';
         this.instance.pconfig.timeTickDensity = config.timeTickDensity ?? 'high';
