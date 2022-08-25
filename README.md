@@ -68,6 +68,17 @@ By default the UI entity dropdown will list all entities known to HA. This can b
 type: custom:history-explorer-card
 recordedEntitiesOnly: true
 ```
+The entity entry field accepts the `*` wildcard and can automatically add multiple entities that match the provided pattern. Some examples:
+```
+person.*      - Add all entities from the person domain
+*door*        - Add all entities that contain the term ‘door’ in the name, regardless of domain
+sensor.*door* - Add all entities that contain the term ‘door’ in the name, but only from the sensor domain
+*             - Add all available entities in the list
+```
+Dynamically added entities can be individually removed by clicking the `x` close button next to them or all together using the option in the entity action dropdown menu:
+
+![image](https://user-images.githubusercontent.com/60828821/186549959-cd3705b6-229a-46c5-abcf-6a9f3b675f0b.png)
+
 When the dashboard is opened, the card will show the last 24 hours by default. You can select a different default time range in the YAML. Use m, h, d, and w to denote minutes, hours, days and weeks respectively. If no postfix is given, hours are assumed.
 
 ```yaml
@@ -271,6 +282,12 @@ labelsVisible: false   # this will hide the unit of measure labels and the entit
 labelAreaWidth: 10     # the width of the label area in pixels, default is 65
 ```
 
+The height of line graphs can be set with this option:
+```yaml
+type: custom:history-explorer-card
+lineGraphHeight: 100   # default height is 250
+```
+
 #### Configuring the tooltip popup
 
 The tooltip popups used in timelines and arrowlines support three different sizes: full, compact and slim. By default, the size is selected automatically depending on the available space around the graph. The size can be overidden manually:
@@ -287,6 +304,15 @@ type: custom:history-explorer-card
 showTooltipColorsLine: false       # hide the color boxes in the tooltip popups for line graphs
 showTooltipColorsTimeline: false   # hide the color boxes in the tooltip popups for timeline graphs
 ```
+
+The tooltips can optionally show the duration of the selected state next to the start and end times:
+```yaml
+type: custom:history-explorer-card
+tooltipShowDuration: true
+```
+
+![image](https://user-images.githubusercontent.com/60828821/186550469-bec9bad3-c76e-4f9f-a1d7-a0b76ec2f51c.png)
+
 
 ### Multiple cards
 
