@@ -166,7 +166,7 @@ The default colors used for the states shown on timeline graphs can be customize
 
 The card accepts all normal HTML color definition strings as well as CSS variables. The latter need to be provided as-is (for example `--primary-color`, without the CSS var function).
 
-The following example will turn the *on* state of all door sensors blue and the *on* state of all motion sensors yellow. The *on* state of other sensor device classes will not be affected. They will inherit their colors from either a domain wide or a global color rule, in that order (see below). You specify the device class followed by a dot and the state you'd like to customize:
+The following example will turn the *on* state of all door sensors blue and the *on* state of all motion sensors yellow. The *on* state of other sensor device classes will not be affected. They will inherit their colors from either an entity specific, a device class or domain wide or a global color rule, in that order (see below). You specify the device class followed by a dot and the state you'd like to customize:
 
 ```yaml
 type: custom:history-explorer-card
@@ -200,7 +200,7 @@ stateColors:
   sensor.Wet: green
 ```
 
-There is a special virtual state that is added to all entities, the *multiple* state. This state substitutes an aggregation of multiple states on the timeline when they were merged due to data decimation. Like normal states, you can specify the color for this special state for device classes, domains or globally.
+There is a special virtual state that is added to all entities, the *multiple* state. This state substitutes an aggregation of multiple states on the timeline when they were merged due to data decimation. Like normal states, you can specify the color for this special state for individual entities, device classes, domains or globally.
 
 ### Customizing dynamically added graphs
 
