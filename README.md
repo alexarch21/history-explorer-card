@@ -75,6 +75,12 @@ person.*      - Add all entities from the person domain
 sensor.*door* - Add all entities that contain the term ‘door’ in the name, but only from the sensor domain
 *             - Add all available entities in the list
 ```
+The entities shown in the list can be further filtered using the `filterEntities` option. The same wildcard syntax applies here. For example:
+```yaml
+type: custom:history-explorer-card
+filterEntities: 'binary_sensor.*'
+```
+
 Dynamically added entities can be individually removed by clicking the `x` close button next to them or all together using the option in the entity action dropdown menu:
 
 ![image](https://user-images.githubusercontent.com/60828821/186549959-cd3705b6-229a-46c5-abcf-6a9f3b675f0b.png)
@@ -156,11 +162,11 @@ Compass arrow graphs use the `arrowline` type and can be used in both dynamicall
 
 ### Customizing state colors
 
-The default colors used for the states shown on timeline graphs can be customized in many different ways. Customizing is done by adding the statesColor key to the card YAML. Colors act on device classes, domains or global states. You can, for example, have distinct colors for the on and off states of your motion sensors and your door sensors, even if they're both binary sensors.
+The default colors used for the states shown on timeline graphs can be customized in many different ways. Customizing is done by adding the statesColor key to the card YAML. Colors act on individual entities, entire device classes, domains or global states. You can, for example, have distinct colors for the on and off states of your motion sensors and your door sensors, even if they're both binary sensors.
 
 The card accepts all normal HTML color definition strings as well as CSS variables. The latter need to be provided as-is (for example `--primary-color`, without the CSS var function).
 
-The following example will turn the *on* state of all door sensors blue and the *on* state of all motion sensors yellow. The *on* state of other sensor device classes will not be affected. They will inherit their colors from either a domain wide or a global color rule, in that order (see below). You specify the device class followed by a dot and the state you'd like to customize:
+The following example will turn the *on* state of all door sensors blue and the *on* state of all motion sensors yellow. The *on* state of other sensor device classes will not be affected. They will inherit their colors from either an entity specific, a device class or domain wide or a global color rule, in that order (see below). You specify the device class followed by a dot and the state you'd like to customize:
 
 ```yaml
 type: custom:history-explorer-card
@@ -186,7 +192,15 @@ stateColors:
   off: '#ff0000'
 ```
 
-There is a special virtual state that is added to all entities, the *multiple* state. This state substitutes an aggregation of multiple states on the timeline when they were merged due to data decimation. Like normal states, you can specify the color for this special state for device classes, domains or globally.
+Customizable states aren't limited to `on` or `off` values. Any raw state value may be used, such as values assigned by template or MQTT sensors. For example:
+```yaml
+type: custom:history-explorer-card
+stateColors:
+  sensor.Dry: tan
+  sensor.Wet: green
+```
+
+There is a special virtual state that is added to all entities, the *multiple* state. This state substitutes an aggregation of multiple states on the timeline when they were merged due to data decimation. Like normal states, you can specify the color for this special state for individual entities, device classes, domains or globally.
 
 ### Customizing dynamically added graphs
 
