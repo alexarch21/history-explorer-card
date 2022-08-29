@@ -1,0 +1,26 @@
+{
+    "ui" : {
+        "label" : {
+            "type_to_search" : "Entität suchen oder auswählen",
+            "error_retreiving" : "Entitäten konnten nicht geladen werden !",
+            "loading" : "Lade verfügbare Entitäten...",
+        }, 
+        "popup" : {
+            "remove_all" : "Alle dynamisch hinzugefügten Diagramme entfernen ?",
+        },
+        "menu" : {  
+            "export_csv" : "Als CSV exportieren",
+            "remove_all" : "Alle Diagramme entfernen"
+        },
+        "ranges" : {
+            "hour" : "1 S",
+            "n_hours" : "%1 S",
+            "day" : "1 Tag",
+            "n_days" : "%1 Tage",
+            "week" : "1 Woche",
+            "n_weeks" : "%1 Wochen",
+            "month" : "1 Monat",
+            "n_months" : "%1 Monate"
+        }
+    }
+}

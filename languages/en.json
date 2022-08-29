@@ -1,0 +1,26 @@
+{
+    "ui" : {
+        "label" : {
+            "type_to_search" : "Type to search for an entity to add",
+            "error_retreiving" : "Could not retrieve available entities !",
+            "loading" : "Loading available entities...",
+        }, 
+        "popup" : {
+            "remove_all" : "Remove all dynamically added graphs ?",
+        },
+        "menu" : {  
+            "export_csv" : "Export as CSV",
+            "remove_all" : "Remove all added graphs"
+        },
+        "ranges" : {
+            "hour" : "1 H",
+            "n_hours" : "%1 H",
+            "day" : "1 Day",
+            "n_days" : "%1 Days",
+            "week" : "1 Week",
+            "n_weeks" : "%1 Weeks",
+            "month" : "1 Month",
+            "n_months" : "%1 Months"
+        }
+    }
+}

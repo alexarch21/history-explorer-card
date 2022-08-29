@@ -1,0 +1,26 @@
+{
+    "ui" : {
+        "label" : {
+            "type_to_search" : "Tapez ici pour rechercher une entité à ajouter",
+            "error_retreiving" : "Impossible de récupérer les entités !",
+            "loading" : "Chargement des entités disponibles...",
+        }, 
+        "popup" : {
+            "remove_all" : "Supprimer tous les graphiques ajoutés dynamiquement ?",
+        },
+        "menu" : {  
+            "export_csv" : "Exporter le CSV",
+            "remove_all" : "Supprimer tous les graphiques"
+        },
+        "ranges" : {
+            "hour" : "1 H",
+            "n_hours" : "%1 H",
+            "day" : "1 Jour",
+            "n_days" : "%1 Jours",
+            "week" : "1 Semaine",
+            "n_weeks" : "%1 Semaine",
+            "month" : "1 Mois",
+            "n_months" : "%1 Mois"
+        }
+    }
+}
