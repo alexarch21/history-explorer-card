@@ -5,7 +5,7 @@ import "./deps/timeline.js";
 import "./deps/md5.min.js"
 import "./deps/FileSaver.js"
 
-const Version = '1.0.24';
+const Version = '1.0.25';
 
 var isMobile = ( navigator.appVersion.indexOf("Mobi") > -1 ) || ( navigator.userAgent.indexOf("HomeAssistant") > -1 );
 
@@ -1490,7 +1490,7 @@ class HistoryCardState {
         this.menuSetVisibility(0, false);
         this.menuSetVisibility(1, false);
 
-        if( !confirm('Remove all dynamically added graphs ?') ) return;
+        if( !confirm(i18n('ui.popup.remove_all')) ) return;
 
         let a = 0;
         for( a = 0; a < this.graphs.length; a++ ) 
@@ -1668,13 +1668,13 @@ class HistoryCardState {
 
         if( selector && isMobile ) html += `
             <div id='sl_${i}' style="background-color:${bgcol};display:none;padding-left:10px;padding-right:10px;">
-                <input id="b7_${i}" ${inputStyle} autoComplete="on" placeholder="Type to search for an entity to add"/>
+                <input id="b7_${i}" ${inputStyle} autoComplete="on"/>
                 <div id="es_${i}" style="display:none;position:absolute;text-align:left;min-width:260px;max-height:150px;overflow:auto;border:1px solid #444;z-index:1;color:var(--primary-text-color);background-color:var(--card-background-color)"></div>
                 <button id="b8_${i}" style="border:0px solid black;color:inherit;background-color:#00000000;height:34px;margin-left:5px;">+</button>
                 <button id="bo_${i}" style="border:0px solid black;color:inherit;background-color:#00000000;height:30px;margin-left:1px;margin-right:0px;"><svg width="18" height="18" viewBox="0 0 24 24" style="vertical-align:middle;"><path fill="var(--primary-text-color)" d="M7.41,8.58L12,13.17L16.59,8.58L18,10L12,16L6,10L7.41,8.58Z" /></svg></button>
                 <div id="eo_${i}" style="display:none;position:absolute;text-align:left;min-width:150px;overflow:auto;border:1px solid #ddd;box-shadow:0px 8px 16px 0px rgba(0,0,0,0.2);z-index:1;color:var(--primary-text-color);background-color:var(--card-background-color)">
-                    <a id="ef_${i}" href="#" style="display:block;padding:5px 5px;text-decoration:none;color:inherit">Export as CSV</a>
-                    <a id="eg_${i}" href="#" style="display:block;padding:5px 5px;text-decoration:none;color:inherit">Remove all added graphs</a>
+                    <a id="ef_${i}" href="#" style="display:block;padding:5px 5px;text-decoration:none;color:inherit"></a>
+                    <a id="eg_${i}" href="#" style="display:block;padding:5px 5px;text-decoration:none;color:inherit"></a>
                 </div>
             </div>`;
 
@@ -1684,8 +1684,8 @@ class HistoryCardState {
                 <button id="b8_${i}" style="border:0px solid black;color:inherit;background-color:#00000000;height:34px;margin-left:5px;">+</button>
                 <button id="bo_${i}" style="border:0px solid black;color:inherit;background-color:#00000000;height:30px;margin-left:1px;margin-right:0px;"><svg width="18" height="18" viewBox="0 0 24 24" style="vertical-align:middle;"><path fill="var(--primary-text-color)" d="M7.41,8.58L12,13.17L16.59,8.58L18,10L12,16L6,10L7.41,8.58Z" /></svg></button>
                 <div id="eo_${i}" style="display:none;position:absolute;text-align:left;min-width:150px;overflow:auto;border:1px solid #ddd;box-shadow:0px 8px 16px 0px rgba(0,0,0,0.2);z-index:1;color:var(--primary-text-color);background-color:var(--card-background-color)">
-                    <a id="ef_${i}" href="#" style="display:block;padding:5px 5px;text-decoration:none;color:inherit">Export as CSV</a>
-                    <a id="eg_${i}" href="#" style="display:block;padding:5px 5px;text-decoration:none;color:inherit">Remove all added graphs</a>
+                    <a id="ef_${i}" href="#" style="display:block;padding:5px 5px;text-decoration:none;color:inherit"></a>
+                    <a id="eg_${i}" href="#" style="display:block;padding:5px 5px;text-decoration:none;color:inherit"></a>
                 </div>
             </div>`;
 
@@ -1693,30 +1693,30 @@ class HistoryCardState {
             <div id="dr_${i}" style="background-color:${bgcol};float:right;margin-right:10px;display:inline-block;padding-left:10px;padding-right:10px;">
                 <button id="bz_${i}" style="border:0px solid black;color:inherit;background-color:#00000000"><svg width="24" height="24" viewBox="0 0 24 24" style="vertical-align:middle;"><path fill="var(--primary-text-color)" d="M15.5,14L20.5,19L19,20.5L14,15.5V14.71L13.73,14.43C12.59,15.41 11.11,16 9.5,16A6.5,6.5 0 0,1 3,9.5A6.5,6.5 0 0,1 9.5,3A6.5,6.5 0 0,1 16,9.5C16,11.11 15.41,12.59 14.43,13.73L14.71,14H15.5M9.5,14C12,14 14,12 14,9.5C14,7 12,5 9.5,5C7,5 5,7 5,9.5C5,12 7,14 9.5,14M12,10H10V12H9V10H7V9H9V7H10V9H12V10Z" /></svg></button>
                 <button id="b${invertZoom ? 5 : 4}_${i}" style="border:0px solid black;color:inherit;background-color:#00000000;height:30px">-</button>
-                <select id="by_${i}" style="border:0px solid black;color:inherit;background-color:#00000000;height:30px">
-                    <option value="0" ${optionStyle} hidden>< 1H</option>
-                    <option value="1" ${optionStyle}>1 H</option>
-                    <option value="2" ${optionStyle}>2 H</option>
-                    <option value="3" ${optionStyle} hidden>3 H</option>
-                    <option value="4" ${optionStyle} hidden>4 H</option>
-                    <option value="5" ${optionStyle} hidden>5 H</option>
-                    <option value="6" ${optionStyle}>6 H</option>
-                    <option value="7" ${optionStyle} hidden>7 H</option>
-                    <option value="8" ${optionStyle} hidden>8 H</option>
-                    <option value="9" ${optionStyle} hidden>9 H</option>
-                    <option value="10" ${optionStyle} hidden>10 H</option>
-                    <option value="11" ${optionStyle} hidden>11 H</option>
-                    <option value="12" ${optionStyle}>12 H</option>
-                    <option value="24" ${optionStyle}>1 Day</option>
-                    <option value="48" ${optionStyle}>2 Days</option>
-                    <option value="72" ${optionStyle}>3 Days</option>
-                    <option value="96" ${optionStyle}>4 Days</option>
-                    <option value="120" ${optionStyle}>5 Days</option>
-                    <option value="144" ${optionStyle}>6 Days</option>
-                    <option value="168" ${optionStyle}>1 Week</option>
-                    <option value="336" ${optionStyle}>2 Weeks</option>
-                    <option value="504" ${optionStyle}>3 Weeks</option>
-                    <option value="720" ${optionStyle}>1 Month</option>
+                <select id="by_${i}" style="border:0px solid black;color:inherit;background-color:#00000000;height:30px;max-width:83px">
+                    <option value="0" ${optionStyle} hidden></option>
+                    <option value="1" ${optionStyle}></option>
+                    <option value="2" ${optionStyle}></option>
+                    <option value="3" ${optionStyle} hidden></option>
+                    <option value="4" ${optionStyle} hidden></option>
+                    <option value="5" ${optionStyle} hidden></option>
+                    <option value="6" ${optionStyle}></option>
+                    <option value="7" ${optionStyle} hidden></option>
+                    <option value="8" ${optionStyle} hidden></option>
+                    <option value="9" ${optionStyle} hidden></option>
+                    <option value="10" ${optionStyle} hidden></option>
+                    <option value="11" ${optionStyle} hidden></option>
+                    <option value="12" ${optionStyle}></option>
+                    <option value="24" ${optionStyle}></option>
+                    <option value="48" ${optionStyle}></option>
+                    <option value="72" ${optionStyle}></option>
+                    <option value="96" ${optionStyle}></option>
+                    <option value="120" ${optionStyle}></option>
+                    <option value="144" ${optionStyle}></option>
+                    <option value="168" ${optionStyle}></option>
+                    <option value="336" ${optionStyle}></option>
+                    <option value="504" ${optionStyle}></option>
+                    <option value="720" ${optionStyle}></option>
                 </select>
                 <button id="b${invertZoom ? 4 : 5}_${i}" style="border:0px solid black;color:inherit;background-color:#00000000;height:30px">+</button>
             </div>`;
@@ -1726,6 +1726,39 @@ class HistoryCardState {
         html += `<div id='rf_${i}' style="margin-left:0px;margin-top:10px;margin-bottom:15px;width:100%;text-align:center;display:none"></div>`;
 
         return html;
+    }
+
+    insertUIHtmlText(i)
+    {
+        let ef = this._this.querySelector(`#ef_${i}`); if( ef ) ef.innerHTML = i18n('ui.menu.export_csv');
+        let eg = this._this.querySelector(`#eg_${i}`); if( eg ) eg.innerHTML = i18n('ui.menu.remove_all');
+        let b7 = this._this.querySelector(`#b7_${i}`); if( b7 ) b7.placeholder = i18n('ui.label.type_to_search');
+        let by = this._this.querySelector(`#by_${i}`); 
+        if( by ) {
+            by.children[0].innerHTML = i18n('ui.ranges.l_hour');
+            by.children[1].innerHTML = i18n('ui.ranges.hour');
+            by.children[2].innerHTML = i18n('ui.ranges.n_hours', 2);
+            by.children[3].innerHTML = i18n('ui.ranges.n_hours', 3);
+            by.children[4].innerHTML = i18n('ui.ranges.n_hours', 4);
+            by.children[5].innerHTML = i18n('ui.ranges.n_hours', 5);
+            by.children[6].innerHTML = i18n('ui.ranges.n_hours', 6);
+            by.children[7].innerHTML = i18n('ui.ranges.n_hours', 7);
+            by.children[8].innerHTML = i18n('ui.ranges.n_hours', 8);
+            by.children[9].innerHTML = i18n('ui.ranges.n_hours', 9);
+            by.children[10].innerHTML = i18n('ui.ranges.n_hours', 10);
+            by.children[11].innerHTML = i18n('ui.ranges.n_hours', 11);
+            by.children[12].innerHTML = i18n('ui.ranges.n_hours', 12);
+            by.children[13].innerHTML = i18n('ui.ranges.day');
+            by.children[14].innerHTML = i18n('ui.ranges.n_days', 2);
+            by.children[15].innerHTML = i18n('ui.ranges.n_days', 3);
+            by.children[16].innerHTML = i18n('ui.ranges.n_days', 4);
+            by.children[17].innerHTML = i18n('ui.ranges.n_days', 5);
+            by.children[18].innerHTML = i18n('ui.ranges.n_days', 6);
+            by.children[19].innerHTML = i18n('ui.ranges.week');
+            by.children[20].innerHTML = i18n('ui.ranges.n_weeks', 2);
+            by.children[21].innerHTML = i18n('ui.ranges.n_weeks', 3);
+            by.children[22].innerHTML = i18n('ui.ranges.month');
+        }
     }
 
     resize()
@@ -1790,6 +1823,9 @@ class HistoryCardState {
         if( !this.contentValid ) {
 
             this.contentValid = true;
+
+            for( let i = 0; i < 2; i++ )
+                this.insertUIHtmlText(i);
 
             this.ui.darkMode = (this._hass.selectedTheme && this._hass.selectedTheme.dark) || (this._hass.themes && this._hass.themes.darkMode);
             if( this._this.config.uimode ) {
@@ -2006,7 +2042,7 @@ class HistoryCardState {
         }
 
         for( let i of this.ui.inputField )
-            if( i ) i.placeholder = "Type to search for an entity to add";
+            if( i ) i.placeholder = i18n("ui.label.type_to_search");
     }
 
     entityCollectorFailed(error) 
@@ -2016,7 +2052,7 @@ class HistoryCardState {
         this.entityCollectAll();
 
         for( let i of this.ui.inputField )
-            if( i ) i.placeholder = "Could not retrieve available entities !";
+            if( i ) i.placeholder = i18n("ui.label.error_retreiving");
     }
 
     entityCollectAll()
@@ -2062,7 +2098,7 @@ class HistoryCardState {
 
         if( this.pconfig.recordedEntitiesOnly ) {
             for( let i of this.ui.inputField )
-                if( i ) i.placeholder = "Loading available entities...";
+                if( i ) i.placeholder = i18n("ui.label.loading");
             const t0 = moment().subtract(1, "hour").format('YYYY-MM-DDTHH:mm:ss');
             const url = `history/period/${t0}?minimal_response&no_attributes`;
             this.callHassAPIGet(url).then(this.entityCollectorCallback.bind(this), this.entityCollectorFailed.bind(this));
@@ -2081,6 +2117,8 @@ class HistoryCardState {
         if( this.i18n.valid ) return;
 
         let locale = this._hass.language ? this._hass.language : 'en-GB';
+
+        setLanguage(locale);
 
         this.i18n.styleDateSelector = getLocalizedDateString(locale, { dateStyle: 'medium' });
         this.i18n.styleDateTicks = ( this.i18n.styleDateSelector[0] == 'D' ) ? 'D MMM' : 'MMM D';
