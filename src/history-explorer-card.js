@@ -2178,6 +2178,11 @@ class HistoryCardState {
 // Get time and date formating strings for a given locale
 // --------------------------------------------------------------------------------------
 
+function isSingleSymbol(s)
+{
+    return s.length == 1 && s[0].toLowerCase() == s[0].toUpperCase();
+}
+
 function getLocalizedDateString(locale, style)
 {
     let s = new Intl.DateTimeFormat(locale, style).formatToParts(new Date());
@@ -2191,7 +2196,7 @@ function getLocalizedDateString(locale, style)
             case 'minute': return 'mm';
             case 'second': return 'ss';
             case 'dayPeriod': return 'a';
-            default: return ['.', ',', '/', '-'].includes(part.value) ? ' ' : part.value;
+            default: return ( ['.', ',', '/', '-'].includes(part.value) || !isSingleSymbol(part.value) ) ? ' ' : part.value;
         }
     }).join("");
 }
