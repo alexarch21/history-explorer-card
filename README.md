@@ -78,7 +78,7 @@ sensor.*door* - Add all entities that contain the term ‘door’ in the name, b
 The entities shown in the list can be further filtered using the `filterEntities` option. The same wildcard syntax applies here. For example:
 ```yaml
 type: custom:history-explorer-card
-filterEntities: 'binary_sensor.*'
+filterEntities: 'binary_sensor.*'   # Show only binary sensors in the selector dropdown list
 ```
 
 Dynamically added entities can be individually removed by clicking the `x` close button next to them or all together using the option in the entity action dropdown menu:
