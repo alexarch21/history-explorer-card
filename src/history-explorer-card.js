@@ -764,6 +764,8 @@ class HistoryCardState {
 
                         // Fill line chart buffer
 
+                        const scale = g.entities[j].scale ?? 1.0;
+
                         const enableClustering = g.entities[j].decimation == undefined || g.entities[j].decimation;
 
                         if( n > 2 && enableClustering && this.activeRange.dataClusterSize > 0 ) {
@@ -774,7 +776,7 @@ class HistoryCardState {
                                 if( isDataValid(result[id][i].state) ) {
                                     let this_time = moment(result[id][i].last_changed);
                                     if( !i || this_time.diff(last_time) >= this.activeRange.dataClusterSize ) {
-                                        s.push({ x: this_time, y: result[id][i].state});
+                                        s.push({ x: this_time, y: result[id][i].state * scale});
                                         last_time = this_time;
                                     }
                                 }
@@ -784,15 +786,15 @@ class HistoryCardState {
 
                             for( let i = 0; i < n; i++ ) {
                                 if( isDataValid(result[id][i].state) ) {
-                                    s.push({ x: result[id][i].last_changed, y: result[id][i].state});
+                                    s.push({ x: result[id][i].last_changed, y: result[id][i].state * scale});
                                 }
                             }
                         }
 
                         if( m_now > m_end && s.length > 0 && moment(s[s.length-1].x) < m_end ) {
-                            s.push({ x: m_end, y: result[id][n-1].state});
+                            s.push({ x: m_end, y: result[id][n-1].state * scale});
                         } else if( m_now <= m_end && s.length > 0 && moment(s[s.length-1].x) < m_now ) {
-                            s.push({ x: m_now, y: result[id][n-1].state});
+                            s.push({ x: m_now, y: result[id][n-1].state * scale});
                         }
 
                     } else if( g.type == 'timeline' || g.type == 'arrowline' ) {
@@ -1584,6 +1586,7 @@ class HistoryCardState {
 
             entities[0].width = entityOptions?.width;
             entities[0].lineMode = entityOptions?.lineMode;
+            entities[0].scale = entityOptions?.scale;
 
         }
 
