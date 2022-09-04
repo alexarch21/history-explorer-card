@@ -1,0 +1,27 @@
+{
+    "ui" : {
+        "label" : {
+            "type_to_search" : "Seleccionar entidad a añadir",
+            "error_retreiving" : "No se encuentran entidades disponibles!",
+            "loading" : "Cargando entidades ...",
+        }, 
+        "popup" : {
+            "remove_all" : "Borrar gráficos añadidos dinámicamente ?",
+        },
+        "menu" : {  
+            "export_csv" : "Exportar como CSV",
+            "remove_all" : "Borrar gráficos añadidos"
+        },
+        "ranges" : {
+            "l_hour" : "< 1 H",
+            "hour" : "1 H",
+            "n_hours" : "%1 H",
+            "day" : "1 Día",
+            "n_days" : "%1 Días",
+            "week" : "1 Sem.",
+            "n_weeks" : "%1 Sem.",
+            "month" : "1 Mes",
+            "n_months" : "%1 Meses"
+        }
+    }
+}
