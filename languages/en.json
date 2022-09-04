@@ -13,6 +13,7 @@
             "remove_all" : "Remove all added graphs"
         },
         "ranges" : {
+            "l_hour" : "< 1 H",
             "hour" : "1 H",
             "n_hours" : "%1 H",
             "day" : "1 Day",

@@ -13,12 +13,13 @@
             "remove_all" : "Alle Diagramme entfernen"
         },
         "ranges" : {
-            "hour" : "1 S",
-            "n_hours" : "%1 S",
+            "l_hour" : "< 1 Std",
+            "hour" : "1 Stunde",
+            "n_hours" : "%1 Stdn.",
             "day" : "1 Tag",
             "n_days" : "%1 Tage",
             "week" : "1 Woche",
-            "n_weeks" : "%1 Wochen",
+            "n_weeks" : "%1 Wo.",
             "month" : "1 Monat",
             "n_months" : "%1 Monate"
         }
