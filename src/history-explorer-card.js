@@ -5,7 +5,7 @@ import "./deps/timeline.js";
 import "./deps/md5.min.js"
 import "./deps/FileSaver.js"
 
-const Version = '1.0.25';
+const Version = '1.0.26';
 
 var isMobile = ( navigator.appVersion.indexOf("Mobi") > -1 ) || ( navigator.userAgent.indexOf("HomeAssistant") > -1 );
 
@@ -1457,7 +1457,7 @@ class HistoryCardState {
         // Single entity or wildcard ?
         if( entity_id.indexOf('*') >= 0 ) {
 
-            const datalist = this._this.querySelector(isMobile ? `#es_${ii}` : '#b6');
+            const datalist = this._this.querySelector(isMobile ? `#es_${ii}` : `#b6_${this.cid}`);
             if( !datalist ) return;
 
             // Convert wildcard to regex
@@ -1683,7 +1683,7 @@ class HistoryCardState {
 
         if( selector && !isMobile ) html += `
             <div id='sl_${i}' style="background-color:${bgcol};display:none;padding-left:10px;padding-right:10px;">
-                <input id="b7_${i}" ${inputStyle} autoComplete="on" list="b6" placeholder="Type to search for an entity to add"/>
+                <input id="b7_${i}" ${inputStyle} autoComplete="on" list="b6_${this.cid}" placeholder="Type to search for an entity to add"/>
                 <button id="b8_${i}" style="border:0px solid black;color:inherit;background-color:#00000000;height:34px;margin-left:5px;">+</button>
                 <button id="bo_${i}" style="border:0px solid black;color:inherit;background-color:#00000000;height:30px;margin-left:1px;margin-right:0px;"><svg width="18" height="18" viewBox="0 0 24 24" style="vertical-align:middle;"><path fill="var(--primary-text-color)" d="M7.41,8.58L12,13.17L16.59,8.58L18,10L12,16L6,10L7.41,8.58Z" /></svg></button>
                 <div id="eo_${i}" style="display:none;position:absolute;text-align:left;min-width:150px;overflow:auto;border:1px solid #ddd;box-shadow:0px 8px 16px 0px rgba(0,0,0,0.2);z-index:1;color:var(--primary-text-color);background-color:var(--card-background-color)">
@@ -2020,7 +2020,7 @@ class HistoryCardState {
     { 
         for( let i = 0; i < (isMobile ? 2 : 1); ++i ) {
 
-            const datalist = this._this.querySelector(isMobile ? `#es_${i}` : '#b6');
+            const datalist = this._this.querySelector(isMobile ? `#es_${i}` : `#b6_${this.cid}`);
             if( !datalist ) continue;
 
             while( datalist.firstChild ) datalist.removeChild(datalist.firstChild);
@@ -2062,7 +2062,7 @@ class HistoryCardState {
     {
         for( let i = 0; i < (isMobile ? 2 : 1); ++i ) {
 
-            const datalist = this._this.querySelector(isMobile ? `#es_${i}` : '#b6');
+            const datalist = this._this.querySelector(isMobile ? `#es_${i}` : `#b6_${this.cid}`);
             if( !datalist ) continue;
 
             while( datalist.firstChild ) datalist.removeChild(datalist.firstChild);
@@ -2209,6 +2209,8 @@ function getLocalizedDateString(locale, style)
 // Main card custom HTML element
 // --------------------------------------------------------------------------------------
 
+var gcid = 0;
+
 class HistoryExplorerCard extends HTMLElement 
 {
     instance = null;
@@ -2290,6 +2292,7 @@ class HistoryExplorerCard extends HTMLElement
         this.instance.pconfig.lineGraphHeight = ( config.lineGraphHeight ?? 250 ) * 1;
 
         this.instance.id = config.cardName ?? "default";
+        this.instance.cid = gcid++;
 
         this.instance.contentValid = false;
         this.instance.entitiesPopulated = false;
@@ -2335,7 +2338,7 @@ class HistoryExplorerCard extends HTMLElement
             ${this.instance.addUIHtml(tools & 2, selector & 2, bgcol, optionStyle, inputStyle, invertZoom, 1)}
             ${(tools | selector) & 2 ? '<br>' : ''}
             ${((tools & 2) && !(selector & 2)) ? '<br>' : ''}
-            <datalist id="b6"></datalist>
+            <datalist id="b6_${this.instance.cid}"></datalist>
             </ha-card>
         `;
 
