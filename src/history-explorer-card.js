@@ -1509,7 +1509,7 @@ class HistoryCardState {
 
 
     // --------------------------------------------------------------------------------------
-    // HTML generation
+    // Adding and removing graphs from the view
     // --------------------------------------------------------------------------------------
 
     getDomainForEntity(entity)
@@ -1562,8 +1562,24 @@ class HistoryCardState {
         this.writeLocalState();
     }
 
+    addFixedGraph(g)
+    {
+        // Add fixed graphs from YAML
+        if( g.graph.type == 'line' ) {
+            let entities = [];
+            for( let d of g.graph.entities ) {
+                const dc = this.getNextDefaultColor();
+                entities.push({ ...d, 'color' : d.color ?? dc.color, 'fill' : d.fill ?? d.color ? 'rgba(0,0,0,0)' : dc.fill }); 
+            }
+            this.addGraphToCanvas(g.id, g.graph.type, entities, g.graph.options);
+        } else
+            this.addGraphToCanvas(g.id, g.graph.type, g.graph.entities, g.graph.options);
+    }
+
     addEntityGraph(entity_id)
     {
+        // Add dynamic entity
+
         if( this._hass.states[entity_id] == undefined ) return;
 
         var entityOptions = this.getEntityOptions(entity_id);
@@ -1635,7 +1651,7 @@ class HistoryCardState {
         for( let d of entities ) {
             datasets.push({
                 "name": ( d.name === undefined ) ? this._hass.states[d.entity]?.attributes?.friendly_name : d.name,
-                "bColor": parseColor(d.color), 
+                "bColor": parseColor(d.color),
                 "fillColor": parseColor(d.fill), 
                 "mode": d.lineMode || this.pconfig.defaultLineMode, 
                 "width": d.width || 2.0,
@@ -1657,6 +1673,11 @@ class HistoryCardState {
         canvas.addEventListener('pointerup', this.pointerUp.bind(this));
         canvas.addEventListener('pointercancel', this.pointerCancel.bind(this));
     }
+
+
+    // --------------------------------------------------------------------------------------
+    // HTML generation
+    // --------------------------------------------------------------------------------------
 
     addUIHtml(timeline, selector, bgcol, optionStyle, inputStyle, invertZoom, i)
     {
@@ -1839,11 +1860,12 @@ class HistoryCardState {
             this.pconfig.graphLabelColor = parseColor(this._this.config.uiColors?.labels ?? (this.ui.darkMode ? '#9b9b9b' : '#333'));
             this.pconfig.graphGridColor  = parseColor(this._this.config.uiColors?.gridlines ?? (this.ui.darkMode ? "rgba(255, 255, 255, 0.1)" : "rgba(0, 0, 0, 0.1)"));
 
+            this.pconfig.nextDefaultColor = 0;
+
             this.graphs = [];
 
-            for( let g of this.pconfig.graphConfig ) {
-                this.addGraphToCanvas(g.id, g.graph.type, g.graph.entities, g.graph.options);
-            }
+            // Add fixed YAML defined graphs
+            for( let g of this.pconfig.graphConfig ) this.addFixedGraph(g);
 
             this.resizeSelector();
 
@@ -1877,7 +1899,10 @@ class HistoryCardState {
                 this._this.querySelector('#maincard').addEventListener('wheel', this.wheelScrolled.bind(this), { passive: false }); 
 
             this.readLocalState();
+
+            this.pconfig.nextDefaultColor = 0;
             
+            // Add dynamically added graphs
             if( this.pconfig.entities ) {
                 for( let e of this.pconfig.entities ) this.addEntityGraph(e);
             } else
