@@ -5,7 +5,7 @@ import "./deps/timeline.js";
 import "./deps/md5.min.js"
 import "./deps/FileSaver.js"
 
-const Version = '1.0.26';
+const Version = '1.0.27';
 
 var isMobile = ( navigator.appVersion.indexOf("Mobi") > -1 ) || ( navigator.userAgent.indexOf("HomeAssistant") > -1 );
 
@@ -1569,7 +1569,7 @@ class HistoryCardState {
             let entities = [];
             for( let d of g.graph.entities ) {
                 const dc = this.getNextDefaultColor();
-                entities.push({ ...d, 'color' : d.color ?? dc.color, 'fill' : d.fill ?? d.color ? 'rgba(0,0,0,0)' : dc.fill }); 
+                entities.push({ ...d, 'color' : d.color ?? dc.color, 'fill' : d.fill ?? (d.color ? 'rgba(0,0,0,0)' : dc.fill) }); 
             }
             this.addGraphToCanvas(g.id, g.graph.type, entities, g.graph.options);
         } else
