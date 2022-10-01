@@ -28,6 +28,11 @@ const lang_en =
             "n_weeks" : "%1 Weeks",
             "month" : "1 Month",
             "n_months" : "%1 Months"
+        },
+        "interval" : {
+            "_10m" : "10 min",
+            "hourly" : "Hourly",
+            "daily" : "Daily"
         }
     }
 }
@@ -62,6 +67,11 @@ const lang_fr =
             "n_weeks" : "%1 Sem",
             "month" : "1 Mois",
             "n_months" : "%1 Mois"
+        },
+        "interval" : {
+            "_10m" : "10 min",
+            "hourly" : "Heure",
+            "daily" : "Journée"
         }
     }
 }
@@ -97,6 +107,11 @@ const lang_de =
             "n_weeks" : "%1 Wo.",
             "month" : "1 Monat",
             "n_months" : "%1 Monate"
+        },
+        "interval" : {
+            "_10m" : "10 Min",
+            "hourly" : "Stündlich",
+            "daily" : "Täglich"
         }
     }
 }
@@ -131,6 +146,11 @@ const lang_es =
             "n_weeks" : "%1 Sem.",
             "month" : "1 Mes",
             "n_months" : "%1 Meses"
+        },
+        "interval" : {
+            "_10m" : "10 min",      // TODO !
+            "hourly" : "Hourly",    // TODO !
+            "daily" : "Daily"       // TODO !
         }
     }
 }

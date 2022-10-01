@@ -51,6 +51,7 @@ class HistoryCardState {
         this.ui.inputField    = [];
         this.ui.darkMode      = false;
         this.ui.spinOverlay   = null;
+        this.ui.optionStyle   = '';
 
         this.i18n = {};
         this.i18n.valid                = false;
@@ -63,6 +64,7 @@ class HistoryCardState {
         this.pconfig.graphLabelColor      = '#333';
         this.pconfig.graphGridColor       = '#00000000';
         this.pconfig.lineGraphHeight      = 250;
+        this.pconfig.barGraphHeight       = 150;
         this.pconfig.labelAreaWidth       = 65;
         this.pconfig.labelsVisible        = true;
         this.pconfig.showTooltipColors    = [true, true];
@@ -328,6 +330,42 @@ class HistoryCardState {
             this.setTimeRange(ranges[i-1], true, t_center, t_position);
         else
             this.setTimeRangeMinutes((this.activeRange.timeRangeHours * 60 + this.activeRange.timeRangeMinutes) / 2, true, t_center, t_position);
+    }
+
+
+    // --------------------------------------------------------------------------------------
+    // Display interval for accumulating bar graphs
+    // --------------------------------------------------------------------------------------
+
+    selectBarInterval(event)
+    {
+        const id = event.target.id.substr(event.target.id.indexOf("-") + 1);
+
+        for( let i = 0; i < this.graphs.length; i++ ) {
+            if( this.graphs[i].id == id ) {
+                this.graphs[i].interval = event.target.value;
+                break;
+            }
+        }
+
+        this.updateHistory();
+    }
+
+    createIntervalSelectorHtml(gid, h, selected, optionStyle)
+    {
+        if( selected === undefined ) selected = 1;
+
+        return `<select id='bd-${gid}' style="position:absolute;right:50px;width:80px;margin-top:${-h+5}px;color:var(--primary-text-color);background-color:${this.pconfig.closeButtonColor};border:0px solid black;">
+                    <option value="0" ${optionStyle} ${(selected == 0) ? 'selected' : ''}>${i18n('ui.interval._10m')}</option>
+                    <option value="1" ${optionStyle} ${(selected == 1) ? 'selected' : ''}>${i18n('ui.interval.hourly')}</option>
+                    <option value="2" ${optionStyle} ${(selected == 2) ? 'selected' : ''}>${i18n('ui.interval.daily')}</option>
+                </select>`;
+    }
+
+    parseIntervalConfig(s)
+    {
+        const options = { '10m' : 0, 'hourly' : 1, 'daily' : 2 };
+        return options[s];
     }
 
 
@@ -797,6 +835,45 @@ class HistoryCardState {
                             s.push({ x: m_now, y: result[id][n-1].state * scale});
                         }
 
+                    } else if( g.type == 'bar' && n > 0 ) {
+
+                        const scale = g.entities[j].scale ?? 1.0;
+
+                        let td;
+                        if( g.interval == 0 ) td = moment.duration(10, "minute"); else
+                        if( g.interval == 1 ) td = moment.duration(1, "hour"); else
+                        if( g.interval == 2 ) td = moment.duration(1, "day");
+
+                        let i = 0;
+                        let y0 = result[id][0].state;
+                        let y1 = y0;
+
+                        // Start time of the range, snapped to interval boundary
+                        const f = ( g.interval <= 1 ) ? 'YYYY-MM-DDTHH[:00:00]' : 'YYYY-MM-DDT[00:00:00]';
+                        let t = moment(moment(m_start).format(f));
+
+                        // Search for the first state in the time range
+                        while( i < n-1 && moment(result[id][i].last_changed) <= t ) y0 = result[id][i++].state;
+
+                        // Calculate differentials over the time range in interval sized stacks, add a half interval at the end so that the last bar doesn't jump
+                        // Add them to the graph with a half interval time offset, so that the stacks align at the center of their respective intervals
+                        for( ; t <= m_end + td; ) {
+                            let te = moment(t).add(td);
+                            y1 = y0;
+                            let d = 0;
+                            while( i < n && moment(result[id][i].last_changed) < te ) {
+                                if( result[id][i].state < y1 ) {
+                                    d += y1 - y0;
+                                    y0 = result[id][i].state;
+                                }
+                                y1 = result[id][i++].state;
+                            }
+                            d += y1 - y0;
+                            s.push({ x: t + td / 2.0, y: d * scale});
+                            t = te;
+                            y0 = y1;
+                        }
+
                     } else if( g.type == 'timeline' || g.type == 'arrowline' ) {
 
                         // Fill timeline chart buffer
@@ -912,7 +989,7 @@ class HistoryCardState {
 
         let scaleUnit;
 
-        if( graphtype == 'line' ) {
+        if( graphtype == 'line' || graphtype == 'bar' ) {
 
             datastructure = {
                 datasets: []
@@ -970,7 +1047,7 @@ class HistoryCardState {
             options: {
                 scales: {
                     xAxes: [{ 
-                        type: ( graphtype == 'line' ) ? 'time' : ( graphtype == 'arrowline' ) ? 'arrowline' : 'timeline',
+                        type: ( graphtype == 'line' || graphtype == 'bar' ) ? 'time' : ( graphtype == 'arrowline' ) ? 'arrowline' : 'timeline',
                         time: {
                             unit: this.activeRange.tickStepUnit,
                             stepSize: this.activeRange.tickStepSize,
@@ -998,8 +1075,8 @@ class HistoryCardState {
                         },
                         afterDataLimits: (me) => {
                             const epsilon = 0.0001;
-                            if( config?.ymin == null && this.pconfig.axisAddMarginMin ) me.min -= epsilon;
-                            if( config?.ymax == null && this.pconfig.axisAddMarginMax ) me.max += epsilon;
+                            if( config?.ymin == null && this.pconfig.axisAddMarginMin && graphtype == 'line' ) me.min -= epsilon;
+                            if( config?.ymax == null && this.pconfig.axisAddMarginMax && graphtype == 'line' ) me.max += epsilon;
                         },
                         ticks: {
                             fontColor: this.pconfig.graphLabelColor,
@@ -1009,7 +1086,7 @@ class HistoryCardState {
                             forceMax: config?.ymax ?? undefined,
                         },
                         gridLines: {
-                            color: ( graphtype == 'line' || datasets.length > 1 ) ? this.pconfig.graphGridColor : 'rgba(0,0,0,0)'
+                            color: ( graphtype == 'line' || graphtype == 'bar' || datasets.length > 1 ) ? this.pconfig.graphGridColor : 'rgba(0,0,0,0)'
                         },
                         scaleLabel: {
                             display: scaleUnit !== undefined && scaleUnit !== '' && this.pconfig.labelsVisible,
@@ -1026,7 +1103,7 @@ class HistoryCardState {
                 tooltips: {
                     callbacks: {
                         label: (item, data) => {
-                            if( graphtype == 'line' ) {
+                            if( graphtype == 'line' || graphtype == 'bar' ) {
                                 let label = data.datasets[item.datasetIndex].label || '';
                                 if( label ) label += ': ';
                                 const p = 10 ** this.pconfig.roundingPrecision;
@@ -1047,7 +1124,7 @@ class HistoryCardState {
                         title: function(tooltipItems, data) {
                             let title = '';
                             if( tooltipItems.length > 0 ) {
-                                if( graphtype == 'line' ) {
+                                if( graphtype == 'line' || graphtype == 'bar' ) {
                                     title = tooltipItems[0].xLabel;
                                 } else {
                                     let d = data.labels[tooltipItems[0].datasetIndex];
@@ -1057,7 +1134,7 @@ class HistoryCardState {
                             return title;
                         }
                     },
-                    yAlign: ( graphtype == 'line' ) ? undefined : 'nocenter',
+                    yAlign: ( graphtype == 'line' || graphtype == 'bar' ) ? undefined : 'nocenter',
                     caretPadding: 8,
                     displayColors: ( graphtype == 'line' ) ? this.pconfig.showTooltipColors[0] : ( graphtype == 'timeline' ) ? this.pconfig.showTooltipColors[1] : false
                 },
@@ -1467,7 +1544,7 @@ class HistoryCardState {
                 const entity_id = e.innerText;
                 if( regex.test(entity_id) ) {
                     if( this._hass.states[entity_id] == undefined ) continue;
-                    this.addEntityGraph(entity_id);
+                    this.addDynamicGraph(entity_id);
                     this.pconfig.entities.push(entity_id);
                 }
             }
@@ -1476,7 +1553,7 @@ class HistoryCardState {
 
             if( this._hass.states[entity_id] == undefined ) return;
 
-            this.addEntityGraph(entity_id);
+            this.addDynamicGraph(entity_id);
 
             this.pconfig.entities.push(entity_id);
 
@@ -1527,6 +1604,11 @@ class HistoryCardState {
         return ( manualUnit === undefined ) ? this._hass.states[entity]?.attributes?.unit_of_measurement : manualUnit;
     }
 
+    getStateClass(entity)
+    {
+        return this._hass.states[entity]?.attributes?.state_class;
+    }
+
     getEntityOptions(entity)
     {
         const dc = this.getDeviceClass(entity);
@@ -1538,7 +1620,7 @@ class HistoryCardState {
     calcGraphHeight(type, n)
     {
         const m = ( n >= 2 || this.pconfig.tooltipSize == 'full' ) ? 130 : ( this.pconfig.tooltipSize == 'slim' ) ? 90 : 115;
-        return ( type == 'line' ) ? this.pconfig.lineGraphHeight : Math.max(n * 45, m);
+        return ( type == 'line' ) ? this.pconfig.lineGraphHeight : ( type == 'bar' ) ? this.pconfig.barGraphHeight : Math.max(n * 45, m);
     }
 
     removeGraph(event)
@@ -1565,18 +1647,29 @@ class HistoryCardState {
     addFixedGraph(g)
     {
         // Add fixed graphs from YAML
-        if( g.graph.type == 'line' ) {
+        if( g.graph.type == 'line' || g.graph.type == 'bar' ) {
+
             let entities = [];
             for( let d of g.graph.entities ) {
                 const dc = this.getNextDefaultColor();
-                entities.push({ ...d, 'color' : d.color ?? dc.color, 'fill' : d.fill ?? (d.color ? 'rgba(0,0,0,0)' : dc.fill) }); 
+                const color = d.color ?? dc.color;
+                let fill = d.fill ?? (d.color ? 'rgba(0,0,0,0)' : dc.fill);
+                if( g.graph.type == 'bar' ) fill = color;
+                entities.push({ ...d, 'color' : color, 'fill' : fill }); 
             }
+
             this.addGraphToCanvas(g.id, g.graph.type, entities, g.graph.options);
+
         } else
+
             this.addGraphToCanvas(g.id, g.graph.type, g.graph.entities, g.graph.options);
+
+        // For bar graphs, connect the interval selector dropdown listener
+        if( g.graph.type == 'bar' )
+            this._this.querySelector(`#bd-${g.id}`).addEventListener('change', this.selectBarInterval.bind(this));
     }
 
-    addEntityGraph(entity_id)
+    addDynamicGraph(entity_id)
     {
         // Add dynamic entity
 
@@ -1584,12 +1677,12 @@ class HistoryCardState {
 
         var entityOptions = this.getEntityOptions(entity_id);
 
-        const type = entityOptions?.type ? entityOptions.type : ( this.getUnitOfMeasure(entity_id) == undefined ) ? 'timeline' : 'line';
+        const type = entityOptions?.type ? entityOptions.type : ( this.getUnitOfMeasure(entity_id) == undefined ) ? 'timeline' : ( this.getStateClass(entity_id) === 'total_increasing' ) ? 'bar' : 'line';
 
         let entities = [{ "entity": entity_id, "color": "#000000", "fill": "#00000000" }];
 
         // Get the options for line and arrow graphs (use per device_class options if available, otherwise use defaults)
-        if( type == 'line' || type == 'arrowline' ) {
+        if( type == 'line' || type == 'arrowline' || type == 'bar' ) {
 
             if( entityOptions?.color ) {
                 entities[0].color = entityOptions?.color;
@@ -1604,12 +1697,16 @@ class HistoryCardState {
             entities[0].lineMode = entityOptions?.lineMode;
             entities[0].scale = entityOptions?.scale;
 
+            if( type == 'bar' )
+                entities[0].fill = entities[0].color;
+
         }
 
         const last = this.graphs.length - 1;
 
         // Add to an existing timeline graph and compatible line graph if possible
         let combine = last >= 0 && 
+                      type != 'bar' &&
                       this.graphs[last].type === type &&
                       ( type == 'timeline' || this.pconfig.combineSameUnits && this.getUnitOfMeasure(entity_id) == this.getUnitOfMeasure(this.graphs[last].entities[0].entity) );
 
@@ -1630,6 +1727,8 @@ class HistoryCardState {
         html += `<div sytle='height:${h}px'>`;
         html += `<canvas id="graph${this.g_id}" height="${h}px" style='touch-action:pan-y'></canvas>`;
         html += `<button id='bc-${this.g_id}' style="position:absolute;right:20px;margin-top:${-h+5}px;color:var(--primary-text-color);background-color:${this.pconfig.closeButtonColor};border:0px solid black;">×</button>`;
+        if( type == 'bar' ) 
+            html += this.createIntervalSelectorHtml(this.g_id, h, this.parseIntervalConfig(entityOptions?.interval), this.ui.optionStyle);
         html += `</div>`;
 
         let e = document.createElement('div');
@@ -1637,6 +1736,9 @@ class HistoryCardState {
 
         let gl = this._this.querySelector('#graphlist');
         gl.appendChild(e);
+
+        if( type == 'bar' )
+            this._this.querySelector(`#bd-${this.g_id}`).addEventListener('change', this.selectBarInterval.bind(this));
 
         this._this.querySelector(`#bc-${this.g_id}`).addEventListener('click', this.removeGraph.bind(this));
 
@@ -1666,7 +1768,11 @@ class HistoryCardState {
 
         const h = this.calcGraphHeight(type, entities.length);
 
-        this.graphs.push({ "id": gid, "type": type, "canvas": canvas, "graphHeight": h, "chart": chart , "entities": entities });
+        const interval = this.parseIntervalConfig(config?.interval) ?? 1;
+
+        const g = { "id": gid, "type": type, "canvas": canvas, "graphHeight": h, "chart": chart , "entities": entities, "interval": interval };
+
+        this.graphs.push(g);
 
         canvas.addEventListener('pointerdown', this.pointerDown.bind(this));
         canvas.addEventListener('pointermove', this.pointerMove.bind(this));
@@ -1904,7 +2010,7 @@ class HistoryCardState {
             
             // Add dynamically added graphs
             if( this.pconfig.entities ) {
-                for( let e of this.pconfig.entities ) this.addEntityGraph(e);
+                for( let e of this.pconfig.entities ) this.addDynamicGraph(e);
             } else
                 this.pconfig.entities = [];
 
@@ -2315,6 +2421,7 @@ class HistoryExplorerCard extends HTMLElement
         this.instance.pconfig.defaultTimeRange = config.defaultTimeRange ?? '24';
         this.instance.pconfig.timeTickDensity = config.timeTickDensity ?? 'high';
         this.instance.pconfig.lineGraphHeight = ( config.lineGraphHeight ?? 250 ) * 1;
+        this.instance.pconfig.barGraphHeight = ( config.barGraphHeight ?? 150 ) * 1;
 
         this.instance.id = config.cardName ?? "default";
         this.instance.cid = gcid++;
@@ -2333,6 +2440,8 @@ class HistoryExplorerCard extends HTMLElement
 
         const optionStyle = `style="color:var(--primary-text-color);background-color:var(--card-background-color)"`;
         const inputStyle = config.uiColors?.selector ? `style="color:var(--primary-text-color);background-color:${config.uiColors.selector};border:1px solid black;"` : '';
+
+        this.instance.ui.optionStyle = optionStyle;
 
         // Generate card html
 
@@ -2353,6 +2462,8 @@ class HistoryExplorerCard extends HTMLElement
             const h = this.instance.calcGraphHeight(g.graph.type, g.graph.entities.length);
             html += `<div style='height:${h}px'>`;
             html += `<canvas id="graph${g.id}" height="${h}px" style='touch-action:pan-y'></canvas>`;
+            if( g.graph.type == 'bar' ) 
+                html += this.instance.createIntervalSelectorHtml(g.id, h, this.instance.parseIntervalConfig(g.graph.options?.interval), optionStyle);
             html += `</div>`;
             spacing = !( g.graph.options?.showTimeLabels === false );
         }
