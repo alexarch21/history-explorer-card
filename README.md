@@ -333,10 +333,11 @@ labelsVisible: false   # this will hide the unit of measure labels and the entit
 labelAreaWidth: 10     # the width of the label area in pixels, default is 65
 ```
 
-The height of line graphs can be set with this option:
+The height of line and bar graphs can be set with these options:
 ```yaml
 type: custom:history-explorer-card
-lineGraphHeight: 100   # default height is 250
+lineGraphHeight: 100   # default line graph height is 250
+barGraphHeight: 100    # default bar graph height is 150
 ```
 
 #### Configuring the tooltip popup
