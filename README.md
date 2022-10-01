@@ -152,6 +152,42 @@ type: custom:history-explorer-card
 showUnavailable: false
 ```
 
+### Bar graphs for total increasing entities
+
+Entities that represent a monotonically increasing total can be visualized as adaptive bar charts. This applies to entities such as, for example, consumed energy, water or gas, rainfall, or network data usage. The data is visualized over a time interval (10 minutes, hourly or daily) that can be toggled on the fly and independently for each graph.
+
+![image](https://user-images.githubusercontent.com/60828821/193383950-53242b11-d467-42ba-9859-3b3df0b0dcb8.png)
+
+Bar charts use the `bar` chart type and can be used in both dynamically and statically added entities by setting the type accordingly. When dynamically adding an entity with a state class of `total_increasing`, then the bar chart type is automatically used. If the entity does not have this state class, then its type must be explicitly set to `bar`.
+
+Use the selector on the top right of the graph to choose the time interval your data is displayed at. You can add the same entity multiple times in separate graphs with different intervals. The default interval is hourly. It can be overridden using the `interval` option. Possible values are `10m`, `hourly` or `daily`.
+
+Example configuration of a bar chart display for the entity `sensor.rain_amount` when added dynamically. The default interval is 10 minutes and the type is explicitly set to `bar`. The latter is not needed if the entity has a `total_increasing` state class.
+
+```yaml
+entityOptions:
+  sensor.rain_amount:
+    type: bar
+    color: '#3e95cd'
+    interval: 10m     # Default interval for this entity can be 10m, hourly or daily
+```
+
+Bar graphs can be manually added in the YAML too. Multiple entities can be combined into a single graph. The bars for each entity will then be displayed side by side:
+
+![image](https://user-images.githubusercontent.com/60828821/193384065-db7423ac-b3d2-4992-988a-a0d16a3ecc78.png)
+
+```yaml
+graphs:
+  - type: bar
+    title: Rainfall
+    options:
+      interval: daily
+    entities:
+      - entity: sensor.rain_amount
+        scale: 0.5
+      - entity: sensor.rain_amount
+```
+
 ### Compass arrow graphs
 
 Entities representing a directional angle value, like a bearing or direction, can be displayed using a timeline of compass arrows. This is especially useful for visualizing wind directions:
@@ -176,6 +212,7 @@ stateColors:
 ```
 
 You can also specify state colors for an entire domain. The following example will turn the *off* state for all binary sensors that don't have a color defined for their device class purple and the *home* state of the person domain green:
+
 
 ```yaml
 type: custom:history-explorer-card
