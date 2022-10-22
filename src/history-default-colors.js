@@ -126,7 +126,21 @@ const stateColorsDark = {
 
 function parseColor(c)
 {
+    if( c && c.constructor == Object ) return c;
     while( c && c.startsWith('--') ) c = getComputedStyle(document.body).getPropertyValue(c);
     return c;
+}
+
+function parseColorRange(r, v)
+{
+    let c, c1, m, n;
+
+    for( let i in r ) {
+        const j = i*1;
+        if( v >= j && (m == undefined || j > m) ) { c = r[i]; m = j; }
+        if( v < j && (n == undefined || j < n) ) { c1 = r[i]; n = j; }
+    }
+
+    return c ?? c1;
 }
 

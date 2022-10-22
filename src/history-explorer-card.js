@@ -5,7 +5,7 @@ import "./deps/timeline.js";
 import "./deps/md5.min.js"
 import "./deps/FileSaver.js"
 
-const Version = '1.0.27';
+const Version = '1.0.28';
 
 var isMobile = ( navigator.appVersion.indexOf("Mobi") > -1 ) || ( navigator.userAgent.indexOf("HomeAssistant") > -1 );
 
@@ -798,6 +798,7 @@ class HistoryCardState {
                 if( this.state.updateCanvas && this.state.updateCanvas !== g.canvas ) continue;
 
                 var s = [];
+                var bcol = [];
 
                 if( result && result.length > id ) {
 
@@ -844,6 +845,8 @@ class HistoryCardState {
 
                         const scale = g.entities[j].scale ?? 1.0;
 
+                        const colorRange = ( g.entities[j].color && g.entities[j].color.constructor == Object ) ? g.entities[j].color : null;
+
                         let td;
                         if( g.interval == 0 ) td = moment.duration(10, "minute"); else
                         if( g.interval == 1 ) td = moment.duration(1, "hour"); else
@@ -875,6 +878,8 @@ class HistoryCardState {
                             }
                             d += y1 - y0;
                             s.push({ x: t + td / 2.0, y: d * scale});
+                            if( colorRange ) 
+                                bcol.push(parseColorRange(colorRange, d));
                             t = te;
                             y0 = y1;
                         }
@@ -953,6 +958,11 @@ class HistoryCardState {
                 }
 
                 g.chart.data.datasets[j].data = s;
+
+                if( bcol.length > 0 ) {
+                    g.chart.data.datasets[j].backgroundColor = bcol;
+                    g.chart.data.datasets[j].borderColor = bcol;
+                }
 
                 updated = true;
 
