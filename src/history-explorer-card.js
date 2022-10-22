@@ -88,6 +88,8 @@ class HistoryCardState {
         this.pconfig.axisAddMarginMax     = true;
         this.pconfig.defaultTimeRange     = '24';
         this.pconfig.timeTickDensity      = 'high';
+        this.pconfig.exportSeparator      = undefined;
+        this.pconfig.exportTimeFormat     = undefined;
         this.pconfig.entities             = [];
 
         this.loader = {};
@@ -2425,6 +2427,8 @@ class HistoryExplorerCard extends HTMLElement
         this.instance.pconfig.timeTickDensity = config.timeTickDensity ?? 'high';
         this.instance.pconfig.lineGraphHeight = ( config.lineGraphHeight ?? 250 ) * 1;
         this.instance.pconfig.barGraphHeight = ( config.barGraphHeight ?? 150 ) * 1;
+        this.instance.pconfig.exportSeparator = config.csv?.separator;
+        this.instance.pconfig.exportTimeFormat = config.csv?.timeFormat;
 
         this.instance.id = config.cardName ?? "default";
         this.instance.cid = gcid++;

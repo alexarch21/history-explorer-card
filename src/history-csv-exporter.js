@@ -8,20 +8,22 @@ class HistoryCSVExporter {
     constructor() 
     {
         this.overlay = null;
+        this.separator = undefined;
+        this.timeFormat = undefined;
     }
 
     exportCallback(result)
     { 
         let data = [];
 
-        data.push("Time stamp,State\r\n");
+        data.push(`Time stamp${this.separator}State\r\n`);
 
         for( let r of result ) {
             if( !r.length ) continue;
             data.push(r[0].entity_id + "\r\n");
             for( let e of r ) {
-                const t = moment(e.last_changed).format('YYYY-MM-DD HH:mm:ss');
-                data.push(t + "," + e.state + "\r\n");
+                const t = moment(e.last_changed).format(this.timeFormat);
+                data.push(t + this.separator + e.state + "\r\n");
             }
         }
 
@@ -41,6 +43,9 @@ class HistoryCSVExporter {
 
     exportFile(cardstate)
     {
+        this.separator = cardstate.pconfig.exportSeparator ?? ',';
+        this.timeFormat = cardstate.pconfig.exportTimeFormat ?? 'YYYY-MM-DD HH:mm:ss';
+
         let n = 0;
 
         let t0 = cardstate.startTime.replace('+', '%2b');
