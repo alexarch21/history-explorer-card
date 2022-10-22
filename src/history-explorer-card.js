@@ -155,18 +155,21 @@ class HistoryCardState {
         if( entity_id ) {
             const v = entity_id + '.' + value;
             c = this.pconfig.customStateColors?.[v];
+            if( !c ) c = this.pconfig.customStateColors?.[entity_id];
         }
 
         // device_class.state override
         if( !c && device_class ) {
             const v = device_class + '.' + value;
             c = this.pconfig.customStateColors?.[v];
+            if( !c ) c = this.pconfig.customStateColors?.[device_class];
         }
 
         // domain.state override
         if( !c && domain ) {
             const v = domain + '.' + value;
             c = this.pconfig.customStateColors?.[v];
+            if( !c ) c = this.pconfig.customStateColors?.[domain];
         }
 
         // global state override
