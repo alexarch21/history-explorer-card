@@ -446,8 +446,9 @@ class HistoryCardState {
     // Activate a given time range
     // --------------------------------------------------------------------------------------
 
-    validateRange(range)
+    validateRange(range, hidden = false)
     {
+        if( hidden && range < 12 && range > 0 ) return range;
         let i = ranges.findIndex(e => e >= range);
         if( i < ranges.length-1 && (i < 0 || ranges[i] != range) ) i++;
         return ranges[i];
@@ -570,7 +571,7 @@ class HistoryCardState {
         const h = Math.floor(t / 60);
 
         if( h > 0 )
-            this.setTimeRange(this.validateRange(h), update, t_center);
+            this.setTimeRange(this.validateRange(h, true), update, t_center);
         else
             this.setTimeRangeMinutes(t, update, t_center);
     }
