@@ -930,10 +930,12 @@ class HistoryCardState {
                             }
 
                             // Add the current block to the graph
-                            if( moment(t1) >= m_start ) {
-                                if( moment(t1) > m_end ) t1 = this.endTime;
-                                if( moment(t0) > m_end ) break;
-                                if( moment(t0) < m_start ) t0 = this.startTime;
+                            const moment_t1 = moment(t1);
+                            if( moment_t1 >= m_start ) {
+                                const moment_t0 = moment(t0);
+                                if( moment_t1 > m_end ) t1 = this.endTime;
+                                if( moment_t0 > m_end ) break;
+                                if( moment_t0 < m_start ) t0 = this.startTime;
                                 let e = [];
                                 e.push(t0);
                                 e.push(t1);
