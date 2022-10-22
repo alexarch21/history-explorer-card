@@ -217,11 +217,11 @@ class HistoryCardState {
     // UI element handlers
     // --------------------------------------------------------------------------------------
 
-    today(resetRange = true)
+    today(resetRange = false)
     {
         if( !this.state.loading ) {
 
-            if( resetRange && this.activeRange.timeRangeHours < 24 ) this.setTimeRange(24, false);
+            if( resetRange ) this.setTimeRange(24, false);
 
             this.endTime = moment().format('YYYY-MM-DDTHH:mm[:00]');
             this.startTime = moment(this.endTime).subtract(this.activeRange.timeRangeHours, "hour").subtract(this.activeRange.timeRangeMinutes, "minute").format('YYYY-MM-DDTHH:mm[:00]');
@@ -229,6 +229,16 @@ class HistoryCardState {
             this.updateHistory();
 
         }
+    }
+
+    todayNoReset()
+    {
+        this.today(false);
+    }    
+
+    todayReset()
+    {
+        this.today(true);
     }
 
     subDay()
@@ -2000,7 +2010,8 @@ class HistoryCardState {
                 this._this.querySelector(`#b4_${i}`)?.addEventListener('click', this.decZoom.bind(this), false);
                 this._this.querySelector(`#b5_${i}`)?.addEventListener('click', this.incZoom.bind(this), false);
                 this._this.querySelector(`#b8_${i}`)?.addEventListener('click', this.addEntitySelected.bind(this));
-                this._this.querySelector(`#bx_${i}`)?.addEventListener('click', this.today.bind(this), false);
+                this._this.querySelector(`#bx_${i}`)?.addEventListener('click', this.todayNoReset.bind(this), false);
+                this._this.querySelector(`#bx_${i}`)?.addEventListener('dblclick', this.todayReset.bind(this), false);
                 this._this.querySelector(`#by_${i}`)?.addEventListener('change', this.timeRangeSelected.bind(this));
                 this._this.querySelector(`#bz_${i}`)?.addEventListener('click', this.toggleZoom.bind(this), false);
                 this._this.querySelector(`#ef_${i}`)?.addEventListener('click', this.exportFile.bind(this), false);
