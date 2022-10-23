@@ -198,9 +198,10 @@ entityOptions:
     type: bar
     color:
       '0.0': blue   # Bar is blue between below and up to 1.0 kWh
-      '1.0': green  # Bar is green between 1.0 - 2.0 kWh
-      '2.0': red    # Bar is red at 2.0 kWh and above
+      '1.0': green  # Bar is green between 1.0 - 1.5 kWh
+      '1.5': red    # Bar is red at 1.5 kWh and above
 ```
+![image](https://user-images.githubusercontent.com/60828821/197369661-9c75c9fe-e33f-4790-8348-8ae103880bfb.png)
 
 ### Compass arrow graphs
 
@@ -300,7 +301,7 @@ The raw data for the currently displayed entities and time range can be exported
 
 ![image](https://user-images.githubusercontent.com/60828821/156686793-c0cdace6-87c0-4c1e-bb7f-58dd04035be5.png)
 
-The exported CSV can be customized:
+The exported CSV can optionally be customized:
 ```yaml
 type: custom:history-explorer-card
 csv:
