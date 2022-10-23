@@ -188,6 +188,20 @@ graphs:
       - entity: sensor.rain_amount
 ```
 
+#### Color ranges
+
+Bar graphs can be color coded depending on the value they display rather than having a single color. The color range thresholds are provided as value pairs under the color key. You can provide as many thresholds as you want. Both dynamic and YAML defined graphs are supported.
+
+```yaml
+entityOptions:
+  energy:           # apply this color coding to all sensors of the energy device class (also works for domains or individual entities)
+    type: bar
+    color:
+      '0.0': blue   # Bar is blue between below and up to 1.0 kWh
+      '1.0': green  # Bar is green between 1.0 - 2.0 kWh
+      '2.0': red    # Bar is red at 2.0 kWh and above
+```
+
 ### Compass arrow graphs
 
 Entities representing a directional angle value, like a bearing or direction, can be displayed using a timeline of compass arrows. This is especially useful for visualizing wind directions:
@@ -237,6 +251,15 @@ stateColors:
   sensor.Wet: green
 ```
 
+A general default color can be set per domain, device class or entity. If present, it will serve as a fallback to all states in that domain, device class or entity that were not explicitely defined. In the following example, the states of the input_text.air_quality entity are defined. The *bad* state will be red, the *good* state will be green. All other states of that entity, regardless of what they are, will be yellow due to the catch-all key.
+```yaml
+type: custom:history-explorer-card
+stateColors:
+  input_text.air_quality.bad: red
+  input_text.air_quality.good: green
+  input_text.air_quality: yellow        # Fallback, catches all states from this entity that are not 'good' or 'bad'
+```
+
 There is a special virtual state that is added to all entities, the *multiple* state. This state substitutes an aggregation of multiple states on the timeline when they were merged due to data decimation. Like normal states, you can specify the color for this special state for individual entities, device classes, domains or globally.
 
 ### Customizing dynamically added graphs
@@ -276,6 +299,14 @@ entityOptions:
 The raw data for the currently displayed entities and time range can be exported as a CSV file by opening the entity options and selecting Export as CSV. Note that CSV exporting does not work in the HA Companion app.
 
 ![image](https://user-images.githubusercontent.com/60828821/156686793-c0cdace6-87c0-4c1e-bb7f-58dd04035be5.png)
+
+The exported CSV can be customized:
+```yaml
+type: custom:history-explorer-card
+csv:
+  separator: ';'            # Use a semicolon as a separator, the default is a comma
+  timeFormat: 'DD/MM/YYYY'  # Customize the date/time format used in the CSV. The default is 'YYYY-MM-DD HH:mm:ss'.
+```
 
 ### Configuring the UI 
 
