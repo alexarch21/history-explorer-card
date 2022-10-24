@@ -880,7 +880,7 @@ class HistoryCardState {
                         if( g.interval == 2 ) td = moment.duration(1, "day");
 
                         let i = 0;
-                        let y0 = result[id][0].state;
+                        let y0 = result[id][0].state * 1.0;
                         let y1 = y0;
 
                         // Start time of the range, snapped to interval boundary
@@ -888,7 +888,7 @@ class HistoryCardState {
                         let t = moment(moment(m_start).format(f));
 
                         // Search for the first state in the time range
-                        while( i < n-1 && moment(result[id][i].last_changed) <= t ) y0 = result[id][i++].state;
+                        while( i < n-1 && moment(result[id][i].last_changed) <= t ) y0 = result[id][i++].state * 1.0;
 
                         // Calculate differentials over the time range in interval sized stacks, add a half interval at the end so that the last bar doesn't jump
                         // Add them to the graph with a half interval time offset, so that the stacks align at the center of their respective intervals
@@ -897,11 +897,12 @@ class HistoryCardState {
                             y1 = y0;
                             let d = 0;
                             while( i < n && moment(result[id][i].last_changed) < te ) {
-                                if( result[id][i].state < y1 ) {
+                                const state = result[id][i].state * 1.0;
+                                if( state < y1 ) {
                                     d += y1 - y0;
-                                    y0 = result[id][i].state;
+                                    y0 = state;
                                 }
-                                y1 = result[id][i++].state;
+                                y1 = result[id][i++].state * 1.0;
                             }
                             d += y1 - y0;
                             s.push({ x: t + td / 2.0, y: d * scale});
