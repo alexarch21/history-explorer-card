@@ -5,7 +5,7 @@ import "./deps/timeline.js";
 import "./deps/md5.min.js"
 import "./deps/FileSaver.js"
 
-const Version = '1.0.28';
+const Version = '1.0.29';
 
 var isMobile = ( navigator.appVersion.indexOf("Mobi") > -1 ) || ( navigator.userAgent.indexOf("HomeAssistant") > -1 );
 
@@ -41,6 +41,7 @@ class HistoryCardState {
     {
 
         this.colorMap = new Map();
+        this.timeCache = new Map();
 
         this.csvExporter = new HistoryCSVExporter();
 
@@ -458,6 +459,8 @@ class HistoryCardState {
     {
         if( this.state.loading ) return;
 
+        this.timeCache.clear();
+
         t_position = Math.min(Math.max(t_position, 0.0), 1.0);
 
         range = Math.max(range, 1);
@@ -790,6 +793,19 @@ class HistoryCardState {
     // Graph data generation
     // --------------------------------------------------------------------------------------
 
+    momentCache(tc)
+    {
+        let r;
+        if( tc !== undefined ) {
+            if( !this.timeCache.has(tc) ) {
+                r = moment(tc);
+                this.timeCache.set(tc, r);
+            } else 
+                r = this.timeCache.get(tc);
+        }
+        return r;
+    }
+
     buildChartData(result)
     {
         let m_now = moment();
@@ -825,11 +841,11 @@ class HistoryCardState {
 
                         if( n > 2 && enableClustering && this.activeRange.dataClusterSize > 0 ) {
 
-                            let last_time = moment(result[id][0].last_changed);
+                            let last_time = this.momentCache(result[id][0].last_changed);
 
                             for( let i = 0; i < n; i++ ) {
                                 if( isDataValid(result[id][i].state) ) {
-                                    let this_time = moment(result[id][i].last_changed);
+                                    let this_time = this.momentCache(result[id][i].last_changed);
                                     if( !i || this_time.diff(last_time) >= this.activeRange.dataClusterSize ) {
                                         s.push({ x: this_time, y: result[id][i].state * scale});
                                         last_time = this_time;
@@ -929,12 +945,17 @@ class HistoryCardState {
 
                             }
 
-                            if( !enableClustering || moment(t1).diff(moment(t0)) >= this.activeRange.dataClusterSize || i == n-1 ) {
+                            let moment_t0 = this.momentCache(t0);
+                            let moment_t1 = ( t1 === m_max ) ? moment(t1) : this.momentCache(t1);
+
+                            if( !enableClustering || moment_t1.diff(moment_t0) >= this.activeRange.dataClusterSize || i == n-1 ) {
                                 // Larger than merge limit, finish a potential current merge before proceeding with new block
                                 // Also stop merging when hitting the last state block regardless of size, otherwise it wont be committed
                                 if( merged > 0 ) {
                                     t0 = mt0;
                                     t1 = mt1;
+                                    moment_t0 = moment(t0);
+                                    moment_t1 = moment(t1);
                                     i--;
                                 }
                             } else {
@@ -946,9 +967,7 @@ class HistoryCardState {
                             }
 
                             // Add the current block to the graph
-                            const moment_t1 = moment(t1);
                             if( moment_t1 >= m_start ) {
-                                const moment_t0 = moment(t0);
                                 if( moment_t1 > m_end ) t1 = this.endTime;
                                 if( moment_t0 > m_end ) break;
                                 if( moment_t0 < m_start ) t0 = this.startTime;
