@@ -1189,10 +1189,11 @@ class HistoryCardState {
                     mode: 'nearest'
                 },
                 legend: {
-                    display: ( graphtype == 'line' ),
+                    display: ( graphtype == 'line' || graphtype == 'bar' ),
                     labels: {
                         fontColor: this.pconfig.graphLabelColor,
-                        usePointStyle: true
+                        usePointStyle: ( graphtype == 'line' || (graphtype == 'bar' && datasets.length > 1) ),
+                        boxWidth: 0
                     }
                 },
                 elements: {
@@ -1667,7 +1668,7 @@ class HistoryCardState {
     calcGraphHeight(type, n)
     {
         const m = ( n >= 2 || this.pconfig.tooltipSize == 'full' ) ? 130 : ( this.pconfig.tooltipSize == 'slim' ) ? 90 : 115;
-        return ( type == 'line' ) ? this.pconfig.lineGraphHeight : ( type == 'bar' ) ? this.pconfig.barGraphHeight : Math.max(n * 45, m);
+        return ( type == 'line' ) ? this.pconfig.lineGraphHeight : ( type == 'bar' ) ? this.pconfig.barGraphHeight + 24 : Math.max(n * 45, m);
     }
 
     removeGraph(event)
