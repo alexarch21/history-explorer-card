@@ -301,7 +301,7 @@ The raw data for the currently displayed entities and time range can be exported
 
 ![image](https://user-images.githubusercontent.com/60828821/156686793-c0cdace6-87c0-4c1e-bb7f-58dd04035be5.png)
 
-The exported CSV can optionally be customized:
+The exported CSV can be customized. The following settings are optional. If they are not present, the defaults will be used.
 ```yaml
 type: custom:history-explorer-card
 csv:
