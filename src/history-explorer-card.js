@@ -897,12 +897,16 @@ class HistoryCardState {
                             y1 = y0;
                             let d = 0;
                             while( i < n && moment(result[id][i].last_changed) < te ) {
-                                const state = result[id][i].state * 1.0;
-                                if( state < y1 ) {
-                                    d += y1 - y0;
-                                    y0 = state;
+                                const rawstate = result[id][i].state;
+                                if( !['unavailable', 'unknown'].includes(rawstate) ) {
+                                    const state = rawstate * 1.0;
+                                    if( state < y1 ) {
+                                        d += y1 - y0;
+                                        y0 = state;
+                                    }
+                                    y1 = state;
                                 }
-                                y1 = result[id][i++].state * 1.0;
+                                i++;
                             }
                             d += y1 - y0;
                             s.push({ x: t + td / 2.0, y: d * scale});
