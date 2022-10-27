@@ -145,11 +145,11 @@ rounding: 4
 
 ### Line graphs and unavailable data
 
-If your history data contains an unavailable state, for example if a sensor went offline for a while, then this appears as a gap in the line charts. This way you will be able to easily see when and how often your sensors disconnected or became unavailable. This unavailable state is also shown on timeline charts. If you prefer to not have gaps in your line charts, you can add the following YAML option to hide and interpolate over the unavailable states:
+If your history data contains an unavailable state, for example if a sensor went offline for a while, then the card will interpolate over the missing data in line charts to avoid gaps by default. If you prefer to keep the unavailable state visible, so to easily see when and how often your sensors disconnected or became unavailable, then you can disable the interpolation using the YAML below. Timeline charts will always show unavailable or unknown states, regardless of how this parameter is set.
 
 ```yaml
 type: custom:history-explorer-card
-showUnavailable: false
+showUnavailable: true
 ```
 
 ### Bar graphs for total increasing entities
@@ -203,15 +203,22 @@ entityOptions:
 ```
 ![image](https://user-images.githubusercontent.com/60828821/197369661-9c75c9fe-e33f-4790-8348-8ae103880bfb.png)
 
-### Compass arrow graphs
+### Timeline charts
 
-Entities representing a directional angle value, like a bearing or direction, can be displayed using a timeline of compass arrows. This is especially useful for visualizing wind directions:
+Timeline charts are typically used to visualize entities with non-numerical data. When you dynamically add an entity without a unit of measure, then the card will automatically use a timeline chart to visualize its states.
 
-![image](https://user-images.githubusercontent.com/60828821/163562690-01002243-b6d3-4a55-8128-9d1dc89581c6.png)
+![image](https://user-images.githubusercontent.com/60828821/198171854-f643a628-25f7-4f5a-ac50-f0914a5e265e.png)
 
-Compass arrow graphs use the `arrowline` type and can be used in both dynamically and statically added entities. See the *Customizing dynamically added graphs* section for an example of the former and the advanced YAML example for the latter.
+By default the state texts shown in a timeline chart represent the raw underlying state as used by Home Assistant internally. For example, binary sensors will show their state as `on`or `off`, regardless of their device class. If you prefer to see device class dependent states (like `Opened`/`Closed` for doors or `Detected`/`Clear` for motion sensors), you can change the state text display mode as shown in the YAML below:
 
-### Customizing state colors
+```yaml
+type: custom:history-explorer-card
+stateTextMode: raw    # Show the raw untranslated state names, this is the default
+stateTextMode: auto   # Show the automatically translated device class dependent state names
+stateTextMode: hide   # Hide all state text labels
+```
+
+#### Customizing state colors
 
 The default colors used for the states shown on timeline graphs can be customized in many different ways. Customizing is done by adding the statesColor key to the card YAML. Colors act on individual entities, entire device classes, domains or global states. You can, for example, have distinct colors for the on and off states of your motion sensors and your door sensors, even if they're both binary sensors.
 
@@ -227,7 +234,6 @@ stateColors:
 ```
 
 You can also specify state colors for an entire domain. The following example will turn the *off* state for all binary sensors that don't have a color defined for their device class purple and the *home* state of the person domain green:
-
 
 ```yaml
 type: custom:history-explorer-card
@@ -262,6 +268,14 @@ stateColors:
 ```
 
 There is a special virtual state that is added to all entities, the *multiple* state. This state substitutes an aggregation of multiple states on the timeline when they were merged due to data decimation. Like normal states, you can specify the color for this special state for individual entities, device classes, domains or globally.
+
+### Compass arrow graphs
+
+Entities representing a directional angle value, like a bearing or direction, can be displayed using a timeline of compass arrows. This is especially useful for visualizing wind directions:
+
+![image](https://user-images.githubusercontent.com/60828821/163562690-01002243-b6d3-4a55-8128-9d1dc89581c6.png)
+
+Compass arrow graphs use the `arrowline` type and can be used in both dynamically and statically added entities. See the *Customizing dynamically added graphs* section for an example of the former and the advanced YAML example for the latter.
 
 ### Customizing dynamically added graphs
 
