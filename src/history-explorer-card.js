@@ -42,6 +42,7 @@ class HistoryCardState {
 
         this.colorMap = new Map();
         this.timeCache = new Map();
+        this.stateTexts = new Map();
 
         this.csvExporter = new HistoryCSVExporter();
 
@@ -211,6 +212,25 @@ class HistoryCardState {
         }
 
         return c;
+    }
+
+
+    // --------------------------------------------------------------------------------------
+    // Device class or domain specific state localization
+    // --------------------------------------------------------------------------------------
+
+    getLocalizedState(state, domain, device_class, entity)
+    {
+        const s = entity + state;
+
+        let v = this.stateTexts.get(s);
+        if( !v ) {
+            v = ( device_class && this._hass.localize(`component.${domain}.state.${device_class}.${state}`) ) || 
+                  this._hass.localize(`component.${domain}.state._.${state}`) || state;
+            this.stateTexts.set(s, v);
+        }
+        
+        return v;
     }
 
 
@@ -1202,6 +1222,13 @@ class HistoryCardState {
                     }
                 },
                 elements: {
+                    textFunction: (text, datasets, index) => {
+                        switch( this.pconfig.stateTextMode ) {
+                          case 'auto' : return this.getLocalizedState(text, datasets[index].domain, datasets[index].device_class, datasets[index].entity_id);
+                          case 'hide' : return '';
+                          default: return text;
+                        }
+                    },
                     colorFunction: (text, data, datasets, index) => {
                         // * check device_class.state first (if it exists)
                         // * if not found, then check domain.state
@@ -2455,29 +2482,31 @@ class HistoryExplorerCard extends HTMLElement
 
         this.instance.pconfig.entityOptions = config.entityOptions;
 
-        this.instance.pconfig.labelAreaWidth = config.labelAreaWidth ?? 65;
-        this.instance.pconfig.labelsVisible = config.labelsVisible ?? true;
-        this.instance.pconfig.showTooltipColors[0] = config.showTooltipColorsLine ?? true;
-        this.instance.pconfig.showTooltipColors[1] = config.showTooltipColorsTimeline ?? true;
-        this.instance.pconfig.tooltipSize = config.tooltipSize ?? 'auto';
-        this.instance.pconfig.tooltipShowDuration = config.tooltipShowDuration ?? false;
-        this.instance.pconfig.closeButtonColor = parseColor(config.uiColors?.closeButton ?? '#0000001f');
-        this.instance.pconfig.colorSeed = config.stateColorSeed ?? 137;
+        this.instance.pconfig.labelAreaWidth =         config.labelAreaWidth ?? 65;
+        this.instance.pconfig.labelsVisible =          config.labelsVisible ?? true;
+        this.instance.pconfig.showTooltipColors[0] =   config.showTooltipColorsLine ?? true;
+        this.instance.pconfig.showTooltipColors[1] =   config.showTooltipColorsTimeline ?? true;
+        this.instance.pconfig.tooltipSize =            config.tooltipSize ?? 'auto';
+        this.instance.pconfig.tooltipShowDuration =    config.tooltipShowDuration ?? false;
+        this.instance.pconfig.colorSeed =              config.stateColorSeed ?? 137;
+        this.instance.pconfig.stateTextMode =          config.stateTextMode ?? 'raw';
         this.instance.pconfig.enableDataClustering = ( config.decimation === undefined ) || config.decimation;
-        this.instance.pconfig.roundingPrecision = config.rounding || 2;
-        this.instance.pconfig.defaultLineMode = config.lineMode;
-        this.instance.pconfig.showUnavailable = config.showUnavailable ?? true;
-        this.instance.pconfig.axisAddMarginMin = ( config.axisAddMarginMin !== undefined ) ? config.axisAddMarginMin : true;
-        this.instance.pconfig.axisAddMarginMax = ( config.axisAddMarginMax !== undefined ) ? config.axisAddMarginMax : true;
-        this.instance.pconfig.recordedEntitiesOnly = config.recordedEntitiesOnly ?? false;
-        this.instance.pconfig.filterEntities  = config.filterEntities;
-        this.instance.pconfig.combineSameUnits = config.combineSameUnits === true;
-        this.instance.pconfig.defaultTimeRange = config.defaultTimeRange ?? '24';
-        this.instance.pconfig.timeTickDensity = config.timeTickDensity ?? 'high';
-        this.instance.pconfig.lineGraphHeight = ( config.lineGraphHeight ?? 250 ) * 1;
-        this.instance.pconfig.barGraphHeight = ( config.barGraphHeight ?? 150 ) * 1;
-        this.instance.pconfig.exportSeparator = config.csv?.separator;
-        this.instance.pconfig.exportTimeFormat = config.csv?.timeFormat;
+        this.instance.pconfig.roundingPrecision =      config.rounding || 2;
+        this.instance.pconfig.defaultLineMode =        config.lineMode;
+        this.instance.pconfig.showUnavailable =        config.showUnavailable ?? false;
+        this.instance.pconfig.axisAddMarginMin =     ( config.axisAddMarginMin !== undefined ) ? config.axisAddMarginMin : true;
+        this.instance.pconfig.axisAddMarginMax =     ( config.axisAddMarginMax !== undefined ) ? config.axisAddMarginMax : true;
+        this.instance.pconfig.recordedEntitiesOnly =   config.recordedEntitiesOnly ?? false;
+        this.instance.pconfig.filterEntities  =        config.filterEntities;
+        this.instance.pconfig.combineSameUnits =       config.combineSameUnits === true;
+        this.instance.pconfig.defaultTimeRange =       config.defaultTimeRange ?? '24';
+        this.instance.pconfig.timeTickDensity =        config.timeTickDensity ?? 'high';
+        this.instance.pconfig.lineGraphHeight =      ( config.lineGraphHeight ?? 250 ) * 1;
+        this.instance.pconfig.barGraphHeight =       ( config.barGraphHeight ?? 150 ) * 1;
+        this.instance.pconfig.exportSeparator =        config.csv?.separator;
+        this.instance.pconfig.exportTimeFormat =       config.csv?.timeFormat;
+
+        this.instance.pconfig.closeButtonColor = parseColor(config.uiColors?.closeButton ?? '#0000001f');
 
         this.instance.id = config.cardName ?? "default";
         this.instance.cid = gcid++;
