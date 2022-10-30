@@ -18,6 +18,13 @@ const ranges = [1, 2, 6, 12, 24, 48, 72, 96, 120, 144, 168, 336, 504, 720];
 
 
 // --------------------------------------------------------------------------------------
+// Maximum size of data cache in days
+// --------------------------------------------------------------------------------------
+
+const cacheSize = 200;
+
+
+// --------------------------------------------------------------------------------------
 // Shared panning state
 // --------------------------------------------------------------------------------------
 
@@ -116,6 +123,10 @@ class HistoryCardState {
         this.activeRange.tickStepUnit    = 'hour';
         this.activeRange.dataClusterSize = 0;
 
+        this.debug = {};
+        this.debug.useStatistics = false;
+        this.debug.mode = '';
+
         this.id = "";
 
         this.graphs = [];
@@ -125,6 +136,8 @@ class HistoryCardState {
 
         this.startTime;
         this.endTime;
+
+        this.limitSlot = 0;
 
         this.cache = [];
 
@@ -632,9 +645,9 @@ class HistoryCardState {
     initCache()
     {
         let d = moment().format("YYYY-MM-DD") + "T00:00:00";
-        d = moment(d).subtract(90, "day").format("YYYY-MM-DD") + "T00:00:00";
+        d = moment(d).subtract(cacheSize, "day").format("YYYY-MM-DD") + "T00:00:00";
 
-        for( let i = 0; i < 91; i++ ) {
+        for( let i = 0; i < cacheSize+1; i++ ) {
             let e = moment(d).add(1, "day").format("YYYY-MM-DD") + "T00:00:00";
             this.cache.push({ "start" : d, "end" : e, "start_m" : moment(d), "end_m": moment(e), "data" : [], "valid": false });
             d = e;
@@ -645,7 +658,7 @@ class HistoryCardState {
     {
         let mt = moment(t);
 
-        for( let i = 0; i < 91; i++ ) {
+        for( let i = 0; i < cacheSize+1; i++ ) {
             if( mt >= this.cache[i].start_m && mt < this.cache[i].end_m ) return i;
         }
 
@@ -658,11 +671,11 @@ class HistoryCardState {
     {
         let mt = moment(t);
 
-        for( let i = 0; i < 91; i++ ) {
+        for( let i = 0; i < cacheSize+1; i++ ) {
             if( mt > this.cache[i].start_m && mt <= this.cache[i].end_m ) return i;
         }
 
-        if( mt > this.cache[90].end_m ) return 90;
+        if( mt > this.cache[cacheSize].end_m ) return cacheSize;
 
         return -1;
     }
@@ -737,6 +750,19 @@ class HistoryCardState {
 
 
     // --------------------------------------------------------------------------------------
+    // Search the first cache slot that fully contains data for the required timecode
+    // --------------------------------------------------------------------------------------
+
+    searchFirstFullSlot(a, b, t)
+    {
+        for( let i = a; i <= b; i++ ) {
+            if( this.cache[i].start_m >= t ) return i;
+        }
+        return undefined;
+    }
+
+
+    // --------------------------------------------------------------------------------------
     // On demand history retrieval
     // --------------------------------------------------------------------------------------
 
@@ -745,12 +771,35 @@ class HistoryCardState {
         //console.log("database retrieval OK");
         //console.log(result);
 
+        let reload = false;
+
+        let m = 0;
+
+        // Dynamically check if the data pulled from the history DB is still available, if not switch to statistics and reschedule a retrieval
+        if( this.debug.useStatistics ) {
+
+            m = cacheSize;
+            for( let j of result ) {
+                let v = this.searchFirstFullSlot(this.loader.startIndex, this.loader.endIndex, moment(j[0].last_changed));
+                if( v < m ) m = v;
+            }
+
+            if( m > this.loader.startIndex ) {
+                console.log(`Loader switched to statistics (slot ${this.loader.startIndex} to ${this.loader.endIndex}, first full at ${m})`);
+                this.limitSlot = m-1;
+                reload = true;
+            }
+
+        }
+
         if( this.loader.startIndex == this.loader.endIndex ) {
 
             // Retrieved data maps to a single slot directly
 
-            this.cache[this.loader.startIndex].data = result;
-            this.cache[this.loader.startIndex].valid = true;
+            if( this.loader.startIndex >= m ) {
+                this.cache[this.loader.startIndex].data = result;
+                this.cache[this.loader.startIndex].valid = true;
+            }
 
         } else {
 
@@ -758,7 +807,7 @@ class HistoryCardState {
 
             for( let i = this.loader.startIndex; i <= this.loader.endIndex; i++ ) {
                 this.cache[i].data = [];
-                this.cache[i].valid = true;
+                this.cache[i].valid = i >= m;
             }
 
             for( let j of result ) {
@@ -798,6 +847,8 @@ class HistoryCardState {
         this.generateGraphDataFromCache();
 
         this.state.loading = false;
+
+        if( reload ) this.updateHistory();
     }
 
     loaderFailed(error) 
@@ -808,6 +859,25 @@ class HistoryCardState {
         this.buildChartData(null);
 
         this.state.loading = false;
+    }
+
+    loaderCallbackStats(result)
+    {
+        const m = this.debug.mode;
+
+        let r = [];
+
+        for( let entity in result ) {
+            const a = result[entity];
+            let j = [];
+            j.push({'last_changed' : a[0].start, 'state' : a[0][m] ?? a[0].state, 'entity_id' : a[0].statistic_id});
+            for( let i = 1; i < a.length; i++ ) {
+                j.push({'last_changed' : a[i].start, 'state' : a[i][m] ?? a[i].state});
+            }
+            r.push(j);
+        }
+
+        this.loaderCallback(r);
     }
 
 
@@ -1296,25 +1366,42 @@ class HistoryCardState {
             let n = 0;
             let t0 = this.loader.startTime.replace('+', '%2b');
             let t1 = this.loader.endTime.replace('+', '%2b');
+            let l = [];
             let url = `history/period/${t0}?end_time=${t1}&minimal_response&no_attributes&filter_entity_id`;
             let separator = '=';
             for( let g of this.graphs ) {
                 for( let e of g.entities ) {
+                    l.push(e.entity);
                     url += separator;
                     url += e.entity;
                     separator = ',';
                     n++;
                 }
             }
-            //console.log(url);
 
             if( n > 0 ) {
 
                 this.state.loading = true;
 
-                // Issue retrieval call, initiate async cache loading
-                const p = this.callHassAPIGet(url);
-                p.then(this.loaderCallback.bind(this), this.loaderFailed.bind(this));
+                if( !this.debug.useStatistics || l0 > this.limitSlot ) {
+
+                    // Issue retrieval call, initiate async cache loading
+                    const p = this.callHassAPIGet(url);
+                    p.then(this.loaderCallback.bind(this), this.loaderFailed.bind(this));
+
+                } else {
+
+                    // Issue statistics retrieval call
+                    let d = { 
+                        type: "history/statistics_during_period",
+                        start_time: t0,
+                        end_time: t1,
+                        period: "hour",
+                        statistic_ids: l
+                    };
+                    this._hass.callWS(d).then(this.loaderCallbackStats.bind(this), this.loaderFailed.bind(this));
+
+                }
 
             }
 
@@ -2516,6 +2603,8 @@ class HistoryExplorerCard extends HTMLElement
         this.instance.pconfig.barGraphHeight =       ( config.barGraphHeight ?? 150 ) * 1;
         this.instance.pconfig.exportSeparator =        config.csv?.separator;
         this.instance.pconfig.exportTimeFormat =       config.csv?.timeFormat;
+        this.instance.debug.useStatistics =            config.statistics?.enabled ?? false;
+        this.instance.debug.mode =                     config.statistics?.mode ?? 'mean';
 
         this.instance.pconfig.closeButtonColor = parseColor(config.uiColors?.closeButton ?? '#0000001f');
 
