@@ -636,7 +636,7 @@ class HistoryCardState {
 
         for( let i = 0; i < 91; i++ ) {
             let e = moment(d).add(1, "day").format("YYYY-MM-DD") + "T00:00:00";
-            this.cache.push({ "start" : d, "end" : e, "data" : [], "valid": false });
+            this.cache.push({ "start" : d, "end" : e, "start_m" : moment(d), "end_m": moment(e), "data" : [], "valid": false });
             d = e;
         }
     }
@@ -646,10 +646,10 @@ class HistoryCardState {
         let mt = moment(t);
 
         for( let i = 0; i < 91; i++ ) {
-            if( mt >= moment(this.cache[i].start) && mt < moment(this.cache[i].end) ) return i;
+            if( mt >= this.cache[i].start_m && mt < this.cache[i].end_m ) return i;
         }
 
-        if( mt < moment(this.cache[0].start) ) return 0;
+        if( mt < this.cache[0].start_m ) return 0;
 
         return -1;
     }
@@ -659,10 +659,10 @@ class HistoryCardState {
         let mt = moment(t);
 
         for( let i = 0; i < 91; i++ ) {
-            if( mt > moment(this.cache[i].start) && mt <= moment(this.cache[i].end) ) return i;
+            if( mt > this.cache[i].start_m && mt <= this.cache[i].end_m ) return i;
         }
 
-        if( mt > moment(this.cache[90].end) ) return 90;
+        if( mt > this.cache[90].end_m ) return 90;
 
         return -1;
     }
