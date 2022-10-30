@@ -5,7 +5,7 @@ import "./deps/timeline.js";
 import "./deps/md5.min.js"
 import "./deps/FileSaver.js"
 
-const Version = '1.0.29';
+const Version = '1.0.30';
 
 var isMobile = ( navigator.appVersion.indexOf("Mobi") > -1 ) || ( navigator.userAgent.indexOf("HomeAssistant") > -1 );
 
@@ -54,6 +54,8 @@ class HistoryCardState {
         this.ui.darkMode      = false;
         this.ui.spinOverlay   = null;
         this.ui.optionStyle   = '';
+        this.ui.hideHeader    = false;
+        this.ui.stickyTools   = 0;
 
         this.i18n = {};
         this.i18n.valid                = false;
@@ -1867,7 +1869,14 @@ class HistoryCardState {
 
     addUIHtml(timeline, selector, bgcol, optionStyle, inputStyle, invertZoom, i)
     {
-        let html = `<div style="margin-left:0px;width:100%;text-align:center;">`;
+        let html = '';
+
+        if( this.ui.stickyTools & (1<<i) ) {
+            const threshold = i ? 'bottom:0px' : 'top:var(--header-height)';
+            html = `<div style="position:sticky;${threshold};padding-top:${this.ui.hideHeader ? 0 : 15}px;padding-bottom:10px;margin-top:-${this.ui.hideHeader ? 0 : 15}px;z-index:1;background-color:var(--card-background-color);line-height:0px;">`;
+        }
+
+        html += `<div style="margin-left:0px;width:100%;min-height:30px;text-align:center;display:block;line-height:normal;">`;
 
         if( timeline ) html += `
             <div id="dl_${i}" style="background-color:${bgcol};float:left;margin-left:10px;display:inline-block;padding-left:10px;padding-right:10px;">
@@ -1933,7 +1942,9 @@ class HistoryCardState {
 
         html += `</div>`;
 
-        html += `<div id='rf_${i}' style="margin-left:0px;margin-top:10px;margin-bottom:15px;width:100%;text-align:center;display:none"></div>`;
+        html += `<div id='rf_${i}' style="margin-left:0px;margin-top:10px;margin-bottom:0px;width:100%;text-align:center;display:none;line-height:normal;"></div>`;
+
+        if( this.ui.stickyTools & (1<<i) ) html += `</div>`;
 
         return html;
     }
@@ -1999,7 +2010,7 @@ class HistoryCardState {
             const anchor = this._this.querySelector(`#dl_${i}`);
             anchor.after(selector);
         } else if( reflow && !isReflown ) {
-            rfdiv.style.display = 'inline-block';
+            rfdiv.style.display = 'block';
             rfdiv.appendChild(selector);
         }
     }
@@ -2520,6 +2531,7 @@ class HistoryExplorerCard extends HTMLElement
         const bitmask = { 'hide': 0, 'top': 1, 'bottom': 2, 'both': 3 };
         const tools = bitmask[config.uiLayout?.toolbar] ?? 1;
         const selector = bitmask[config.uiLayout?.selector] ?? 2;
+        this.instance.ui.stickyTools = bitmask[config.uiLayout?.sticky] ?? 0;
 
         const invertZoom = config.uiLayout?.invertZoom === true;
 
@@ -2527,16 +2539,15 @@ class HistoryExplorerCard extends HTMLElement
         const inputStyle = config.uiColors?.selector ? `style="color:var(--primary-text-color);background-color:${config.uiColors.selector};border:1px solid black;"` : '';
 
         this.instance.ui.optionStyle = optionStyle;
+        this.instance.ui.hideHeader = header === 'hide';
 
         // Generate card html
 
         // Header
         let html = `
-            <ha-card id="maincard" header="${(header === 'hide') ? '' : header}">
+            <ha-card id="maincard" header="${this.instance.ui.hideHeader ? '' : header}">
             ${this.instance.addUIHtml(tools & 1, selector & 1, bgcol, optionStyle, inputStyle, invertZoom, 0)}
-            ${(tools | selector) & 1 ? '<br>' : ''}
-            ${((tools & 1) && !(selector & 1)) ? '<br>' : ''}
-            <div id='graphlist' class='card-content'>
+            <div id='graphlist' class='card-content' style='margin-top:${(this.instance.ui.stickyTools & 1) ? '0px' : '8px'};'>
         `;
 
         // Graph area
@@ -2557,8 +2568,7 @@ class HistoryExplorerCard extends HTMLElement
         html += `
             </div>
             ${this.instance.addUIHtml(tools & 2, selector & 2, bgcol, optionStyle, inputStyle, invertZoom, 1)}
-            ${(tools | selector) & 2 ? '<br>' : ''}
-            ${((tools & 2) && !(selector & 2)) ? '<br>' : ''}
+            ${(((tools | selector) & 2) && !(this.instance.ui.stickyTools & 2)) ? '<br>' : ''}
             <datalist id="b6_${this.instance.cid}"></datalist>
             </ha-card>
         `;
