@@ -509,6 +509,10 @@ graphs:
 
 Replace the entities and structure as needed.
 
+### Experimental features: long term statistics and sticky toolbars
+
+These are currently experimental features that need to be explicitely enabled in order to test them. For more information on how to enable and use them, please refer [to this post](https://community.home-assistant.io/t/new-interactive-history-explorer-custom-card/369450/332) on the Home Assistant forums.
+
 ### Running as a panel in the sidebar
 
 The history explorer can be run as a sidebar panel. Add a new empty dashboard with the `Show in sidebar` box checked. Set the view type to `Panel (1 card)` and add the history explorer card to the view.
