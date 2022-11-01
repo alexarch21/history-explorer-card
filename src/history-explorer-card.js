@@ -5,7 +5,7 @@ import "./deps/timeline.js";
 import "./deps/md5.min.js"
 import "./deps/FileSaver.js"
 
-const Version = '1.0.30';
+const Version = '1.0.31';
 
 var isMobile = ( navigator.appVersion.indexOf("Mobi") > -1 ) || ( navigator.userAgent.indexOf("HomeAssistant") > -1 );
 
@@ -52,6 +52,7 @@ class HistoryCardState {
         this.stateTexts = new Map();
 
         this.csvExporter = new HistoryCSVExporter();
+        this.statsExporter = new StatisticsCSVExporter();
 
         this.ui = {};
         this.ui.dateSelector  = [];
@@ -123,9 +124,10 @@ class HistoryCardState {
         this.activeRange.tickStepUnit    = 'hour';
         this.activeRange.dataClusterSize = 0;
 
-        this.debug = {};
-        this.debug.useStatistics = false;
-        this.debug.mode = '';
+        this.statistics = {};
+        this.statistics.enabled = false;
+        this.statistics.retention = undefined;
+        this.statistics.mode = '';
 
         this.id = "";
 
@@ -343,6 +345,14 @@ class HistoryCardState {
         this.menuSetVisibility(1, false);
 
         this.csvExporter.exportFile(this);
+    }
+
+    exportStatistics()
+    {
+        this.menuSetVisibility(0, false);
+        this.menuSetVisibility(1, false);
+
+        this.statsExporter.exportFile(this);
     }
 
 
@@ -750,13 +760,13 @@ class HistoryCardState {
 
 
     // --------------------------------------------------------------------------------------
-    // Search the first cache slot that fully contains data for the required timecode
+    // Search the first cache slot that contains data for the required timecode (full or partial)
     // --------------------------------------------------------------------------------------
 
-    searchFirstFullSlot(a, b, t)
+    searchFirstAffectedSlot(a, b, t)
     {
         for( let i = a; i <= b; i++ ) {
-            if( this.cache[i].start_m >= t ) return i;
+            if( this.cache[i].end_m >= t ) return i;
         }
         return undefined;
     }
@@ -772,22 +782,34 @@ class HistoryCardState {
         //console.log(result);
 
         let reload = false;
-
         let m = 0;
 
         // Dynamically check if the data pulled from the history DB is still available, if not switch to statistics and reschedule a retrieval
-        if( this.debug.useStatistics ) {
+        if( this.statistics.enabled ) {
 
+            // Get the first slot affected by the returned result
             m = cacheSize;
             for( let j of result ) {
-                let v = this.searchFirstFullSlot(this.loader.startIndex, this.loader.endIndex, moment(j[0].last_changed));
-                if( v < m ) m = v;
+                let v = this.searchFirstAffectedSlot(this.loader.startIndex, this.loader.endIndex, moment(j[0].last_changed));
+                //console.log(`${j[0].entity_id} -> ${j[0].last_changed} -> slot ${v}`);
+                if( v && v < m ) m = v;
             }
 
+            // 
+            if( m > this.loader.startIndex && this.statistics.retention ) {
+                const limit = cacheSize - this.statistics.retention;
+                if( m > limit ) {
+                    console.warn(`first partial slot ${m}, first history slot is ${limit}`);
+                    m = limit;
+                }
+            }
+
+            // If the first slot with data doesn't cover the full requested time period, then switch to statistics from the that slot and earlier ones
             if( m > this.loader.startIndex ) {
-                console.log(`Loader switched to statistics (slot ${this.loader.startIndex} to ${this.loader.endIndex}, first full at ${m})`);
+                m++;        // Replace partially filled slot with statistics data
                 this.limitSlot = m-1;
                 reload = true;
+                //console.log(`Loader switched to statistics (slot ${this.loader.startIndex} to ${this.loader.endIndex}, first full at ${m})`);
             }
 
         }
@@ -863,7 +885,7 @@ class HistoryCardState {
 
     loaderCallbackStats(result)
     {
-        const m = this.debug.mode;
+        const m = this.statistics.mode;
 
         let r = [];
 
@@ -1383,7 +1405,7 @@ class HistoryCardState {
 
                 this.state.loading = true;
 
-                if( !this.debug.useStatistics || l0 > this.limitSlot ) {
+                if( !this.statistics.enabled || l0 > this.limitSlot ) {
 
                     // Issue retrieval call, initiate async cache loading
                     const p = this.callHassAPIGet(url);
@@ -1965,6 +1987,8 @@ class HistoryCardState {
 
         html += `<div style="margin-left:0px;width:100%;min-height:30px;text-align:center;display:block;line-height:normal;">`;
 
+        const eh = `<a id="eh_${i}" href="#" style="display:block;padding:5px 5px;text-decoration:none;color:inherit"></a>`;
+
         if( timeline ) html += `
             <div id="dl_${i}" style="background-color:${bgcol};float:left;margin-left:10px;display:inline-block;padding-left:10px;padding-right:10px;">
                 <button id="b1_${i}" style="border:0px solid black;color:inherit;background-color:#00000000;height:30px"><</button>
@@ -1980,6 +2004,7 @@ class HistoryCardState {
                 <button id="bo_${i}" style="border:0px solid black;color:inherit;background-color:#00000000;height:30px;margin-left:1px;margin-right:0px;"><svg width="18" height="18" viewBox="0 0 24 24" style="vertical-align:middle;"><path fill="var(--primary-text-color)" d="M7.41,8.58L12,13.17L16.59,8.58L18,10L12,16L6,10L7.41,8.58Z" /></svg></button>
                 <div id="eo_${i}" style="display:none;position:absolute;text-align:left;min-width:150px;overflow:auto;border:1px solid #ddd;box-shadow:0px 8px 16px 0px rgba(0,0,0,0.2);z-index:1;color:var(--primary-text-color);background-color:var(--card-background-color)">
                     <a id="ef_${i}" href="#" style="display:block;padding:5px 5px;text-decoration:none;color:inherit"></a>
+                    ${this.statistics.enabled ? eh : ''}
                     <a id="eg_${i}" href="#" style="display:block;padding:5px 5px;text-decoration:none;color:inherit"></a>
                 </div>
             </div>`;
@@ -1991,6 +2016,7 @@ class HistoryCardState {
                 <button id="bo_${i}" style="border:0px solid black;color:inherit;background-color:#00000000;height:30px;margin-left:1px;margin-right:0px;"><svg width="18" height="18" viewBox="0 0 24 24" style="vertical-align:middle;"><path fill="var(--primary-text-color)" d="M7.41,8.58L12,13.17L16.59,8.58L18,10L12,16L6,10L7.41,8.58Z" /></svg></button>
                 <div id="eo_${i}" style="display:none;position:absolute;text-align:left;min-width:150px;overflow:auto;border:1px solid #ddd;box-shadow:0px 8px 16px 0px rgba(0,0,0,0.2);z-index:1;color:var(--primary-text-color);background-color:var(--card-background-color)">
                     <a id="ef_${i}" href="#" style="display:block;padding:5px 5px;text-decoration:none;color:inherit"></a>
+                    ${this.statistics.enabled ? eh : ''}
                     <a id="eg_${i}" href="#" style="display:block;padding:5px 5px;text-decoration:none;color:inherit"></a>
                 </div>
             </div>`;
@@ -2039,6 +2065,7 @@ class HistoryCardState {
     insertUIHtmlText(i)
     {
         let ef = this._this.querySelector(`#ef_${i}`); if( ef ) ef.innerHTML = i18n('ui.menu.export_csv');
+        let eh = this._this.querySelector(`#eh_${i}`); if( eh ) eh.innerHTML = i18n('ui.menu.export_stats');
         let eg = this._this.querySelector(`#eg_${i}`); if( eg ) eg.innerHTML = i18n('ui.menu.remove_all');
         let b7 = this._this.querySelector(`#b7_${i}`); if( b7 ) b7.placeholder = i18n('ui.label.type_to_search');
         let by = this._this.querySelector(`#by_${i}`); 
@@ -2166,6 +2193,7 @@ class HistoryCardState {
                 this._this.querySelector(`#by_${i}`)?.addEventListener('change', this.timeRangeSelected.bind(this));
                 this._this.querySelector(`#bz_${i}`)?.addEventListener('click', this.toggleZoom.bind(this), false);
                 this._this.querySelector(`#ef_${i}`)?.addEventListener('click', this.exportFile.bind(this), false);
+                this._this.querySelector(`#eh_${i}`)?.addEventListener('click', this.exportStatistics.bind(this), false);
                 this._this.querySelector(`#eg_${i}`)?.addEventListener('click', this.removeAllEntities.bind(this), false);
                 this._this.querySelector(`#bo_${i}`)?.addEventListener('click', this.menuClicked.bind(this), false);
 
@@ -2603,8 +2631,9 @@ class HistoryExplorerCard extends HTMLElement
         this.instance.pconfig.barGraphHeight =       ( config.barGraphHeight ?? 150 ) * 1;
         this.instance.pconfig.exportSeparator =        config.csv?.separator;
         this.instance.pconfig.exportTimeFormat =       config.csv?.timeFormat;
-        this.instance.debug.useStatistics =            config.statistics?.enabled ?? false;
-        this.instance.debug.mode =                     config.statistics?.mode ?? 'mean';
+        this.instance.statistics.enabled =             config.statistics?.enabled ?? false;
+        this.instance.statistics.mode =                config.statistics?.mode ?? 'mean';
+        this.instance.statistics.retention =           config.statistics?.retention ?? undefined;
 
         this.instance.pconfig.closeButtonColor = parseColor(config.uiColors?.closeButton ?? '#0000001f');
 

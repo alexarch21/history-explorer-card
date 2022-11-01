@@ -16,6 +16,7 @@ const lang_en =
         },
         "menu" : {  
             "export_csv" : "Export as CSV",
+            "export_stats" : "Export statistics as CSV",
             "remove_all" : "Remove all added graphs"
         },
         "ranges" : {
@@ -55,6 +56,7 @@ const lang_fr =
         },
         "menu" : {  
             "export_csv" : "Exporter le CSV",
+            "export_stats" : "Exporter le CSV des statistiques",
             "remove_all" : "Supprimer tous les graphiques"
         },
         "ranges" : {
@@ -95,6 +97,7 @@ const lang_de =
         },
         "menu" : {  
             "export_csv" : "Als CSV exportieren",
+            "export_stats" : "Statistik als CSV exportieren",
             "remove_all" : "Alle Diagramme entfernen"
         },
         "ranges" : {
@@ -134,6 +137,7 @@ const lang_es =
         },
         "menu" : {  
             "export_csv" : "Exportar como CSV",
+            "export_stats" : "Export statistics as CSV",       // TODO !
             "remove_all" : "Borrar gráficos añadidos"
         },
         "ranges" : {
