@@ -14,14 +14,14 @@ var isMobile = ( navigator.appVersion.indexOf("Mobi") > -1 ) || ( navigator.user
 // Valid time ranges in hours
 // --------------------------------------------------------------------------------------
 
-const ranges = [1, 2, 6, 12, 24, 48, 72, 96, 120, 144, 168, 336, 504, 720];
+const ranges = [1, 2, 6, 12, 24, 48, 72, 96, 120, 144, 168, 336, 504, 720, 2184, 4368];
 
 
 // --------------------------------------------------------------------------------------
 // Maximum size of data cache in days
 // --------------------------------------------------------------------------------------
 
-const cacheSize = 200;
+const cacheSize = 300;
 
 
 // --------------------------------------------------------------------------------------
@@ -451,15 +451,16 @@ class HistoryCardState {
             const range = this.activeRange.timeRangeHours;
 
             const stepSizes = [];
-            stepSizes.push({ '1': '5m', '2': '10m', '3': '15m', '4': '30m', '5': '30m', '6': '30m', '7': '30m', '8': '30m', '9': '30m', '10': '1h', '11': '1h', '12': '1h', '24': '2h', '48': '4h', '72': '6h', '96': '6h', '120': '12h', '144': '12h', '168': '1d', '336': '1d', '504': '2d', '720': '2d' });
-            stepSizes.push({ '1': '10m', '2': '20m', '3': '30m', '4': '1h', '5': '1h', '6': '1h', '7': '1h', '8': '1h', '9': '1h', '10': '2h', '11': '2h', '12': '2h', '24': '4h', '48': '8h', '72': '12h', '96': '1d', '120': '1d', '144': '1d', '168': '2d', '336': '3d', '504': '4d', '720': '7d' });
-            stepSizes.push({ '1': '20m', '2': '30m', '3': '1h', '4': '2h', '5': '2h', '6': '2h', '7': '2h', '8': '2h', '9': '2h', '10': '4h', '11': '4h', '12': '4h', '24': '6h', '48': '12h', '72': '1d', '96': '2d', '120': '2d', '144': '2d', '168': '4d', '336': '7d', '504': '7d', '720': '14d' });
+            stepSizes.push({ '1': '5m', '2': '10m', '3': '15m', '4': '30m', '5': '30m', '6': '30m', '7': '30m', '8': '30m', '9': '30m', '10': '1h', '11': '1h', '12': '1h', '24': '2h', '48': '4h', '72': '6h', '96': '6h', '120': '12h', '144': '12h', '168': '1d', '336': '1d', '504': '2d', '720': '2d', '2184': '1o', '4368': '1o' });
+            stepSizes.push({ '1': '10m', '2': '20m', '3': '30m', '4': '1h', '5': '1h', '6': '1h', '7': '1h', '8': '1h', '9': '1h', '10': '2h', '11': '2h', '12': '2h', '24': '4h', '48': '8h', '72': '12h', '96': '1d', '120': '1d', '144': '1d', '168': '2d', '336': '3d', '504': '4d', '720': '7d', '2184': '1o', '4368': '1o' });
+            stepSizes.push({ '1': '20m', '2': '30m', '3': '1h', '4': '2h', '5': '2h', '6': '2h', '7': '2h', '8': '2h', '9': '2h', '10': '4h', '11': '4h', '12': '4h', '24': '6h', '48': '12h', '72': '1d', '96': '2d', '120': '2d', '144': '2d', '168': '4d', '336': '7d', '504': '7d', '720': '14d', '2184': '1o', '4368': '1o' });
 
             this.activeRange.tickStepSize = stepSizes[tdensity][range].slice(0, -1);
             switch( stepSizes[tdensity][range].slice(-1)[0] ) {
                 case 'm': this.activeRange.tickStepUnit = 'minute'; break;
                 case 'h': this.activeRange.tickStepUnit = 'hour'; break;
                 case 'd': this.activeRange.tickStepUnit = 'day';  break;
+                case 'o': this.activeRange.tickStepUnit = 'month';  break;
             }
 
         } else if( this.activeRange.timeRangeMinutes ) {
@@ -510,7 +511,7 @@ class HistoryCardState {
 
         range = Math.max(range, 1);
 
-        const dataClusterSizes = { '48': 2, '72': 5, '96': 10, '120': 30, '144': 30, '168': 60, '336': 60, '504': 120, '720': 240 };
+        const dataClusterSizes = { '48': 2, '72': 5, '96': 10, '120': 30, '144': 30, '168': 60, '336': 60, '504': 120, '720': 240, '2184': 240, '4368': 240 };
         const minute = 60000;
 
         this.activeRange.dataClusterSize = ( range >= 48 ) ? dataClusterSizes[range] * minute : 0;
@@ -2042,13 +2043,15 @@ class HistoryCardState {
                     <option value="24" ${optionStyle}></option>
                     <option value="48" ${optionStyle}></option>
                     <option value="72" ${optionStyle}></option>
-                    <option value="96" ${optionStyle}></option>
-                    <option value="120" ${optionStyle}></option>
-                    <option value="144" ${optionStyle}></option>
+                    <option value="96" ${optionStyle} hidden></option>
+                    <option value="120" ${optionStyle} hidden></option>
+                    <option value="144" ${optionStyle} hidden></option>
                     <option value="168" ${optionStyle}></option>
                     <option value="336" ${optionStyle}></option>
                     <option value="504" ${optionStyle}></option>
                     <option value="720" ${optionStyle}></option>
+                    <option value="2184" ${optionStyle}></option>
+                    <option value="4368" ${optionStyle}></option>
                 </select>
                 <button id="b${invertZoom ? 4 : 5}_${i}" style="border:0px solid black;color:inherit;background-color:#00000000;height:30px">+</button>
             </div>`;
@@ -2093,6 +2096,8 @@ class HistoryCardState {
             by.children[20].innerHTML = i18n('ui.ranges.n_weeks', 2);
             by.children[21].innerHTML = i18n('ui.ranges.n_weeks', 3);
             by.children[22].innerHTML = i18n('ui.ranges.month');
+            by.children[23].innerHTML = i18n('ui.ranges.n_months', 3);
+            by.children[24].innerHTML = i18n('ui.ranges.n_months', 6);
         }
     }
 
