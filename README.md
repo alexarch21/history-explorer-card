@@ -371,6 +371,22 @@ uiLayout:
 ```
 Possible options are `top`, `bottom`, `both` and `hide`. When selecting `both`, the UI element will be duplicated and shown both on top and on the bottom. This is useful on large histories that require a lot of vertical scrolling. When `hide` is selected, the respective UI element is not shown.
 
+Toolbars can be made sticky, always floating on top or below the graphs. This can be handy to keep the toolbar controls in reach while scrolling through a long list of graphs. Use the following YAML to make the `top`, `bottom` or `both` sticky. On mobile it is not recommended to make the lower toolbar sticky if it contains an entity selector, as the entity dropdown list may be hard to reach.
+
+```yaml
+type: custom:history-explorer-card
+uiLayout:
+  sticky: top   # Make the top toolbar controls sticky, so they always stay on top.
+```
+
+If you prefer the `+` and `-` zoom icons in the time range control to work the other way round, you can invert them using the following YAML:
+
+```yaml
+type: custom:history-explorer-card
+uiLayout:
+  invertZoom: true
+```
+
 The width of the label area to the left of the graphs can be customized and the labels optionally hidden with the following YAML:
 
 ```yaml
@@ -509,7 +525,7 @@ graphs:
 
 Replace the entities and structure as needed.
 
-### Experimental features: long term statistics and sticky toolbars
+### Experimental features: long term statistics
 
 These are currently experimental features that need to be explicitely enabled in order to test them. For more information on how to enable and use them, please refer [to this post](https://community.home-assistant.io/t/new-interactive-history-explorer-custom-card/369450/332) on the Home Assistant forums.
 
