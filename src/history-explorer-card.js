@@ -109,6 +109,7 @@ class HistoryCardState {
         this.loader.endTime      = 0;
         this.loader.startIndex   = -1;
         this.loader.endIndex     = -1;
+        this.loader.loadingStats = false;
 
         this.state = {};
         this.state.drag          = false;
@@ -786,7 +787,7 @@ class HistoryCardState {
         let m = 0;
 
         // Dynamically check if the data pulled from the history DB is still available, if not switch to statistics and reschedule a retrieval
-        if( this.statistics.enabled ) {
+        if( this.statistics.enabled && !this.loader.loadingStats ) {
 
             // Get the first slot affected by the returned result
             m = cacheSize;
@@ -814,6 +815,8 @@ class HistoryCardState {
             }
 
         }
+
+        this.loader.loadingStats = false;
 
         if( this.loader.startIndex == this.loader.endIndex ) {
 
@@ -899,6 +902,8 @@ class HistoryCardState {
             }
             r.push(j);
         }
+
+        this.loader.loadingStats = true;
 
         this.loaderCallback(r);
     }
@@ -1858,7 +1863,7 @@ class HistoryCardState {
 
         // For bar graphs, connect the interval selector dropdown listener
         if( g.graph.type == 'bar' )
-            this._this.querySelector(`#bd-${g.id}`).addEventListener('change', this.selectBarInterval.bind(this));
+            this._this.querySelector(`#bd-${g.id}`)?.addEventListener('change', this.selectBarInterval.bind(this));
     }
 
     addDynamicGraph(entity_id)
