@@ -13,11 +13,15 @@ const lang_en =
         }, 
         "popup" : {
             "remove_all" : "Remove all dynamically added graphs ?",
+            "enable_panel" : "Enable entity history info panel ?",
+            "disable_panel" : "Disable entity history info panel ?"
         },
         "menu" : {  
             "export_csv" : "Export as CSV",
             "export_stats" : "Export statistics as CSV",
-            "remove_all" : "Remove all added graphs"
+            "remove_all" : "Remove all added graphs",
+            "enable_panel" : "Enable history info panel",
+            "disable_panel" : "Disable history info panel"
         },
         "ranges" : {
             "l_hour" : "< 1 H",
@@ -53,11 +57,15 @@ const lang_fr =
         }, 
         "popup" : {
             "remove_all" : "Supprimer tous les graphiques ajoutés dynamiquement ?",
+            "enable_panel" : "Activer le panneau d'historique des entités ?",
+            "disable_panel" : "Déactiver le panneau d'historique des entités ?"
         },
         "menu" : {  
             "export_csv" : "Exporter le CSV",
             "export_stats" : "Exporter le CSV des statistiques",
-            "remove_all" : "Supprimer tous les graphiques"
+            "remove_all" : "Supprimer tous les graphiques",
+            "enable_panel" : "Activer le panneau d'historique",
+            "disable_panel" : "Déactiver le panneau d'historique"
         },
         "ranges" : {
             "l_hour" : "< 1 H",
@@ -94,11 +102,15 @@ const lang_de =
         }, 
         "popup" : {
             "remove_all" : "Alle dynamisch hinzugefügten Diagramme entfernen ?",
+            "enable_panel" : "Verlaufsinfo für Entitäten aktivieren ?",
+            "disable_panel" : "Verlaufsinfo für Entitäten deaktivieren ?"
         },
         "menu" : {  
             "export_csv" : "Als CSV exportieren",
             "export_stats" : "Statistik als CSV exportieren",
-            "remove_all" : "Alle Diagramme entfernen"
+            "remove_all" : "Alle Diagramme entfernen",
+            "enable_panel" : "Verlaufsinfo aktivieren",
+            "disable_panel" : "Verlaufsinfo deaktivieren"
         },
         "ranges" : {
             "l_hour" : "< 1 Std",
@@ -134,11 +146,15 @@ const lang_es =
         }, 
         "popup" : {
             "remove_all" : "Borrar gráficos añadidos dinámicamente ?",
+            "enable_panel" : "Enable entity history info panel ?",      // TODO !
+            "disable_panel" : "Disable entity history info panel ?"     // TODO !
         },
         "menu" : {  
             "export_csv" : "Exportar como CSV",
             "export_stats" : "Export statistics as CSV",       // TODO !
-            "remove_all" : "Borrar gráficos añadidos"
+            "remove_all" : "Borrar gráficos añadidos",
+            "enable_panel" : "Enable history info panel",      // TODO !
+            "disable_panel" : "Disable history info panel"     // TODO !
         },
         "ranges" : {
             "l_hour" : "< 1 H",

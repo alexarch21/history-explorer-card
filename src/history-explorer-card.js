@@ -5,7 +5,7 @@ import "./deps/timeline.js";
 import "./deps/md5.min.js"
 import "./deps/FileSaver.js"
 
-const Version = '1.0.31';
+const Version = '1.0.32';
 
 var isMobile = ( navigator.appVersion.indexOf("Mobi") > -1 ) || ( navigator.userAgent.indexOf("HomeAssistant") > -1 );
 
@@ -36,6 +36,13 @@ var panstate = {};
     panstate.overlay = null;
     panstate.st0 = null;
     panstate.st1 = null;
+
+
+// --------------------------------------------------------------------------------------
+// HA entity history info panel enabled flag
+// --------------------------------------------------------------------------------------
+
+let infoPanelEnabled = !!JSON.parse(window.localStorage.getItem('history-explorer-info-panel'));
 
 
 // --------------------------------------------------------------------------------------
@@ -103,6 +110,7 @@ class HistoryCardState {
         this.pconfig.exportSeparator      = undefined;
         this.pconfig.exportTimeFormat     = undefined;
         this.pconfig.entities             = [];
+        this.pconfig.infoPanelConfig      = null;
 
         this.loader = {};
         this.loader.startTime    = 0;
@@ -152,6 +160,8 @@ class HistoryCardState {
         this.lastWidth = 0;
 
         this.defocusCall = this.entitySelectorDefocus.bind(this);
+
+        this.databaseCallback = null;
 
     }
 
@@ -354,6 +364,18 @@ class HistoryCardState {
         this.menuSetVisibility(1, false);
 
         this.statsExporter.exportFile(this);
+    }
+
+    toggleInfoPanel()
+    {
+        this.menuSetVisibility(0, false);
+        this.menuSetVisibility(1, false);
+
+        if( confirm(infoPanelEnabled ? i18n('ui.popup.disable_panel') : i18n('ui.popup.enable_panel')) ) {
+            infoPanelEnabled = !infoPanelEnabled;
+            this.writeInfoPanelConfig();
+            location.reload();
+        }
     }
 
 
@@ -783,6 +805,9 @@ class HistoryCardState {
         //console.log("database retrieval OK");
         //console.log(result);
 
+        if( this.databaseCallback ) 
+            this.databaseCallback(result.length > 0);
+
         let reload = false;
         let m = 0;
 
@@ -881,6 +906,9 @@ class HistoryCardState {
     {
         console.log("Database request failure");
         console.log(error);
+
+        if( this.databaseCallback ) 
+            this.databaseCallback(false);
 
         this.buildChartData(null);
 
@@ -1314,7 +1342,7 @@ class HistoryCardState {
                     mode: 'nearest'
                 },
                 legend: {
-                    display: ( graphtype == 'line' || graphtype == 'bar' ),
+                    display: ( graphtype == 'line' || graphtype == 'bar' ) && this.pconfig.hideLegend != true,
                     labels: {
                         fontColor: this.pconfig.graphLabelColor,
                         usePointStyle: ( graphtype == 'line' || (graphtype == 'bar' && datasets.length > 1) ),
@@ -2012,6 +2040,7 @@ class HistoryCardState {
                     <a id="ef_${i}" href="#" style="display:block;padding:5px 5px;text-decoration:none;color:inherit"></a>
                     ${this.statistics.enabled ? eh : ''}
                     <a id="eg_${i}" href="#" style="display:block;padding:5px 5px;text-decoration:none;color:inherit"></a>
+                    <a id="ei_${i}" href="#" style="display:block;padding:5px 5px;text-decoration:none;color:inherit"></a>
                 </div>
             </div>`;
 
@@ -2024,6 +2053,7 @@ class HistoryCardState {
                     <a id="ef_${i}" href="#" style="display:block;padding:5px 5px;text-decoration:none;color:inherit"></a>
                     ${this.statistics.enabled ? eh : ''}
                     <a id="eg_${i}" href="#" style="display:block;padding:5px 5px;text-decoration:none;color:inherit"></a>
+                    <a id="ei_${i}" href="#" style="display:block;padding:5px 5px;text-decoration:none;color:inherit"></a>
                 </div>
             </div>`;
 
@@ -2075,6 +2105,7 @@ class HistoryCardState {
         let ef = this._this.querySelector(`#ef_${i}`); if( ef ) ef.innerHTML = i18n('ui.menu.export_csv');
         let eh = this._this.querySelector(`#eh_${i}`); if( eh ) eh.innerHTML = i18n('ui.menu.export_stats');
         let eg = this._this.querySelector(`#eg_${i}`); if( eg ) eg.innerHTML = i18n('ui.menu.remove_all');
+        let ei = this._this.querySelector(`#ei_${i}`); if( ei ) ei.innerHTML = infoPanelEnabled ? i18n('ui.menu.disable_panel') : i18n('ui.menu.enable_panel');
         let b7 = this._this.querySelector(`#b7_${i}`); if( b7 ) b7.placeholder = i18n('ui.label.type_to_search');
         let by = this._this.querySelector(`#by_${i}`); 
         if( by ) {
@@ -2205,6 +2236,7 @@ class HistoryCardState {
                 this._this.querySelector(`#ef_${i}`)?.addEventListener('click', this.exportFile.bind(this), false);
                 this._this.querySelector(`#eh_${i}`)?.addEventListener('click', this.exportStatistics.bind(this), false);
                 this._this.querySelector(`#eg_${i}`)?.addEventListener('click', this.removeAllEntities.bind(this), false);
+                this._this.querySelector(`#ei_${i}`)?.addEventListener('click', this.toggleInfoPanel.bind(this), false);
                 this._this.querySelector(`#bo_${i}`)?.addEventListener('click', this.menuClicked.bind(this), false);
 
                 if( isMobile ) {
@@ -2238,6 +2270,9 @@ class HistoryCardState {
             // Register observer to resize the graphs whenever the maincard dimensions change
             let ro = new ResizeObserver(entries => { this.resize(); });
             ro.observe(this._this.querySelector('#maincard'));
+
+            // Update the info panel config in the browser local storage to sync with the YAML
+            this.writeInfoPanelConfig();
 
         }
     }
@@ -2522,6 +2557,16 @@ class HistoryCardState {
         }
     }
 
+    writeInfoPanelConfig()
+    {
+        window.localStorage.removeItem('history-explorer-info-panel');
+        if( infoPanelEnabled ) {
+            let data = {};
+            data.enabled = true;
+            data.config = this.pconfig.infoPanelConfig;
+            window.localStorage.setItem('history-explorer-info-panel', JSON.stringify(data));
+        }
+    }
 }
 
 
@@ -2646,6 +2691,8 @@ class HistoryExplorerCard extends HTMLElement
         this.instance.statistics.retention =           config.statistics?.retention ?? undefined;
 
         this.instance.pconfig.closeButtonColor = parseColor(config.uiColors?.closeButton ?? '#0000001f');
+
+        this.instance.pconfig.infoPanelConfig = config.infoPanel;
 
         this.instance.id = config.cardName ?? "default";
         this.instance.cid = gcid++;
