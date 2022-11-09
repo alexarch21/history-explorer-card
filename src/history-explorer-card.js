@@ -5,7 +5,7 @@ import "./deps/timeline.js";
 import "./deps/md5.min.js"
 import "./deps/FileSaver.js"
 
-const Version = '1.0.33';
+const Version = '1.0.34';
 
 var isMobile = ( navigator.appVersion.indexOf("Mobi") > -1 ) || ( navigator.userAgent.indexOf("HomeAssistant") > -1 );
 
@@ -373,7 +373,7 @@ class HistoryCardState {
 
         if( confirm(infoPanelEnabled ? i18n('ui.popup.disable_panel') : i18n('ui.popup.enable_panel')) ) {
             infoPanelEnabled = !infoPanelEnabled;
-            this.writeInfoPanelConfig();
+            this.writeInfoPanelConfig(true);
             location.reload();
         }
     }
@@ -2559,11 +2559,11 @@ class HistoryCardState {
         }
     }
 
-    writeInfoPanelConfig()
+    writeInfoPanelConfig(forceUpdate = false)
     {
         if( !infoPanelEnabled ) {
             window.localStorage.removeItem('history-explorer-info-panel');
-        } else if( infoPanelEnabled && this.pconfig.infoPanelConfig ) {
+        } else if( infoPanelEnabled && (this.pconfig.infoPanelConfig || forceUpdate) ) {
             let data = {};
             data.enabled = true;
             data.config = this.pconfig.infoPanelConfig;
