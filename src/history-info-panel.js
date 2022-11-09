@@ -260,6 +260,7 @@ function hecHookInfoPanel()
                         <option value="0" ${optionStyle}>10m</option>
                         <option value="1" ${optionStyle} selected>Hourly</option>
                         <option value="2" ${optionStyle}>Daily</option>
+                        <option value="3" ${optionStyle}>Monthly</option>
                     </select>
                     <canvas id="graph0" height="${h}px" style='touch-action:pan-y'></canvas>
                 </div>

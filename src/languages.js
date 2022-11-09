@@ -37,7 +37,8 @@ const lang_en =
         "interval" : {
             "_10m" : "10 min",
             "hourly" : "Hourly",
-            "daily" : "Daily"
+            "daily" : "Daily",
+            "monthly" : "Monthly"
         }
     }
 }
@@ -81,7 +82,8 @@ const lang_fr =
         "interval" : {
             "_10m" : "10 min",
             "hourly" : "Heure",
-            "daily" : "Journée"
+            "daily" : "Journée",
+            "monthly" : "Mensuel"
         }
     }
 }
@@ -126,7 +128,8 @@ const lang_de =
         "interval" : {
             "_10m" : "10 Min",
             "hourly" : "Stündlich",
-            "daily" : "Täglich"
+            "daily" : "Täglich",
+            "monthly" : "Monatlich"
         }
     }
 }
@@ -170,7 +173,8 @@ const lang_es =
         "interval" : {
             "_10m" : "10 min",      // TODO !
             "hourly" : "Hourly",    // TODO !
-            "daily" : "Daily"       // TODO !
+            "daily" : "Daily",      // TODO !
+            "monthly" : "Monthly"   // TODO !
         }
     }
 }

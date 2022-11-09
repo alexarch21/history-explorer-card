@@ -443,12 +443,13 @@ class HistoryCardState {
                     <option value="0" ${optionStyle} ${(selected == 0) ? 'selected' : ''}>${i18n('ui.interval._10m')}</option>
                     <option value="1" ${optionStyle} ${(selected == 1) ? 'selected' : ''}>${i18n('ui.interval.hourly')}</option>
                     <option value="2" ${optionStyle} ${(selected == 2) ? 'selected' : ''}>${i18n('ui.interval.daily')}</option>
+                    <option value="3" ${optionStyle} ${(selected == 3) ? 'selected' : ''}>${i18n('ui.interval.monthly')}</option>
                 </select>`;
     }
 
     parseIntervalConfig(s)
     {
-        const options = { '10m' : 0, 'hourly' : 1, 'daily' : 2 };
+        const options = { '10m' : 0, 'hourly' : 1, 'daily' : 2, 'monthly' : 3 };
         return options[s];
     }
 
@@ -1025,14 +1026,15 @@ class HistoryCardState {
                         let td;
                         if( g.interval == 0 ) td = moment.duration(10, "minute"); else
                         if( g.interval == 1 ) td = moment.duration(1, "hour"); else
-                        if( g.interval == 2 ) td = moment.duration(1, "day");
+                        if( g.interval == 2 ) td = moment.duration(1, "day"); else
+                        if( g.interval == 3 ) td = moment.duration(1, "month");
 
                         let i = 0;
                         let y0 = result[id][0].state * 1.0;
                         let y1 = y0;
 
                         // Start time of the range, snapped to interval boundary
-                        const f = ( g.interval <= 1 ) ? 'YYYY-MM-DDTHH[:00:00]' : 'YYYY-MM-DDT[00:00:00]';
+                        const f = ( g.interval <= 1 ) ? 'YYYY-MM-DDTHH[:00:00]' : ( g.interval <= 2 ) ? 'YYYY-MM-DDT[00:00:00]' : 'YYYY-MM-[01]T[00:00:00]';
                         let t = moment(moment(m_start).format(f));
 
                         // Search for the first state in the time range
