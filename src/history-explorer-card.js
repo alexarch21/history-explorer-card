@@ -5,7 +5,7 @@ import "./deps/timeline.js";
 import "./deps/md5.min.js"
 import "./deps/FileSaver.js"
 
-const Version = '1.0.32';
+const Version = '1.0.33';
 
 var isMobile = ( navigator.appVersion.indexOf("Mobi") > -1 ) || ( navigator.userAgent.indexOf("HomeAssistant") > -1 );
 
@@ -2561,11 +2561,13 @@ class HistoryCardState {
 
     writeInfoPanelConfig()
     {
-        window.localStorage.removeItem('history-explorer-info-panel');
-        if( infoPanelEnabled ) {
+        if( !infoPanelEnabled ) {
+            window.localStorage.removeItem('history-explorer-info-panel');
+        } else if( infoPanelEnabled && this.pconfig.infoPanelConfig ) {
             let data = {};
             data.enabled = true;
             data.config = this.pconfig.infoPanelConfig;
+            window.localStorage.removeItem('history-explorer-info-panel');
             window.localStorage.setItem('history-explorer-info-panel', JSON.stringify(data));
         }
     }
