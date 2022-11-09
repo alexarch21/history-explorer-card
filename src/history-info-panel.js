@@ -160,7 +160,7 @@ function hecHookInfoPanel()
 
             instance.databaseCallback = this._databaseCallback.bind(this);
 
-            const graphs = { 'type': type, 'entities': entities };
+            const graphs = { 'type': type, 'entities': entities, 'options':entityOptions };
 
             instance.pconfig.graphConfig = [];
             instance.pconfig.graphConfig.push({ graph: graphs, id:instance.g_id++ });
