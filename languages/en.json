@@ -7,10 +7,15 @@
         }, 
         "popup" : {
             "remove_all" : "Remove all dynamically added graphs ?",
+            "enable_panel" : "Enable entity history info panel ?",
+            "disable_panel" : "Disable entity history info panel ?"
         },
         "menu" : {  
             "export_csv" : "Export as CSV",
-            "remove_all" : "Remove all added graphs"
+            "export_stats" : "Export statistics as CSV",
+            "remove_all" : "Remove all added graphs",
+            "enable_panel" : "Enable history info panel",
+            "disable_panel" : "Disable history info panel"
         },
         "ranges" : {
             "l_hour" : "< 1 H",
@@ -22,6 +27,12 @@
             "n_weeks" : "%1 Weeks",
             "month" : "1 Month",
             "n_months" : "%1 Months"
+        },
+        "interval" : {
+            "_10m" : "10 min",
+            "hourly" : "Hourly",
+            "daily" : "Daily",
+            "monthly" : "Monthly"
         }
     }
 }

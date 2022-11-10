@@ -7,10 +7,15 @@
         }, 
         "popup" : {
             "remove_all" : "Alle dynamisch hinzugefügten Diagramme entfernen ?",
+            "enable_panel" : "Verlaufsinfo für Entitäten aktivieren ?",
+            "disable_panel" : "Verlaufsinfo für Entitäten deaktivieren ?"
         },
         "menu" : {  
             "export_csv" : "Als CSV exportieren",
-            "remove_all" : "Alle Diagramme entfernen"
+            "export_stats" : "Statistik als CSV exportieren",
+            "remove_all" : "Alle Diagramme entfernen",
+            "enable_panel" : "Verlaufsinfo aktivieren",
+            "disable_panel" : "Verlaufsinfo deaktivieren"
         },
         "ranges" : {
             "l_hour" : "< 1 Std",
@@ -22,6 +27,12 @@
             "n_weeks" : "%1 Wo.",
             "month" : "1 Monat",
             "n_months" : "%1 Monate"
+        },
+        "interval" : {
+            "_10m" : "10 Min",
+            "hourly" : "Stündlich",
+            "daily" : "Täglich",
+            "monthly" : "Monatlich"
         }
     }
 }

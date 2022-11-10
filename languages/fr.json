@@ -7,10 +7,15 @@
         }, 
         "popup" : {
             "remove_all" : "Supprimer tous les graphiques ajoutés dynamiquement ?",
+            "enable_panel" : "Activer le panneau d'historique des entités ?",
+            "disable_panel" : "Déactiver le panneau d'historique des entités ?"
         },
         "menu" : {  
             "export_csv" : "Exporter le CSV",
-            "remove_all" : "Supprimer tous les graphiques"
+            "export_stats" : "Exporter le CSV des statistiques",
+            "remove_all" : "Supprimer tous les graphiques",
+            "enable_panel" : "Activer le panneau d'historique",
+            "disable_panel" : "Déactiver le panneau d'historique"
         },
         "ranges" : {
             "l_hour" : "< 1 H",
@@ -22,6 +27,12 @@
             "n_weeks" : "%1 Sem",
             "month" : "1 Mois",
             "n_months" : "%1 Mois"
+        },
+        "interval" : {
+            "_10m" : "10 min",
+            "hourly" : "Heure",
+            "daily" : "Journée",
+            "monthly" : "Mensuel"
         }
     }
 }
