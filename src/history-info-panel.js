@@ -90,7 +90,7 @@ function hecHookInfoPanel()
 
             if( config.stateColors ) {
                 for( let i in config.stateColors ) {
-                    this.instance.pconfig.customStateColors[i] = parseColor(config.stateColors[i]);
+                    instance.pconfig.customStateColors[i] = parseColor(config.stateColors[i]);
                 }
             }
 
