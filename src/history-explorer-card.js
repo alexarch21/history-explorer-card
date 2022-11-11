@@ -5,7 +5,7 @@ import "./deps/timeline.js";
 import "./deps/md5.min.js"
 import "./deps/FileSaver.js"
 
-const Version = '1.0.34';
+const Version = '1.0.35';
 
 var isMobile = ( navigator.appVersion.indexOf("Mobi") > -1 ) || ( navigator.userAgent.indexOf("HomeAssistant") > -1 );
 
@@ -154,6 +154,7 @@ class HistoryCardState {
 
         this._hass = null;
         this._this = null;
+        this.version = [];
         this.contentValid = false;
         this.entitiesPopulated = false;
         this.iid = 0;
@@ -1451,7 +1452,7 @@ class HistoryCardState {
 
                     // Issue statistics retrieval call
                     let d = { 
-                        type: "history/statistics_during_period",
+                        type: ( this.version[0] > 2022 || this.version[1] >= 11 ) ? "recorder/statistics_during_period" : "history/statistics_during_period",
                         start_time: t0,
                         end_time: t1,
                         period: "hour",
@@ -2617,6 +2618,8 @@ class HistoryExplorerCard extends HTMLElement
     {
         this.instance._this = this;
         this.instance._hass = hass;
+
+        this.instance.version = hass.config.version.split('.').map(Number);
 
         if( !this.instance.entitiesPopulated )
             this.instance.requestEntityCollection();
