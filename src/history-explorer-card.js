@@ -2017,12 +2017,12 @@ class HistoryCardState {
     {
         let html = '';
 
-        if( this.ui.stickyTools & (1<<i) ) {
+        if( (timeline || selector) && (this.ui.stickyTools & (1<<i)) ) {
             const threshold = i ? 'bottom:0px' : 'top:var(--header-height)';
             html = `<div style="position:sticky;${threshold};padding-top:${this.ui.hideHeader ? 0 : 15}px;padding-bottom:10px;margin-top:-${this.ui.hideHeader ? 0 : 15}px;z-index:1;background-color:var(--card-background-color);line-height:0px;">`;
         }
 
-        html += `<div style="margin-left:0px;width:100%;min-height:30px;text-align:center;display:block;line-height:normal;">`;
+        if( timeline || selector ) html += `<div style="margin-left:0px;width:100%;min-height:30px;text-align:center;display:block;line-height:normal;">`;
 
         const eh = `<a id="eh_${i}" href="#" style="display:block;padding:5px 5px;text-decoration:none;color:inherit"></a>`;
 
@@ -2094,11 +2094,11 @@ class HistoryCardState {
                 <button id="b${invertZoom ? 4 : 5}_${i}" style="border:0px solid black;color:inherit;background-color:#00000000;height:30px">+</button>
             </div>`;
 
-        html += `</div>`;
+        if( timeline || selector ) html += `</div>`;
 
         html += `<div id='rf_${i}' style="margin-left:0px;margin-top:10px;margin-bottom:0px;width:100%;text-align:center;display:none;line-height:normal;"></div>`;
 
-        if( this.ui.stickyTools & (1<<i) ) html += `</div>`;
+        if( (timeline || selector) && (this.ui.stickyTools & (1<<i)) ) html += `</div>`;
 
         return html;
     }
