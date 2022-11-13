@@ -408,21 +408,31 @@ The tooltip popups used in timelines and arrowlines support three different size
 
 ```yaml
 type: custom:history-explorer-card
-tooltipSize: slim       # Supported sizes are full, compact, slim. Use auto for automatic size (this is the default).
+tooltip:
+  size: slim       # Supported sizes are full, compact, slim. Use auto for automatic size (this is the default).
 ```
 
 The state color boxes in the tooltips can optionally be hidden for line graphs or timelines (or both):
 
 ```yaml
 type: custom:history-explorer-card
-showTooltipColorsLine: false       # hide the color boxes in the tooltip popups for line graphs
-showTooltipColorsTimeline: false   # hide the color boxes in the tooltip popups for timeline graphs
+tooltip:
+  showColorsLine: false       # hide the color boxes in the tooltip popups for line graphs
+  showColorsTimeline: false   # hide the color boxes in the tooltip popups for timeline graphs
 ```
 
 The tooltips can optionally show the duration of the selected state next to the start and end times:
 ```yaml
 type: custom:history-explorer-card
-tooltipShowDuration: true
+tooltip:
+  showDuration: true
+```
+
+You can hide the entity name label on tooltips for line and bar charts to make it even more compact:
+```yaml
+type: custom:history-explorer-card
+tooltip:
+  showLabel: false
 ```
 
 ![image](https://user-images.githubusercontent.com/60828821/186550469-bec9bad3-c76e-4f9f-a1d7-a0b76ec2f51c.png)
