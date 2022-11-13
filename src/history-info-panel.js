@@ -96,7 +96,7 @@ function hecHookInfoPanel()
 
             instance.pconfig.entityOptions = config.entityOptions;
 
-            instance.pconfig.labelAreaWidth =       ( type == 'timeline' ) ? 0 : 40;
+            instance.pconfig.labelAreaWidth =       ( type == 'timeline' ) ? 0 : 55;
             instance.pconfig.labelsVisible =          false;
             instance.pconfig.showTooltipColors[0] =   config.tooltip?.showColorsLine ?? config.showTooltipColorsLine ?? true;
             instance.pconfig.showTooltipColors[1] =   config.tooltip?.showColorsTimeline ?? config.showTooltipColorsTimeline ?? true;
@@ -192,6 +192,8 @@ function hecHookInfoPanel()
 
             this.hec_instance._this = this.shadowRoot;
             this.hec_instance._hass = this.__hass;
+
+            this.hec_instance.version = this.__hass.config.version.split('.').map(Number);
 
             this._injectHistoryExplorer(this.hec_instance);
 
