@@ -198,76 +198,114 @@ function hecHookInfoPanel()
         }
     };
 
+    function calcGraphHeight(type)
+    {
+        switch( type ) {
+            case 'line': return hec_panel?.config?.lineGraphHeight ?? 250;
+            case 'bar': return (hec_panel?.config?.barGraphHeight ?? 150) + 24;
+            default: return 90;
+        }
+    }
+
     __fn.prototype._hec_render = function() 
     {
-        const entity_id = this.__entityId;
-        const type = ( this.__hass.states[entity_id]?.attributes?.unit_of_measurement == undefined ) ? 'timeline' : ( this.__hass.states[entity_id]?.attributes?.state_class === 'total_increasing' ) ? 'bar' : 'line';
-        const h = ( type == 'line' ) ? 250 : ( type == 'bar' ) ? 150 + 24 : 90;
+        if( !this.hec_instance ) 
+            readLocalConfig();
 
-        const i = 0;
-        const invertZoom = false;
+        const entity_id = this.__entityId;
+
+        const type = ( this.__hass.states[entity_id]?.attributes?.unit_of_measurement == undefined ) ? 'timeline' : ( this.__hass.states[entity_id]?.attributes?.state_class === 'total_increasing' ) ? 'bar' : 'line';
+
+        const h = calcGraphHeight(type);
+
+        const bgcol = parseColor(hec_panel?.config?.uiColors?.buttons ?? getComputedStyle(document.body).getPropertyValue('--primary-color') + '1f');
+        const tools = hec_panel?.config?.uiLayout?.toolbar != 'hide';
+        const invertZoom = hec_panel?.config?.uiLayout?.invertZoom === true;
         const optionStyle = `style="color:var(--primary-text-color);background-color:var(--card-background-color)"`;
-        const bgcol = getComputedStyle(document.body).getPropertyValue('--primary-color') + '1f';
 
         if( hec_panel.entity !== this.__entityId ) {
             hec_panel.entity = this.__entityId;
             hec_panel.show = undefined;
         }
 
-        return html`
-            <div id="maincard" style="display:${(hec_panel.show === false) ? 'none' : 'block'};margin-bottom: 16px">
-            <div style="margin-bottom:10px;width:100%;min-height:30px;text-align:center;display:block;line-height:normal;">
-                <div id="dl_${i}" style="background-color:${bgcol};float:left;margin-left:${isMobile ? -10 : -4}px;display:inline-block;padding-left:10px;padding-right:10px;">
-                    <button id="b1_${i}" style="border:0px solid black;color:inherit;background-color:#00000000;height:30px"><</button>
-                    <button id="bx_${i}" style="border:0px solid black;color:inherit;background-color:#00000000;height:30px">-</button>
-                    <button id="b2_${i}" style="border:0px solid black;color:inherit;background-color:#00000000;height:30px">></button>
+        const i = 0;
+
+        if( tools ) {
+
+            return html`
+                <div id="maincard" style="display:${(hec_panel.show === false) ? 'none' : 'block'};margin-bottom: 16px">
+                <div style="margin-bottom:10px;width:100%;min-height:30px;text-align:center;display:block;line-height:normal;">
+                    <div id="dl_${i}" style="background-color:${bgcol};float:left;margin-left:${isMobile ? -10 : -4}px;display:inline-block;padding-left:10px;padding-right:10px;">
+                        <button id="b1_${i}" style="border:0px solid black;color:inherit;background-color:#00000000;height:30px"><</button>
+                        <button id="bx_${i}" style="border:0px solid black;color:inherit;background-color:#00000000;height:30px">-</button>
+                        <button id="b2_${i}" style="border:0px solid black;color:inherit;background-color:#00000000;height:30px">></button>
+                    </div>
+                    <div id="dr_${i}" style="background-color:${bgcol};float:right;margin-right:${isMobile ? -10 : -4}px;display:inline-block;padding-left:${isMobile ? 5 : 10}px;padding-right:10px;">
+                        <button id="bz_${i}" style="border:0px solid black;color:inherit;background-color:#00000000"><svg width="24" height="24" viewBox="0 0 24 24" style="vertical-align:middle;"><path fill="var(--primary-text-color)" d="M15.5,14L20.5,19L19,20.5L14,15.5V14.71L13.73,14.43C12.59,15.41 11.11,16 9.5,16A6.5,6.5 0 0,1 3,9.5A6.5,6.5 0 0,1 9.5,3A6.5,6.5 0 0,1 16,9.5C16,11.11 15.41,12.59 14.43,13.73L14.71,14H15.5M9.5,14C12,14 14,12 14,9.5C14,7 12,5 9.5,5C7,5 5,7 5,9.5C5,12 7,14 9.5,14M12,10H10V12H9V10H7V9H9V7H10V9H12V10Z" /></svg></button>
+                        <button id="b${invertZoom ? 5 : 4}_${i}" style="border:0px solid black;color:inherit;background-color:#00000000;height:30px">-</button>
+                        <select id="by_${i}" style="border:0px solid black;color:inherit;background-color:#00000000;height:30px;max-width:83px">
+                            <option value="0" ${optionStyle} hidden></option>
+                            <option value="1" ${optionStyle}></option>
+                            <option value="2" ${optionStyle}></option>
+                            <option value="3" ${optionStyle} hidden></option>
+                            <option value="4" ${optionStyle} hidden></option>
+                            <option value="5" ${optionStyle} hidden></option>
+                            <option value="6" ${optionStyle}></option>
+                            <option value="7" ${optionStyle} hidden></option>
+                            <option value="8" ${optionStyle} hidden></option>
+                            <option value="9" ${optionStyle} hidden></option>
+                            <option value="10" ${optionStyle} hidden></option>
+                            <option value="11" ${optionStyle} hidden></option>
+                            <option value="12" ${optionStyle}></option>
+                            <option value="24" ${optionStyle}></option>
+                            <option value="48" ${optionStyle}></option>
+                            <option value="72" ${optionStyle}></option>
+                            <option value="96" ${optionStyle} hidden></option>
+                            <option value="120" ${optionStyle} hidden></option>
+                            <option value="144" ${optionStyle} hidden></option>
+                            <option value="168" ${optionStyle}></option>
+                            <option value="336" ${optionStyle}></option>
+                            <option value="504" ${optionStyle}></option>
+                            <option value="720" ${optionStyle}></option>
+                            <option value="2184" ${optionStyle}></option>
+                            <option value="4368" ${optionStyle}></option>
+                        </select>
+                        <button id="b${invertZoom ? 4 : 5}_${i}" style="border:0px solid black;color:inherit;background-color:#00000000;height:30px">+</button>
+                    </div>
                 </div>
-                <div id="dr_${i}" style="background-color:${bgcol};float:right;margin-right:${isMobile ? -10 : -4}px;display:inline-block;padding-left:${isMobile ? 5 : 10}px;padding-right:10px;">
-                    <button id="bz_${i}" style="border:0px solid black;color:inherit;background-color:#00000000"><svg width="24" height="24" viewBox="0 0 24 24" style="vertical-align:middle;"><path fill="var(--primary-text-color)" d="M15.5,14L20.5,19L19,20.5L14,15.5V14.71L13.73,14.43C12.59,15.41 11.11,16 9.5,16A6.5,6.5 0 0,1 3,9.5A6.5,6.5 0 0,1 9.5,3A6.5,6.5 0 0,1 16,9.5C16,11.11 15.41,12.59 14.43,13.73L14.71,14H15.5M9.5,14C12,14 14,12 14,9.5C14,7 12,5 9.5,5C7,5 5,7 5,9.5C5,12 7,14 9.5,14M12,10H10V12H9V10H7V9H9V7H10V9H12V10Z" /></svg></button>
-                    <button id="b${invertZoom ? 5 : 4}_${i}" style="border:0px solid black;color:inherit;background-color:#00000000;height:30px">-</button>
-                    <select id="by_${i}" style="border:0px solid black;color:inherit;background-color:#00000000;height:30px;max-width:83px">
-                        <option value="0" ${optionStyle} hidden></option>
-                        <option value="1" ${optionStyle}></option>
-                        <option value="2" ${optionStyle}></option>
-                        <option value="3" ${optionStyle} hidden></option>
-                        <option value="4" ${optionStyle} hidden></option>
-                        <option value="5" ${optionStyle} hidden></option>
-                        <option value="6" ${optionStyle}></option>
-                        <option value="7" ${optionStyle} hidden></option>
-                        <option value="8" ${optionStyle} hidden></option>
-                        <option value="9" ${optionStyle} hidden></option>
-                        <option value="10" ${optionStyle} hidden></option>
-                        <option value="11" ${optionStyle} hidden></option>
-                        <option value="12" ${optionStyle}></option>
-                        <option value="24" ${optionStyle}></option>
-                        <option value="48" ${optionStyle}></option>
-                        <option value="72" ${optionStyle}></option>
-                        <option value="96" ${optionStyle} hidden></option>
-                        <option value="120" ${optionStyle} hidden></option>
-                        <option value="144" ${optionStyle} hidden></option>
-                        <option value="168" ${optionStyle}></option>
-                        <option value="336" ${optionStyle}></option>
-                        <option value="504" ${optionStyle}></option>
-                        <option value="720" ${optionStyle}></option>
-                        <option value="2184" ${optionStyle}></option>
-                        <option value="4368" ${optionStyle}></option>
-                    </select>
-                    <button id="b${invertZoom ? 4 : 5}_${i}" style="border:0px solid black;color:inherit;background-color:#00000000;height:30px">+</button>
+                <div id='graphlist' style="margin-left:-10px;margin-right:-10px">
+                    <div>
+                        <select id='bd-0' style="display:${(type == 'bar') ? 'block' : 'none'};position:relative;float:right;width:80px;right:10px;color:var(--primary-text-color);background-color:'#0000001f';border:0px solid black;">
+                            <option value="0" ${optionStyle}>10m</option>
+                            <option value="1" ${optionStyle} selected>Hourly</option>
+                            <option value="2" ${optionStyle}>Daily</option>
+                            <option value="3" ${optionStyle}>Monthly</option>
+                        </select>
+                        <canvas id="graph0" height="${h}px" style='touch-action:pan-y'></canvas>
+                    </div>
                 </div>
-            </div>
-            <div id='graphlist' style="margin-left:-10px;margin-right:-10px">
-                <div>
-                    <select id='bd-0' style="display:${(type == 'bar') ? 'block' : 'none'};position:relative;float:right;width:80px;right:10px;color:var(--primary-text-color);background-color:'#0000001f';border:0px solid black;">
-                        <option value="0" ${optionStyle}>10m</option>
-                        <option value="1" ${optionStyle} selected>Hourly</option>
-                        <option value="2" ${optionStyle}>Daily</option>
-                        <option value="3" ${optionStyle}>Monthly</option>
-                    </select>
-                    <canvas id="graph0" height="${h}px" style='touch-action:pan-y'></canvas>
                 </div>
-            </div>
-            </div>
-            `;
+                `;
+
+        } else {
+
+            return html`
+                <div id="maincard" style="display:${(hec_panel.show === false) ? 'none' : 'block'};margin-bottom: 16px">
+                <div id='graphlist' style="margin-left:-10px;margin-right:-10px">
+                    <div>
+                        <select id='bd-0' style="display:${(type == 'bar') ? 'block' : 'none'};position:relative;float:right;width:80px;right:10px;color:var(--primary-text-color);background-color:'#0000001f';border:0px solid black;">
+                            <option value="0" ${optionStyle}>10m</option>
+                            <option value="1" ${optionStyle} selected>Hourly</option>
+                            <option value="2" ${optionStyle}>Daily</option>
+                            <option value="3" ${optionStyle}>Monthly</option>
+                        </select>
+                        <canvas id="graph0" height="${h}px" style='touch-action:pan-y'></canvas>
+                    </div>
+                </div>
+                </div>
+                `;
+
+        }
     };
 
     function readLocalConfig()
