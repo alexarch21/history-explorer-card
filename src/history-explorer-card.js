@@ -5,7 +5,7 @@ import "./deps/timeline.js";
 import "./deps/md5.min.js"
 import "./deps/FileSaver.js"
 
-const Version = '1.0.35';
+const Version = '1.0.36';
 
 var isMobile = ( navigator.appVersion.indexOf("Mobi") > -1 ) || ( navigator.userAgent.indexOf("HomeAssistant") > -1 );
 
@@ -89,6 +89,7 @@ class HistoryCardState {
         this.pconfig.showTooltipColors    = [true, true];
         this.pconfig.tooltipSize          = 'auto';
         this.pconfig.tooltipShowDuration  = false;
+        this.pconfig.tooltipShowLabel     = true;
         this.pconfig.closeButtonColor     = undefined;
         this.pconfig.customStateColors    = undefined;
         this.pconfig.colorSeed            = 137;
@@ -1307,7 +1308,8 @@ class HistoryCardState {
                     callbacks: {
                         label: (item, data) => {
                             if( graphtype == 'line' || graphtype == 'bar' ) {
-                                let label = data.datasets[item.datasetIndex].label || '';
+                                let label = '';
+                                if( this.pconfig.tooltipShowLabel ) label = data.datasets[item.datasetIndex].label || '';
                                 if( label ) label += ': ';
                                 const p = 10 ** this.pconfig.roundingPrecision;
                                 label += Math.round(item.yLabel * p) / p;
@@ -2672,10 +2674,11 @@ class HistoryExplorerCard extends HTMLElement
 
         this.instance.pconfig.labelAreaWidth =         config.labelAreaWidth ?? 65;
         this.instance.pconfig.labelsVisible =          config.labelsVisible ?? true;
-        this.instance.pconfig.showTooltipColors[0] =   config.showTooltipColorsLine ?? true;
-        this.instance.pconfig.showTooltipColors[1] =   config.showTooltipColorsTimeline ?? true;
-        this.instance.pconfig.tooltipSize =            config.tooltipSize ?? 'auto';
-        this.instance.pconfig.tooltipShowDuration =    config.tooltipShowDuration ?? false;
+        this.instance.pconfig.showTooltipColors[0] =   config.tooltip?.showColorsLine ?? config.showTooltipColorsLine ?? true;
+        this.instance.pconfig.showTooltipColors[1] =   config.tooltip?.showColorsTimeline ?? config.showTooltipColorsTimeline ?? true;
+        this.instance.pconfig.tooltipSize =            config.tooltip?.size ?? config.tooltipSize ?? 'auto';
+        this.instance.pconfig.tooltipShowDuration =    config.tooltip?.showDuration ?? config.tooltipShowDuration ?? false;
+        this.instance.pconfig.tooltipShowLabel =       config.tooltip?.showLabel ?? true;
         this.instance.pconfig.colorSeed =              config.stateColorSeed ?? 137;
         this.instance.pconfig.stateTextMode =          config.stateTextMode ?? 'raw';
         this.instance.pconfig.enableDataClustering = ( config.decimation === undefined ) || config.decimation;

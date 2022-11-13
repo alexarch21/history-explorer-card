@@ -98,10 +98,11 @@ function hecHookInfoPanel()
 
             instance.pconfig.labelAreaWidth =       ( type == 'timeline' ) ? 0 : 40;
             instance.pconfig.labelsVisible =          false;
-            instance.pconfig.showTooltipColors[0] =   config.showTooltipColorsLine ?? true;
-            instance.pconfig.showTooltipColors[1] =   config.showTooltipColorsTimeline ?? true;
-            instance.pconfig.tooltipSize =            config.tooltipSize ?? 'auto';
-            instance.pconfig.tooltipShowDuration =    config.tooltipShowDuration ?? true;
+            instance.pconfig.showTooltipColors[0] =   config.tooltip?.showColorsLine ?? config.showTooltipColorsLine ?? true;
+            instance.pconfig.showTooltipColors[1] =   config.tooltip?.showColorsTimeline ?? config.showTooltipColorsTimeline ?? true;
+            instance.pconfig.tooltipSize =            config.tooltip?.size ?? config.tooltipSize ?? 'auto';
+            instance.pconfig.tooltipShowDuration =    config.tooltip?.showDuration ?? config.tooltipShowDuration ?? true;
+            instance.pconfig.tooltipShowLabel =       config.tooltip?.showLabel ?? true;
             instance.pconfig.colorSeed =              config.stateColorSeed ?? 137;
             instance.pconfig.stateTextMode =          config.stateTextMode ?? 'auto';
             instance.pconfig.enableDataClustering = ( config.decimation === undefined ) || config.decimation;
@@ -118,7 +119,7 @@ function hecHookInfoPanel()
             instance.pconfig.lineGraphHeight =      ( config.lineGraphHeight ?? 250 ) * 1;
             instance.pconfig.barGraphHeight =       ( config.barGraphHeight ?? 150 ) * 1;
             instance.pconfig.hideLegend =             true;
-            instance.statistics.enabled =             true;//config.statistics?.enabled ?? false;
+            instance.statistics.enabled =             config.statistics?.enabled ?? true;
             instance.statistics.mode =                config.statistics?.mode ?? 'mean';
             instance.statistics.retention =           config.statistics?.retention ?? undefined;
 
