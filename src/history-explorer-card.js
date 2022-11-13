@@ -1841,9 +1841,16 @@ class HistoryCardState {
 
     getEntityOptions(entity)
     {
-        const dc = this.getDeviceClass(entity);
-        let c = dc ? this.pconfig.entityOptions?.[dc] : undefined;
-        c = c ?? this.pconfig.entityOptions?.[entity];
+        let c = this.pconfig.entityOptions?.[entity];
+        if( !c ) {
+            const dc = this.getDeviceClass(entity);
+            c = dc ? this.pconfig.entityOptions?.[dc] : undefined;
+            if( !c ) {
+                const dm = this.getDomainForEntity(entity);
+                c = dm ? this.pconfig.entityOptions?.[dm] : undefined;
+            }
+        }
+
         return c ?? undefined;
     }
 
