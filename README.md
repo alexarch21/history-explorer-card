@@ -279,12 +279,12 @@ Compass arrow graphs use the `arrowline` type and can be used in both dynamicall
 
 ### Customizing dynamically added graphs
 
-When you add a new line graph using the add entity dropdown, the graph will use the default settings and an automatically picked color. You can override these settings either for specific entities or for entire device classes. For example, you could set a fixed Y axis range for all your humidity sensors or a specific color or line interpolation mode for your power graphs.
+When you add a new line graph using the add entity dropdown, the graph will use the default settings and an automatically picked color. You can override these settings either for specific entities, for device classes or for entire domains. For example, you could set a fixed Y axis range for all your humidity sensors or a specific color or line interpolation mode for your power graphs.
 
 ```yaml
 type: custom:history-explorer-card
 entityOptions:
-  humidity:  # Apply these settings to all humidity sensors 
+  humidity:                 # Apply these settings to all humidity sensors 
     color: blue
     fill: rgba(0,0,255,0.2)
     ymin: 20
@@ -296,9 +296,12 @@ entityOptions:
     ymin: 900
     ymax: 1100
     width: 2
+  sensor:                   # Apply these settings to all other entities in the sensor domain
+    color: red
+    fill: rgba(0,0,0,0)
 ```
 
-You can also change the graph type for certain entities or domains. For example, you could display a numeric entity, which would normally be shown as a linegraph, with a timeline. Or you could default to the directional arrow graph mode for your wind direction sensors:
+You can also change the graph type for certain entities, device classes or domains. For example, you could display a numeric entity, which would normally be shown as a linegraph, with a timeline. Or you could default to the directional arrow graph mode for your wind direction sensors:
 
 ```yaml
 type: custom:history-explorer-card
