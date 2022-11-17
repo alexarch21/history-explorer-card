@@ -273,6 +273,7 @@ function hecHookInfoPanel()
                             <option value="720" style="color:${optColor};background-color:${optBack}"></option>
                             <option value="2184" style="color:${optColor};background-color:${optBack}"></option>
                             <option value="4368" style="color:${optColor};background-color:${optBack}"></option>
+                            <option value="8760" style="color:${optColor};background-color:${optBack}"></option>
                         </select>
                         <button id="b${invertZoom ? 4 : 5}_${i}" style="margin:0px;border:0px solid black;color:inherit;background-color:#00000000;height:30px">+</button>
                     </div>
