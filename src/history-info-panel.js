@@ -240,14 +240,14 @@ function hecHookInfoPanel()
                 <div id="maincard" style="display:${(hec_panel.show === false) ? 'none' : 'block'};margin-bottom: 16px">
                 <div style="margin-bottom:10px;width:100%;min-height:30px;text-align:center;display:block;line-height:normal;">
                     <div id="dl_${i}" style="background-color:${bgcol};float:left;margin-left:${isMobile ? -12 : -4}px;display:inline-block;padding-left:10px;padding-right:10px;">
-                        <button id="b1_${i}" style="border:0px solid black;color:inherit;background-color:#00000000;height:30px"><</button>
-                        <button id="bx_${i}" style="border:0px solid black;color:inherit;background-color:#00000000;height:30px">-</button>
-                        <button id="b2_${i}" style="border:0px solid black;color:inherit;background-color:#00000000;height:30px">></button>
+                        <button id="b1_${i}" style="margin:0px;border:0px solid black;color:inherit;background-color:#00000000;height:30px"><</button>
+                        <button id="bx_${i}" style="margin:0px;border:0px solid black;color:inherit;background-color:#00000000;height:30px">-</button>
+                        <button id="b2_${i}" style="margin:0px;border:0px solid black;color:inherit;background-color:#00000000;height:30px">></button>
                     </div>
                     <div id="dr_${i}" style="background-color:${bgcol};float:right;margin-right:${isMobile ? -12 : -4}px;display:inline-block;padding-left:${isMobile ? 5 : 10}px;padding-right:10px;">
-                        <button id="bz_${i}" style="border:0px solid black;color:inherit;background-color:#00000000"><svg width="24" height="24" viewBox="0 0 24 24" style="vertical-align:middle;"><path fill="var(--primary-text-color)" d="M15.5,14L20.5,19L19,20.5L14,15.5V14.71L13.73,14.43C12.59,15.41 11.11,16 9.5,16A6.5,6.5 0 0,1 3,9.5A6.5,6.5 0 0,1 9.5,3A6.5,6.5 0 0,1 16,9.5C16,11.11 15.41,12.59 14.43,13.73L14.71,14H15.5M9.5,14C12,14 14,12 14,9.5C14,7 12,5 9.5,5C7,5 5,7 5,9.5C5,12 7,14 9.5,14M12,10H10V12H9V10H7V9H9V7H10V9H12V10Z" /></svg></button>
-                        <button id="b${invertZoom ? 5 : 4}_${i}" style="border:0px solid black;color:inherit;background-color:#00000000;height:30px">-</button>
-                        <select id="by_${i}" style="border:0px solid black;color:inherit;background-color:#00000000;height:30px;max-width:83px">
+                        <button id="bz_${i}" style="margin:0px;border:0px solid black;color:inherit;background-color:#00000000"><svg width="24" height="24" viewBox="0 0 24 24" style="vertical-align:middle;"><path fill="var(--primary-text-color)" d="M15.5,14L20.5,19L19,20.5L14,15.5V14.71L13.73,14.43C12.59,15.41 11.11,16 9.5,16A6.5,6.5 0 0,1 3,9.5A6.5,6.5 0 0,1 9.5,3A6.5,6.5 0 0,1 16,9.5C16,11.11 15.41,12.59 14.43,13.73L14.71,14H15.5M9.5,14C12,14 14,12 14,9.5C14,7 12,5 9.5,5C7,5 5,7 5,9.5C5,12 7,14 9.5,14M12,10H10V12H9V10H7V9H9V7H10V9H12V10Z" /></svg></button>
+                        <button id="b${invertZoom ? 5 : 4}_${i}" style="margin:0px;border:0px solid black;color:inherit;background-color:#00000000;height:30px">-</button>
+                        <select id="by_${i}" style="margin:0px;border:0px solid black;color:inherit;background-color:#00000000;height:30px;max-width:83px">
                             <option value="0" style="color:${optColor};background-color:${optBack}" hidden></option>
                             <option value="1" style="color:${optColor};background-color:${optBack}"></option>
                             <option value="2" style="color:${optColor};background-color:${optBack}"></option>
@@ -274,7 +274,7 @@ function hecHookInfoPanel()
                             <option value="2184" style="color:${optColor};background-color:${optBack}"></option>
                             <option value="4368" style="color:${optColor};background-color:${optBack}"></option>
                         </select>
-                        <button id="b${invertZoom ? 4 : 5}_${i}" style="border:0px solid black;color:inherit;background-color:#00000000;height:30px">+</button>
+                        <button id="b${invertZoom ? 4 : 5}_${i}" style="margin:0px;border:0px solid black;color:inherit;background-color:#00000000;height:30px">+</button>
                     </div>
                 </div>
                 <div id='graphlist' style="margin-left:-10px;margin-right:-10px">
