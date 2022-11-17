@@ -32,7 +32,8 @@ const lang_en =
             "week" : "1 Week",
             "n_weeks" : "%1 Weeks",
             "month" : "1 Month",
-            "n_months" : "%1 Months"
+            "n_months" : "%1 Months",
+            "year" : "1 Year"
         },
         "interval" : {
             "_10m" : "10 min",
@@ -77,7 +78,8 @@ const lang_fr =
             "week" : "1 Sem",
             "n_weeks" : "%1 Sem",
             "month" : "1 Mois",
-            "n_months" : "%1 Mois"
+            "n_months" : "%1 Mois",
+            "year" : "1 An"
         },
         "interval" : {
             "_10m" : "10 min",
@@ -92,7 +94,6 @@ const lang_fr =
 // --------------------------------------------------------------------------------------
 // German (de)
 // --------------------------------------------------------------------------------------
-
 
 const lang_de =
 {
@@ -123,7 +124,8 @@ const lang_de =
             "week" : "1 Woche",
             "n_weeks" : "%1 Wo.",
             "month" : "1 Monat",
-            "n_months" : "%1 Monate"
+            "n_months" : "%1 Monate",
+            "year" : "1 Jahr"
         },
         "interval" : {
             "_10m" : "10 Min",
@@ -168,7 +170,8 @@ const lang_es =
             "week" : "1 Sem.",
             "n_weeks" : "%1 Sem.",
             "month" : "1 Mes",
-            "n_months" : "%1 Meses"
+            "n_months" : "%1 Meses",
+            "year" : "1 Año"
         },
         "interval" : {
             "_10m" : "10 min",      // TODO !
