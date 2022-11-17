@@ -85,7 +85,7 @@ Dynamically added entities can be individually removed by clicking the `x` close
 
 ![image](https://user-images.githubusercontent.com/60828821/186549959-cd3705b6-229a-46c5-abcf-6a9f3b675f0b.png)
 
-When the dashboard is opened, the card will show the last 24 hours by default. You can select a different default time range in the YAML. Use m, h, d, and w to denote minutes, hours, days and weeks respectively. If no postfix is given, hours are assumed.
+When the dashboard is opened, the card will show the last 24 hours by default. You can select a different default time range in the YAML. Use m, h, d, and w to denote minutes, hours, days and weeks respectively. For longer time scale, o and y denote months and year. Currently the maximum range is one year. If no postfix is given, hours are assumed.
 
 ```yaml
 type: custom:history-explorer-card
@@ -93,6 +93,8 @@ defaultTimeRange: 4h   // show the last 4 hours when opening the card
 defaultTimeRange: 2d   // or 2 days...
 defaultTimeRange: 15m  // or 15 minutes...
 defaultTimeRange: 3w   // or 3 weeks
+defaultTimeRange: 6o   // or 6 months
+defaultTimeRange: 1y   // or 1 year
 ```
 
 ### Grouping multiple entities into a single graph
