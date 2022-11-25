@@ -314,11 +314,30 @@ entityOptions:
     fill: rgba(0,0,0,0.2)   # Optional background color for the arrows
 ```
 
+### Long term statistics
+
+When this setting is enabled, the card will try to pull in long term statistics for an entity once the limit of the history data is reached. The integration of both history sources is entirely seamless. You keep scrolling and zooming in or out of your data, as usual. The statistics and history data will be combined on the fly at all time ranges. This only works for entities that have long term statistics available. Graphs for all other entities will just become blank as soon as the history data limit is reached.
+
+![image](https://user-images.githubusercontent.com/60828821/203880897-6f634e95-cb5d-484c-a9c0-d97b58321557.png)
+
+In the screenshot above, the blue graph is the outdoor temperature, the red graph is the temperature of a workshop / barn. The outdoor temperature has statistics available, the barn temperature does not. So you see the red line stopping where the history database retention period ends (Oct 11th). The outdoor temperature continues way past this point, as the card will turn to long term statistics. Note that the card will always prefer history data over long term statistics data if available, because it’s more precise.
+
+To enable this feature, add the following to the card YAML:
+
+```yaml
+type: custom:history-explorer-card
+statistics:
+  enabled: true
+  mode: mean
+```
+
+The (optional) mode parameter controls how the statistics data is processed before being integrated into the history stream. `mean` = use the average value, `min` = minimum value, `max` = max value. The default if the option is not present is mean. This setting does not apply to total_increasing values like energy sensors, which are calculated differently.
+
 ### Exporting data as CSV
 
-The raw data for the currently displayed entities and time range can be exported as a CSV file by opening the entity options and selecting Export as CSV. Note that CSV exporting does not work in the HA Companion app.
+The raw data for the currently displayed entities and time range can be exported as a CSV file by opening the entity options and selecting Export as CSV. Note that CSV exporting does not work in the HA Companion app. Both history and long term statistics can be exported.
 
-![image](https://user-images.githubusercontent.com/60828821/156686793-c0cdace6-87c0-4c1e-bb7f-58dd04035be5.png)
+![image](https://user-images.githubusercontent.com/60828821/203881276-1332c8bd-d83c-4ff6-9a9b-9b43cb4a6c44.png)
 
 The exported CSV can be customized. The following settings are optional. If they are not present, the defaults will be used.
 ```yaml
@@ -539,10 +558,6 @@ graphs:
 ```
 
 Replace the entities and structure as needed.
-
-### Experimental features: long term statistics
-
-These are currently experimental features that need to be explicitely enabled in order to test them. For more information on how to enable and use them, please refer [to this post](https://community.home-assistant.io/t/new-interactive-history-explorer-custom-card/369450/332) on the Home Assistant forums.
 
 ### Running as a panel in the sidebar
 
