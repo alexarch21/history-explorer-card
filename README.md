@@ -20,17 +20,11 @@ Once you release the mouse button after dragging (or release your finger from th
 
 Like in the native HA history panel, you can hover over the chart line or state timelines to get a tooltip of the selected values or state.
 
-### Data decimation
+### Overriding the HA more info history
 
-The card will automatically reduce the data shown in the charts and remove details that would not be visible or useful at a given time range. For example, if you view a per-hour history, nothing will be removed and you will be able to explore the raw data, point by point. If you view an entire week at once, there's no need to show data that changed every few seconds, you couldn't even see it. The card will simplify the curves and make the experience a lot faster that way. 
+The card is capable of replacing the history graph in the HA more info popup that appears when you click an entity anywhere on your dashboard.
 
-This feature can be turned off in the options if you want, either globally or by entity.
-
-![history-panel-line-decimation](https://github.com/alexarch21/history-explorer-card/raw/main/images/screenshots/history-panel-line-decimation.png)
-
-Decimation works on state timelines by merging very small state changes into 'multiple' sections when they can't be seen individually anymore. Zoom into the timeline and the details will appear. The color used for the multiple sections can be adjusted per graph.
-
-![history-panel-timeline-multiple](https://github.com/alexarch21/history-explorer-card/raw/main/images/screenshots/history-panel-timeline-multiple.png)
+Please refer to [this post](https://community.home-assistant.io/t/new-interactive-history-explorer-custom-card/369450/378) on the HA forums for more information on how to enable and configure the option.
 
 ## Install and configuration
 
@@ -153,6 +147,19 @@ If your history data contains an unavailable state, for example if a sensor went
 type: custom:history-explorer-card
 showUnavailable: true
 ```
+
+### Data decimation
+
+The card will automatically reduce the data shown in the charts and remove details that would not be visible or useful at a given time range. For example, if you view a per-hour history, nothing will be removed and you will be able to explore the raw data, point by point. If you view an entire week at once, there's no need to show data that changed every few seconds, you couldn't even see it. The card will simplify the curves and make the experience a lot faster that way. 
+
+This feature can be turned off in the options if you want, either globally or by entity.
+
+![image](https://user-images.githubusercontent.com/60828821/203882385-461d3376-58e1-4344-861f-852c150bd01a.png)
+
+Decimation works on state timelines by merging very small state changes into 'multiple' sections when they can't be seen individually anymore. Zoom into the timeline and the details will appear. The color used for the multiple sections can be adjusted per graph.
+
+![history-panel-timeline-multiple](https://github.com/alexarch21/history-explorer-card/raw/main/images/screenshots/history-panel-timeline-multiple.png)
+
 
 ### Bar graphs for total increasing entities
 
