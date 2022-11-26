@@ -327,7 +327,7 @@ When this setting is enabled, the card will try to pull in long term statistics 
 
 ![image](https://user-images.githubusercontent.com/60828821/203880897-6f634e95-cb5d-484c-a9c0-d97b58321557.png)
 
-In the screenshot above, the blue graph is the outdoor temperature, the red graph is the temperature of a workshop / barn. The outdoor temperature has statistics available, the barn temperature does not. So you see the red line stopping where the history database retention period ends (Oct 11th). The outdoor temperature continues way past this point, as the card will turn to long term statistics. Note that the card will always prefer history data over long term statistics data if available, because it’s more precise.
+In the screenshot above, the blue graph is the outdoor temperature, the red graph is the temperature of a barn. The outdoor temperature has statistics available, the barn temperature does not. So you see the red line stopping where the history database retention period ends (Oct 11th). The outdoor temperature continues way past this point, as the card will turn to long term statistics. Note that the card will always prefer history data over long term statistics data if available, because it’s more precise.
 
 To enable this feature, add the following to the card YAML:
 
@@ -339,6 +339,30 @@ statistics:
 ```
 
 The (optional) mode parameter controls how the statistics data is processed before being integrated into the history stream. `mean` = use the average value, `min` = minimum value, `max` = max value. The default if the option is not present is mean. This setting does not apply to total_increasing values like energy sensors, which are calculated differently.
+
+### Custom data processing functions
+
+The card supports user defined Javascript expressions modifying the data right before display through the `process` option. This can be used to filter or shape data, apply non-linear scaling or transform data from one graph type to another. The supplied JS expression is provided with the original input `state` value (can be a string or a number, depending on the graph and data source). The expression must evaluate to the desired new state. Complex custom processing functions can degrade rendering performance. 
+
+Custom processing functions works for dyanmically added entities, manually defined YAML graphs and graphs in the more info panel.
+
+Example showing a humidity numerical entity as a timeline graph, where humidity below 30% appears as state `dry`, above 70% as `wet` and everything inbetween as `normal`:
+```yaml
+type: custom:history-explorer-card
+graphs:
+  - type: timeline
+    entities:
+      - entity: sensor.room_humidity
+        process: '( state < 30 ) ? "dry" : ( state > 70 ) ? "wet" : "normal"'
+```
+
+Example of a spike rejection filter for dynamic temperature entities, removing invalid  positive or negative temperature spikes, marking them invalid and letting the graph interpolate over them:
+```yaml
+type: custom:history-explorer-card
+entityOptions:
+  temperature:  
+    process: '( Math.abs(state) < 100 ) ? state : "unavailable"'
+```
 
 ### Exporting data as CSV
 
