@@ -132,9 +132,9 @@ function hecHookInfoPanel()
             instance.pconfig.graphLabelColor = parseColor(config.uiColors?.labels ?? (instance.ui.darkMode ? '#9b9b9b' : '#333'));
             instance.pconfig.graphGridColor  = parseColor(config.uiColors?.gridlines ?? (instance.ui.darkMode ? "rgba(255, 255, 255, 0.1)" : "rgba(0, 0, 0, 0.1)"));
 
-            let entities = [ { 'entity' : entity_id } ];
-
             var entityOptions = instance.getEntityOptions(entity_id);
+
+            let entities = [ { 'entity' : entity_id, "process": entityOptions?.process } ];
 
             // Get the options for line and arrow graphs (use per device_class options if available, otherwise use defaults)
             if( type == 'line' || type == 'arrowline' || type == 'bar' ) {

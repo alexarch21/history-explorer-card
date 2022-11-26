@@ -5,7 +5,7 @@ import "./deps/timeline.js";
 import "./deps/md5.min.js"
 import "./deps/FileSaver.js"
 
-const Version = '1.0.37';
+const Version = '1.0.38';
 
 var isMobile = ( navigator.appVersion.indexOf("Mobi") > -1 ) || ( navigator.userAgent.indexOf("HomeAssistant") > -1 );
 
@@ -943,6 +943,30 @@ class HistoryCardState {
 
 
     // --------------------------------------------------------------------------------------
+    // User defined state process function
+    // --------------------------------------------------------------------------------------
+
+    process(sample, process)
+    {
+        return process ? process(sample) : sample;
+    }
+
+    buildProcessFunction(p)
+    {
+        if( !p ) return null;
+
+        try {
+            const f = new Function('state', `"use strict";return (${p});`);
+            f('undefined');
+            return f;
+        } catch( e ) {
+            console.warn(e.message);
+            return null;
+        }
+    }
+
+
+    // --------------------------------------------------------------------------------------
     // Graph data generation
     // --------------------------------------------------------------------------------------
 
@@ -984,6 +1008,8 @@ class HistoryCardState {
 
                     var n = result[id].length;
 
+                    const process = this.buildProcessFunction(g.entities[j].process);
+
                     if( g.type == 'line' ) {
 
                         // Fill line chart buffer
@@ -997,10 +1023,11 @@ class HistoryCardState {
                             let last_time = this.momentCache(result[id][0].last_changed);
 
                             for( let i = 0; i < n; i++ ) {
-                                if( isDataValid(result[id][i].state) ) {
+                                const state = this.process(result[id][i].state, process);
+                                if( isDataValid(state) ) {
                                     let this_time = this.momentCache(result[id][i].last_changed);
                                     if( !i || this_time.diff(last_time) >= this.activeRange.dataClusterSize ) {
-                                        s.push({ x: this_time, y: result[id][i].state * scale});
+                                        s.push({ x: this_time, y: state * scale});
                                         last_time = this_time;
                                     }
                                 }
@@ -1009,16 +1036,17 @@ class HistoryCardState {
                         } else {
 
                             for( let i = 0; i < n; i++ ) {
-                                if( isDataValid(result[id][i].state) ) {
-                                    s.push({ x: result[id][i].last_changed, y: result[id][i].state * scale});
+                                const state = this.process(result[id][i].state, process);
+                                if( isDataValid(state) ) {
+                                    s.push({ x: result[id][i].last_changed, y: state * scale});
                                 }
                             }
                         }
 
                         if( m_now > m_end && s.length > 0 && moment(s[s.length-1].x) < m_end ) {
-                            s.push({ x: m_end, y: result[id][n-1].state * scale});
+                            s.push({ x: m_end, y: this.process(result[id][n-1].state, process) * scale});
                         } else if( m_now <= m_end && s.length > 0 && moment(s[s.length-1].x) < m_now ) {
-                            s.push({ x: m_now, y: result[id][n-1].state * scale});
+                            s.push({ x: m_now, y: this.process(result[id][n-1].state, process) * scale});
                         }
 
                     } else if( g.type == 'bar' && n > 0 ) {
@@ -1034,7 +1062,7 @@ class HistoryCardState {
                         if( g.interval == 3 ) td = moment.duration(1, "month");
 
                         let i = 0;
-                        let y0 = result[id][0].state * 1.0;
+                        let y0 = this.process(result[id][0].state, process) * 1.0;
                         let y1 = y0;
 
                         // Start time of the range, snapped to interval boundary
@@ -1042,7 +1070,9 @@ class HistoryCardState {
                         let t = moment(moment(m_start).format(f));
 
                         // Search for the first state in the time range
-                        while( i < n-1 && moment(result[id][i].last_changed) <= t ) y0 = result[id][i++].state * 1.0;
+                        while( i < n-1 && moment(result[id][i].last_changed) <= t ) {
+                            y0 = this.process(result[id][i++].state, process) * 1.0;
+                        }
 
                         // Calculate differentials over the time range in interval sized stacks, add a half interval at the end so that the last bar doesn't jump
                         // Add them to the graph with a half interval time offset, so that the stacks align at the center of their respective intervals
@@ -1053,7 +1083,7 @@ class HistoryCardState {
                             while( i < n && moment(result[id][i].last_changed) < te ) {
                                 const rawstate = result[id][i].state;
                                 if( !['unavailable', 'unknown'].includes(rawstate) ) {
-                                    const state = rawstate * 1.0;
+                                    const state = this.process(rawstate, process) * 1.0;
                                     if( state < y1 ) {
                                         d += y1 - y0;
                                         y0 = state;
@@ -1094,10 +1124,10 @@ class HistoryCardState {
                             if( !merged ) {
 
                                 // State of the current block
-                                state = result[id][i].state;
+                                state = this.process(result[id][i].state, process);
 
                                 // Skip noop state changes (can happen at cache slot boundaries)
-                                while( i < n-1 && result[id][i].state == result[id][i+1].state ) {
+                                while( i < n-1 && this.process(result[id][i].state, process) == this.process(result[id][i+1].state, process) ) {
                                     ++i;
                                     t1 = ( i < n-1 ) ? result[id][i+1].last_changed : m_max;
                                 }
@@ -1119,7 +1149,7 @@ class HistoryCardState {
                                 }
                             } else {
                                 // Below merge limit, start merge (keep the first state for possible single block merges) or extend current one
-                                if( !merged ) { mt0 = t0; state = result[id][i].state; }
+                                if( !merged ) { mt0 = t0; state = this.process(result[id][i].state, process); }
                                 mt1 = t1;
                                 merged++;
                                 continue;
@@ -1920,7 +1950,7 @@ class HistoryCardState {
 
         const type = entityOptions?.type ? entityOptions.type : ( this.getUnitOfMeasure(entity_id) == undefined ) ? 'timeline' : ( this.getStateClass(entity_id) === 'total_increasing' ) ? 'bar' : 'line';
 
-        let entities = [{ "entity": entity_id, "color": "#000000", "fill": "#00000000" }];
+        let entities = [{ "entity": entity_id, "color": "#000000", "fill": "#00000000", "process": entityOptions?.process }];
 
         // Get the options for line and arrow graphs (use per device_class options if available, otherwise use defaults)
         if( type == 'line' || type == 'arrowline' || type == 'bar' ) {
