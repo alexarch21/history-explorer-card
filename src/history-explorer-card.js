@@ -70,6 +70,7 @@ class HistoryCardState {
         this.ui.spinOverlay   = null;
         this.ui.optionStyle   = '';
         this.ui.hideHeader    = false;
+        this.ui.hideInterval  = false;
         this.ui.stickyTools   = 0;
 
         this.i18n = {};
@@ -1998,7 +1999,7 @@ class HistoryCardState {
         html += `<div sytle='height:${h}px'>`;
         html += `<canvas id="graph${this.g_id}" height="${h}px" style='touch-action:pan-y'></canvas>`;
         html += `<button id='bc-${this.g_id}' style="position:absolute;right:20px;margin-top:${-h+5}px;color:var(--primary-text-color);background-color:${this.pconfig.closeButtonColor};border:0px solid black;">×</button>`;
-        if( type == 'bar' ) 
+        if( type == 'bar' && !this.ui.hideInterval ) 
             html += this.createIntervalSelectorHtml(this.g_id, h, this.parseIntervalConfig(entityOptions?.interval), this.ui.optionStyle);
         html += `</div>`;
 
@@ -2008,7 +2009,7 @@ class HistoryCardState {
         let gl = this._this.querySelector('#graphlist');
         gl.appendChild(e);
 
-        if( type == 'bar' )
+        if( type == 'bar' && !this.ui.hideInterval )
             this._this.querySelector(`#bd-${this.g_id}`).addEventListener('change', this.selectBarInterval.bind(this));
 
         this._this.querySelector(`#bc-${this.g_id}`).addEventListener('click', this.removeGraph.bind(this));
@@ -2769,6 +2770,7 @@ class HistoryExplorerCard extends HTMLElement
 
         this.instance.ui.optionStyle = optionStyle;
         this.instance.ui.hideHeader = header === 'hide';
+        this.instance.ui.hideInterval = config.uiLayout?.interval === 'hide';
 
         // Generate card html
 
@@ -2787,7 +2789,7 @@ class HistoryExplorerCard extends HTMLElement
             const h = this.instance.calcGraphHeight(g.graph.type, g.graph.entities.length);
             html += `<div style='height:${h}px'>`;
             html += `<canvas id="graph${g.id}" height="${h}px" style='touch-action:pan-y'></canvas>`;
-            if( g.graph.type == 'bar' ) 
+            if( g.graph.type == 'bar' && !this.instance.ui.hideInterval ) 
                 html += this.instance.createIntervalSelectorHtml(g.id, h, this.instance.parseIntervalConfig(g.graph.options?.interval), optionStyle);
             html += `</div>`;
             spacing = !( g.graph.options?.showTimeLabels === false );
