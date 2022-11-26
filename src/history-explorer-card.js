@@ -1107,7 +1107,7 @@ class HistoryCardState {
 
                         let enableClustering = g.entities[j].decimation == undefined || g.entities[j].decimation;
 
-                        if( g.type == 'arrowline' ) enableClustering = false;
+                        if( g.type == 'arrowline' || process ) enableClustering = false;
 
                         let merged = 0;
                         let mt0, mt1;
@@ -1164,7 +1164,7 @@ class HistoryCardState {
                                 let e = [];
                                 e.push(t0);
                                 e.push(t1);
-                                e.push(( merged > 1 ) ? 'multiple' : state);
+                                e.push(( merged > 1 ) ? 'multiple' : String(state));
                                 s.push(e);
                             }
 
