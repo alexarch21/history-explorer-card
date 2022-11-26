@@ -20,17 +20,11 @@ Once you release the mouse button after dragging (or release your finger from th
 
 Like in the native HA history panel, you can hover over the chart line or state timelines to get a tooltip of the selected values or state.
 
-### Data decimation
+### Overriding the HA more info history
 
-The card will automatically reduce the data shown in the charts and remove details that would not be visible or useful at a given time range. For example, if you view a per-hour history, nothing will be removed and you will be able to explore the raw data, point by point. If you view an entire week at once, there's no need to show data that changed every few seconds, you couldn't even see it. The card will simplify the curves and make the experience a lot faster that way. 
+The card is capable of replacing the history graph in the HA more info popup that appears when you click an entity anywhere on your dashboard.
 
-This feature can be turned off in the options if you want, either globally or by entity.
-
-![history-panel-line-decimation](https://github.com/alexarch21/history-explorer-card/raw/main/images/screenshots/history-panel-line-decimation.png)
-
-Decimation works on state timelines by merging very small state changes into 'multiple' sections when they can't be seen individually anymore. Zoom into the timeline and the details will appear. The color used for the multiple sections can be adjusted per graph.
-
-![history-panel-timeline-multiple](https://github.com/alexarch21/history-explorer-card/raw/main/images/screenshots/history-panel-timeline-multiple.png)
+Please refer to [this post](https://community.home-assistant.io/t/new-interactive-history-explorer-custom-card/369450/378) on the HA forums for more information on how to enable and configure the option.
 
 ## Install and configuration
 
@@ -85,7 +79,7 @@ Dynamically added entities can be individually removed by clicking the `x` close
 
 ![image](https://user-images.githubusercontent.com/60828821/186549959-cd3705b6-229a-46c5-abcf-6a9f3b675f0b.png)
 
-When the dashboard is opened, the card will show the last 24 hours by default. You can select a different default time range in the YAML. Use m, h, d, and w to denote minutes, hours, days and weeks respectively. If no postfix is given, hours are assumed.
+When the dashboard is opened, the card will show the last 24 hours by default. You can select a different default time range in the YAML. Use m, h, d, and w to denote minutes, hours, days and weeks respectively. For longer time scale, o and y denote months and year. Currently the maximum range is one year. If no postfix is given, hours are assumed.
 
 ```yaml
 type: custom:history-explorer-card
@@ -93,6 +87,8 @@ defaultTimeRange: 4h   // show the last 4 hours when opening the card
 defaultTimeRange: 2d   // or 2 days...
 defaultTimeRange: 15m  // or 15 minutes...
 defaultTimeRange: 3w   // or 3 weeks
+defaultTimeRange: 6o   // or 6 months
+defaultTimeRange: 1y   // or 1 year
 ```
 
 ### Grouping multiple entities into a single graph
@@ -151,6 +147,19 @@ If your history data contains an unavailable state, for example if a sensor went
 type: custom:history-explorer-card
 showUnavailable: true
 ```
+
+### Data decimation
+
+The card will automatically reduce the data shown in the charts and remove details that would not be visible or useful at a given time range. For example, if you view a per-hour history, nothing will be removed and you will be able to explore the raw data, point by point. If you view an entire week at once, there's no need to show data that changed every few seconds, you couldn't even see it. The card will simplify the curves and make the experience a lot faster that way. 
+
+This feature can be turned off in the options if you want, either globally or by entity.
+
+![image](https://user-images.githubusercontent.com/60828821/203882385-461d3376-58e1-4344-861f-852c150bd01a.png)
+
+Decimation works on state timelines by merging very small state changes into 'multiple' sections when they can't be seen individually anymore. Zoom into the timeline and the details will appear. The color used for the multiple sections can be adjusted per graph.
+
+![history-panel-timeline-multiple](https://github.com/alexarch21/history-explorer-card/raw/main/images/screenshots/history-panel-timeline-multiple.png)
+
 
 ### Bar graphs for total increasing entities
 
@@ -312,11 +321,30 @@ entityOptions:
     fill: rgba(0,0,0,0.2)   # Optional background color for the arrows
 ```
 
+### Long term statistics
+
+When this setting is enabled, the card will try to pull in long term statistics for an entity once the limit of the history data is reached. The integration of both history sources is entirely seamless. You keep scrolling and zooming in or out of your data, as usual. The statistics and history data will be combined on the fly at all time ranges. This only works for entities that have long term statistics available. Graphs for all other entities will just become blank as soon as the history data limit is reached.
+
+![image](https://user-images.githubusercontent.com/60828821/203880897-6f634e95-cb5d-484c-a9c0-d97b58321557.png)
+
+In the screenshot above, the blue graph is the outdoor temperature, the red graph is the temperature of a workshop / barn. The outdoor temperature has statistics available, the barn temperature does not. So you see the red line stopping where the history database retention period ends (Oct 11th). The outdoor temperature continues way past this point, as the card will turn to long term statistics. Note that the card will always prefer history data over long term statistics data if available, because it’s more precise.
+
+To enable this feature, add the following to the card YAML:
+
+```yaml
+type: custom:history-explorer-card
+statistics:
+  enabled: true
+  mode: mean
+```
+
+The (optional) mode parameter controls how the statistics data is processed before being integrated into the history stream. `mean` = use the average value, `min` = minimum value, `max` = max value. The default if the option is not present is mean. This setting does not apply to total_increasing values like energy sensors, which are calculated differently.
+
 ### Exporting data as CSV
 
-The raw data for the currently displayed entities and time range can be exported as a CSV file by opening the entity options and selecting Export as CSV. Note that CSV exporting does not work in the HA Companion app.
+The raw data for the currently displayed entities and time range can be exported as a CSV file by opening the entity options and selecting Export as CSV. Note that CSV exporting does not work in the HA Companion app. Both history and long term statistics can be exported.
 
-![image](https://user-images.githubusercontent.com/60828821/156686793-c0cdace6-87c0-4c1e-bb7f-58dd04035be5.png)
+![image](https://user-images.githubusercontent.com/60828821/203881276-1332c8bd-d83c-4ff6-9a9b-9b43cb4a6c44.png)
 
 The exported CSV can be customized. The following settings are optional. If they are not present, the defaults will be used.
 ```yaml
@@ -537,10 +565,6 @@ graphs:
 ```
 
 Replace the entities and structure as needed.
-
-### Experimental features: long term statistics
-
-These are currently experimental features that need to be explicitely enabled in order to test them. For more information on how to enable and use them, please refer [to this post](https://community.home-assistant.io/t/new-interactive-history-explorer-custom-card/369450/332) on the Home Assistant forums.
 
 ### Running as a panel in the sidebar
 
