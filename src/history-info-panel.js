@@ -224,6 +224,7 @@ function hecHookInfoPanel()
         const optBack = 'var(--card-background-color)';
 
         const bgcol = parseColor(hec_panel?.config?.uiColors?.buttons ?? getComputedStyle(document.body).getPropertyValue('--primary-color') + '1f');
+        const cbcol = parseColor(hec_panel?.config?.uiColors?.closeButton ?? '#0000001f');
         const tools = hec_panel?.config?.uiLayout?.toolbar != 'hide';
         const invertZoom = hec_panel?.config?.uiLayout?.invertZoom === true;
 
@@ -280,7 +281,7 @@ function hecHookInfoPanel()
                 </div>
                 <div id='graphlist' style="margin-left:-10px;margin-right:-10px">
                     <div>
-                        <select id='bd-0' style="display:${(type == 'bar') ? 'block' : 'none'};position:relative;float:right;width:80px;right:10px;color:var(--primary-text-color);background-color:#0000001f;border:0px solid black;">
+                        <select id='bd-0' style="display:${(type == 'bar') ? 'block' : 'none'};position:relative;float:right;width:80px;right:10px;color:var(--primary-text-color);background-color:${cbcol};border:0px solid black;">
                             <option value="0" style="color:${optColor};background-color:${optBack}">10m</option>
                             <option value="1" style="color:${optColor};background-color:${optBack}" selected>Hourly</option>
                             <option value="2" style="color:${optColor};background-color:${optBack}">Daily</option>
@@ -298,7 +299,7 @@ function hecHookInfoPanel()
                 <div id="maincard" style="display:${(hec_panel.show === false) ? 'none' : 'block'};margin-bottom: 16px">
                 <div id='graphlist' style="margin-left:-10px;margin-right:-10px">
                     <div>
-                        <select id='bd-0' style="display:${(type == 'bar') ? 'block' : 'none'};position:relative;float:right;width:80px;right:10px;color:var(--primary-text-color);background-color:#0000001f;border:0px solid black;">
+                        <select id='bd-0' style="display:${(type == 'bar') ? 'block' : 'none'};position:relative;float:right;width:80px;right:10px;color:var(--primary-text-color);background-color:${cbcol};border:0px solid black;">
                             <option value="0" style="color:${optColor};background-color:${optBack}">10m</option>
                             <option value="1" style="color:${optColor};background-color:${optBack}" selected>Hourly</option>
                             <option value="2" style="color:${optColor};background-color:${optBack}">Daily</option>
