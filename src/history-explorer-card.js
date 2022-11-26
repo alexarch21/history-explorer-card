@@ -1349,8 +1349,12 @@ class HistoryCardState {
                                 label += ' ' + (data.datasets[item.datasetIndex].unit || '');
                                 return label;
                             } else if( graphtype == 'timeline' ) {
-                                const d = data.datasets[item.datasetIndex].data[item.index];
-                                return this.generateTooltipContents(d[2], d, tooltipSize, datasets.length);
+                                const dataset = data.datasets[item.datasetIndex];
+                                const d = dataset.data[item.index];
+                                let label = d[2];
+                                if( this.pconfig.stateTextMode == 'auto' )
+                                    label = this.getLocalizedState(label, dataset.domain, dataset.device_class, dataset.entity_id);
+                                return this.generateTooltipContents(label, d, tooltipSize, datasets.length);
                             } else if( graphtype == 'arrowline' ) {
                                 const d = data.datasets[item.datasetIndex].data[item.index];
                                 const p = 10 ** this.pconfig.roundingPrecision;
