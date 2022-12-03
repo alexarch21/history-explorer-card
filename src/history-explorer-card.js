@@ -5,7 +5,7 @@ import "./deps/timeline.js";
 import "./deps/md5.min.js"
 import "./deps/FileSaver.js"
 
-const Version = '1.0.38';
+const Version = '1.0.39';
 
 var isMobile = ( navigator.appVersion.indexOf("Mobi") > -1 ) || ( navigator.userAgent.indexOf("HomeAssistant") > -1 );
 
@@ -91,9 +91,11 @@ class HistoryCardState {
         this.pconfig.tooltipSize          = 'auto';
         this.pconfig.tooltipShowDuration  = false;
         this.pconfig.tooltipShowLabel     = true;
+        this.pconfig.tooltipStateTextMode = 'raw';
         this.pconfig.closeButtonColor     = undefined;
         this.pconfig.customStateColors    = undefined;
         this.pconfig.colorSeed            = 137;
+        this.pconfig.stateTextMode        = 'raw';
         this.pconfig.graphConfig          = [];
         this.pconfig.entityOptions        = undefined;
         this.pconfig.lockAllGraphs        = false;
@@ -1352,7 +1354,7 @@ class HistoryCardState {
                                 const dataset = data.datasets[item.datasetIndex];
                                 const d = dataset.data[item.index];
                                 let label = d[2];
-                                if( this.pconfig.stateTextMode == 'auto' )
+                                if( this.pconfig.tooltipStateTextMode == 'auto' )
                                     label = this.getLocalizedState(label, dataset.domain, dataset.device_class, dataset.entity_id);
                                 return this.generateTooltipContents(label, d, tooltipSize, datasets.length);
                             } else if( graphtype == 'arrowline' ) {
@@ -2728,6 +2730,7 @@ class HistoryExplorerCard extends HTMLElement
         this.instance.pconfig.tooltipSize =            config.tooltip?.size ?? config.tooltipSize ?? 'auto';
         this.instance.pconfig.tooltipShowDuration =    config.tooltip?.showDuration ?? config.tooltipShowDuration ?? false;
         this.instance.pconfig.tooltipShowLabel =       config.tooltip?.showLabel ?? true;
+        this.instance.pconfig.tooltipStateTextMode =   config.tooltip?.stateTextMode ?? config.stateTextMode ?? 'raw';
         this.instance.pconfig.colorSeed =              config.stateColorSeed ?? 137;
         this.instance.pconfig.stateTextMode =          config.stateTextMode ?? 'raw';
         this.instance.pconfig.enableDataClustering = ( config.decimation === undefined ) || config.decimation;

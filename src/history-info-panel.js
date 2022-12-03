@@ -103,6 +103,7 @@ function hecHookInfoPanel()
             instance.pconfig.tooltipSize =            config.tooltip?.size ?? config.tooltipSize ?? 'auto';
             instance.pconfig.tooltipShowDuration =    config.tooltip?.showDuration ?? config.tooltipShowDuration ?? true;
             instance.pconfig.tooltipShowLabel =       config.tooltip?.showLabel ?? true;
+            instance.pconfig.tooltipStateTextMode =   config.tooltip?.stateTextMode ?? config.stateTextMode ?? 'auto';
             instance.pconfig.colorSeed =              config.stateColorSeed ?? 137;
             instance.pconfig.stateTextMode =          config.stateTextMode ?? 'auto';
             instance.pconfig.enableDataClustering = ( config.decimation === undefined ) || config.decimation;
