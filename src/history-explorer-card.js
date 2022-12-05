@@ -102,7 +102,7 @@ class HistoryCardState {
         this.pconfig.combineSameUnits     = false;
         this.pconfig.recordedEntitiesOnly = false;
         this.pconfig.filterEntities       = undefined;
-        this.pconfig.enableDataClustering = true;
+        this.pconfig.decimation           = 'fast';
         this.pconfig.roundingPrecision    = 2;
         this.pconfig.defaultLineMode      = undefined;
         this.pconfig.nextDefaultColor     = 0;
@@ -544,8 +544,6 @@ class HistoryCardState {
         const minute = 60000;
 
         this.activeRange.dataClusterSize = ( range >= 48 ) ? dataClusterSizes[range] * minute : 0;
-
-        if( !this.pconfig.enableDataClustering ) this.activeRange.dataClusterSize = 0;
 
         this.activeRange.timeRangeHours = range;
         this.activeRange.timeRangeMinutes = 0;
@@ -1019,19 +1017,36 @@ class HistoryCardState {
 
                         const scale = g.entities[j].scale ?? 1.0;
 
-                        const enableClustering = g.entities[j].decimation == undefined || g.entities[j].decimation;
+                        const clusterMode = g.entities[j].decimation ?? this.pconfig.decimation ?? 'fast';
 
-                        if( n > 2 && enableClustering && this.activeRange.dataClusterSize > 0 ) {
+                        if( n > 2 && clusterMode && this.activeRange.dataClusterSize > 0 ) {
 
                             let last_time = this.momentCache(result[id][0].last_changed);
+                            let max_state = null, max_time = null;
+                            let min_state = null, min_time = null;
 
                             for( let i = 0; i < n; i++ ) {
-                                const state = this.process(result[id][i].state, process);
+                                let state = this.process(result[id][i].state, process);
                                 if( isDataValid(state) ) {
+                                    state *= scale;
                                     let this_time = this.momentCache(result[id][i].last_changed);
+                                    if( clusterMode == 'accurate' ) {
+                                        if( max_state === null || state > max_state ) { max_state = state; max_time = this_time; }
+                                        if( min_state === null || state < min_state ) { min_state = state; min_time = this_time; }
+                                    }
                                     if( !i || this_time.diff(last_time) >= this.activeRange.dataClusterSize ) {
-                                        s.push({ x: this_time, y: state * scale});
+                                        if( clusterMode == 'accurate' ) {
+                                            if( min_time < max_time ) {
+                                                s.push({ x: min_time, y: min_state});
+                                                s.push({ x: max_time, y: max_state});
+                                            } else {
+                                                s.push({ x: max_time, y: max_state});
+                                                s.push({ x: min_time, y: min_state});
+                                            }
+                                        } else
+                                            s.push({ x: this_time, y: state});
                                         last_time = this_time;
+                                        max_state = min_state = null;
                                     }
                                 }
                             }
@@ -1107,7 +1122,7 @@ class HistoryCardState {
 
                         // Fill timeline chart buffer
 
-                        let enableClustering = g.entities[j].decimation == undefined || g.entities[j].decimation;
+                        let enableClustering = (g.entities[j].decimation ?? this.pconfig.decimation) != undefined;
 
                         if( g.type == 'arrowline' || process ) enableClustering = false;
 
@@ -2733,7 +2748,7 @@ class HistoryExplorerCard extends HTMLElement
         this.instance.pconfig.tooltipStateTextMode =   config.tooltip?.stateTextMode ?? config.stateTextMode ?? 'raw';
         this.instance.pconfig.colorSeed =              config.stateColorSeed ?? 137;
         this.instance.pconfig.stateTextMode =          config.stateTextMode ?? 'raw';
-        this.instance.pconfig.enableDataClustering = ( config.decimation === undefined ) || config.decimation;
+        this.instance.pconfig.decimation =             config.decimation;
         this.instance.pconfig.roundingPrecision =      config.rounding || 2;
         this.instance.pconfig.defaultLineMode =        config.lineMode;
         this.instance.pconfig.showUnavailable =        config.showUnavailable ?? false;

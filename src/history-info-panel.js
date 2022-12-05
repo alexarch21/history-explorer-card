@@ -106,7 +106,7 @@ function hecHookInfoPanel()
             instance.pconfig.tooltipStateTextMode =   config.tooltip?.stateTextMode ?? config.stateTextMode ?? 'auto';
             instance.pconfig.colorSeed =              config.stateColorSeed ?? 137;
             instance.pconfig.stateTextMode =          config.stateTextMode ?? 'auto';
-            instance.pconfig.enableDataClustering = ( config.decimation === undefined ) || config.decimation;
+            instance.pconfig.decimation =             config.decimation;
             instance.pconfig.roundingPrecision =      config.rounding || 2;
             instance.pconfig.defaultLineMode =        config.lineMode ?? 'lines';
             instance.pconfig.showUnavailable =        config.showUnavailable ?? false;
