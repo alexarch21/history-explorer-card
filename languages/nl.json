@@ -1,0 +1,39 @@
+{
+    "ui" : {
+        "label" : {
+            "type_to_search" : "Typ om te zoeken naar een entiteit om toe te voegen",
+            "error_retreiving" : "Kan beschikbare entiteiten niet ophalen !",
+            "loading" : "Beschikbare entiteiten laden...",
+        }, 
+        "popup" : {
+            "remove_all" : "Alle dynamisch toegevoegde grafieken verwijderen ?",
+            "enable_panel" : "Schakel het informatiepaneel over de geschiedenis van de entiteit in ?",
+            "disable_panel" : "Schakel het informatiepaneel over de geschiedenis van de entiteit uit ?"
+        },
+        "menu" : {  
+            "export_csv" : "Exporteren als CSV",
+            "export_stats" : "Exporteer statistieken als CSV",
+            "remove_all" : "Verwijder alle toegevoegde grafieken",
+            "enable_panel" : "Deelvenster Geschiedenisinfo inschakelen",
+            "disable_panel" : "Schakel geschiedenisinfopaneel uit"
+        },
+        "ranges" : {
+            "l_hour" : "< 1 u",
+            "hour" : "1 u",
+            "n_hours" : "%1 u",
+            "day" : "1 Dag",
+            "n_days" : "%1 Dagen",
+            "week" : "1 Week",
+            "n_weeks" : "%1 Weken",
+            "month" : "1 Maand",
+            "n_months" : "%1 Maand",
+            "year" : "1 Jaar"
+        },
+        "interval" : {
+            "_10m" : "10 minuten",
+            "hourly" : "Per uur",
+            "daily" : "Dagelijks",
+            "monthly" : "Maandelijks"
+        }
+    }
+}

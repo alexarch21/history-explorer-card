@@ -26,7 +26,8 @@
             "week" : "1 Sem.",
             "n_weeks" : "%1 Sem.",
             "month" : "1 Mes",
-            "n_months" : "%1 Meses"
+            "n_months" : "%1 Meses",
+            "year" : "1 Año"
         },
         "interval" : {
             "_10m" : "10 min",      // TODO !
