@@ -838,7 +838,8 @@ class HistoryCardState {
             }
 
             // If the first slot with data doesn't cover the full requested time period, then switch to statistics from the that slot and earlier ones
-            if( m > this.loader.startIndex && m < cacheSize ) {
+            // Don't switch to statistics on entities that have less than one day of history (newly added to recorder)
+            if( m > this.loader.startIndex && (result.length == 0 || m < cacheSize) ) {
                 m++;        // Replace partially filled slot with statistics data
                 this.limitSlot = m-1;
                 reload = true;
