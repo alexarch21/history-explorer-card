@@ -116,6 +116,7 @@ class HistoryCardState {
         this.pconfig.timeTickDensity      = 'high';
         this.pconfig.exportSeparator      = undefined;
         this.pconfig.exportTimeFormat     = undefined;
+        this.pconfig.exportStatsPeriod    = undefined;
         this.pconfig.entities             = [];
         this.pconfig.infoPanelConfig      = null;
 
@@ -144,6 +145,7 @@ class HistoryCardState {
         this.statistics.enabled = false;
         this.statistics.retention = undefined;
         this.statistics.mode = '';
+        this.statistics.period = 'hour';
 
         this.id = "";
 
@@ -1515,7 +1517,7 @@ class HistoryCardState {
                         type: ( this.version[0] > 2022 || this.version[1] >= 11 ) ? "recorder/statistics_during_period" : "history/statistics_during_period",
                         start_time: t0,
                         end_time: t1,
-                        period: "hour",
+                        period: this.statistics.period,
                         statistic_ids: l
                     };
                     this._hass.callWS(d).then(this.loaderCallbackStats.bind(this), this.loaderFailed.bind(this));
@@ -2767,9 +2769,11 @@ class HistoryExplorerCard extends HTMLElement
         this.instance.pconfig.barGraphHeight =       ( config.barGraphHeight ?? 150 ) * 1;
         this.instance.pconfig.exportSeparator =        config.csv?.separator;
         this.instance.pconfig.exportTimeFormat =       config.csv?.timeFormat;
+        this.instance.pconfig.exportStatsPeriod =      config.csv?.statisticsPeriod ?? 'hour';
         this.instance.statistics.enabled =             config.statistics?.enabled ?? false;
         this.instance.statistics.mode =                config.statistics?.mode ?? 'mean';
         this.instance.statistics.retention =           config.statistics?.retention ?? undefined;
+        this.instance.statistics.period =              config.statistics?.period ?? 'hour';
 
         this.instance.pconfig.closeButtonColor = parseColor(config.uiColors?.closeButton ?? '#0000001f');
 

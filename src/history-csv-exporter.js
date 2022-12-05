@@ -145,7 +145,7 @@ class StatisticsCSVExporter {
                 type: ( cardstate.version[0] > 2022 || cardstate.version[1] >= 11 ) ? "recorder/statistics_during_period" : "history/statistics_during_period",
                 start_time: t0,
                 end_time: t1,
-                period: "hour",
+                period: cardstate.pconfig.exportStatsPeriod ?? 'hour',
                 statistic_ids: l
             };
             cardstate._hass.callWS(d).then(this.exportCallback.bind(this), this.exportFailed.bind(this));
