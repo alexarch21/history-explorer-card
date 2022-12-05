@@ -61,6 +61,9 @@ class HistoryCardState {
         this.csvExporter = new HistoryCSVExporter();
         this.statsExporter = new StatisticsCSVExporter();
 
+        this.stateColors = stateColors;
+        this.stateColorsDark = stateColorsDark;
+
         this.ui = {};
         this.ui.dateSelector  = [];
         this.ui.rangeSelector = [];
@@ -217,18 +220,18 @@ class HistoryCardState {
         // device_class.state defaults
         if( !c && device_class ) {
             const v = device_class + '.' + value;
-            c = (( this.ui.darkMode && stateColorsDark[v] ) ? stateColorsDark[v] : stateColors[v]);
+            c = (( this.ui.darkMode && this.stateColorsDark[v] ) ? this.stateColorsDark[v] : this.stateColors[v]);
         }
 
         // domain.state defaults
         if( !c && domain ) {
             const v = domain + '.' + value;
-            c = (( this.ui.darkMode && stateColorsDark[v] ) ? stateColorsDark[v] : stateColors[v]);
+            c = (( this.ui.darkMode && this.stateColorsDark[v] ) ? this.stateColorsDark[v] : this.stateColors[v]);
         }
 
         // global state defaults
         if( !c ) {
-            c = (( this.ui.darkMode && stateColorsDark[value] ) ? stateColorsDark[value] : stateColors[value]);
+            c = (( this.ui.darkMode && this.stateColorsDark[value] ) ? this.stateColorsDark[value] : this.stateColors[value]);
         }
 
         // general fallback if state color is not defined anywhere, generate color from the MD5 hash of the state name

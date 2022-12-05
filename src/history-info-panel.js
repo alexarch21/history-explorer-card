@@ -85,8 +85,20 @@ function hecHookInfoPanel()
             const type = ( instance.getUnitOfMeasure(entity_id) == undefined ) ? 'timeline' : ( instance.getStateClass(entity_id) === 'total_increasing' ) ? 'bar' : 'line';
 
             instance.pconfig.customStateColors = {};
-            instance.pconfig.customStateColors['off'] = defaultGood;
-            instance.pconfig.customStateColors['binary_sensor.multiple'] = '#e5ad23';
+
+            instance.stateColors = { ...stateColors };
+            instance.stateColorsDark = { ...stateColorsDark };
+
+            instance.stateColors['off']                      = defaultGood;
+            instance.stateColors['binary_sensor.multiple']   = '#e5ad23';
+            instance.stateColors['battery_charging.off']     = defaultInactiveLight;
+            instance.stateColors['plug.off']                 = defaultInactiveLight;
+            instance.stateColors['running.off']              = defaultInactiveLight;
+            instance.stateColors['update.on']                = defaultInactiveLight;
+            instance.stateColorsDark['battery_charging.off'] = defaultInactiveDark;
+            instance.stateColorsDark['plug.off']             = defaultInactiveDark;
+            instance.stateColorsDark['running.off']          = defaultInactiveDark;
+            instance.stateColorsDark['update.on']            = defaultInactiveDark;
 
             if( config.stateColors ) {
                 for( let i in config.stateColors ) {

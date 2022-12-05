@@ -27,6 +27,9 @@ const activeGreen = '#3ecd3e';
 const multipleRed = 'rgb(213, 142, 142)';
 const multipleGreen = 'rgb(142, 213, 142)';
 
+const defaultInactiveLight = '#dddddd';
+const defaultInactiveDark = '#383838';
+
 const stateColors = { 
 
     // Special states
@@ -38,7 +41,7 @@ const stateColors = {
     // on = red , off = inactive (default fallback used for all device classes not explicitely mentioned)
 
     'on' : activeRed, 
-    'off' : '#dddddd',
+    'off' : defaultInactiveLight,
     'binary_sensor.multiple' : multipleRed,
 
     // on = green , off = inactive
@@ -103,7 +106,7 @@ const stateColors = {
 
     // 
 
-    'input_select.Arret' : '#dddddd', 
+    'input_select.Arret' : defaultInactiveLight, 
     'input_select.Eco' : '#44739e', 
     'input_select.Confort - 2' : '#53b8ba', 
     'input_select.Confort - 1' : '#984ea3', 
@@ -118,9 +121,9 @@ const stateColors = {
 
 const stateColorsDark = { 
 
-    'off' : "#383838", 
+    'off' : defaultInactiveDark, 
 
-    'input_select.Arret' : '#383838', 
+    'input_select.Arret' : defaultInactiveDark, 
 
 };
 
