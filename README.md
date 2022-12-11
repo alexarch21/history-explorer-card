@@ -152,7 +152,14 @@ showUnavailable: true
 
 The card will automatically reduce the data shown in the charts and remove details that would not be visible or useful at a given time range. For example, if you view a per-hour history, nothing will be removed and you will be able to explore the raw data, point by point. If you view an entire week at once, there's no need to show data that changed every few seconds, you couldn't even see it. The card will simplify the curves and make the experience a lot faster that way. 
 
-This feature can be turned off in the options if you want, either globally or by entity.
+This feature can be turned off in the options if you want, either globally or by entity. Two different decimation algorithms are available. By default, a fast approximate one is used, offering highest rendering performance and a relatively good approximation of the graph shape at lower zoom levels. Optionally, an accurate decimation mode can be enabled. It offers accurate representation of local minima and maxima, at all zoom ranges. But rendering will be slower. Decimation mode can be selected globally at the card level or per entity.
+
+```yaml
+type: custom:history-explorer-card
+decimation: false       # Disable decimation, the raw sensor data will be used at all scales (very slow).
+decimation: fast        # Fast approximate decimation, good balance between speed and accuracy. The default.
+decimation: accurate    # Accurate minmax preserving at all scales.
+```
 
 ![image](https://user-images.githubusercontent.com/60828821/203882385-461d3376-58e1-4344-861f-852c150bd01a.png)
 
@@ -336,6 +343,7 @@ type: custom:history-explorer-card
 statistics:
   enabled: true
   mode: mean
+  period: hour     # reporting period. hour, day or month. Default is hour.
 ```
 
 The (optional) mode parameter controls how the statistics data is processed before being integrated into the history stream. `mean` = use the average value, `min` = minimum value, `max` = max value. The default if the option is not present is mean. This setting does not apply to total_increasing values like energy sensors, which are calculated differently.
@@ -376,6 +384,7 @@ type: custom:history-explorer-card
 csv:
   separator: ';'            # Use a semicolon as a separator, the default is a comma
   timeFormat: 'DD/MM/YYYY'  # Customize the date/time format used in the CSV. The default is 'YYYY-MM-DD HH:mm:ss'.
+  statisticsPeriod: hour    # Period used for statistics export. Hour, day or month is supported. Default is hour.
 ```
 
 ### Configuring the UI 
@@ -470,7 +479,6 @@ tooltip:
 The state color boxes in the tooltips can optionally be hidden for line graphs or timelines (or both):
 
 ```yaml
-type: custom:history-explorer-card
 tooltip:
   showColorsLine: false       # hide the color boxes in the tooltip popups for line graphs
   showColorsTimeline: false   # hide the color boxes in the tooltip popups for timeline graphs
@@ -478,20 +486,24 @@ tooltip:
 
 The tooltips can optionally show the duration of the selected state next to the start and end times:
 ```yaml
-type: custom:history-explorer-card
 tooltip:
   showDuration: true
 ```
 
+![image](https://user-images.githubusercontent.com/60828821/186550469-bec9bad3-c76e-4f9f-a1d7-a0b76ec2f51c.png)
+
 You can hide the entity name label on tooltips for line and bar charts to make it even more compact:
 ```yaml
-type: custom:history-explorer-card
 tooltip:
   showLabel: false
 ```
 
-![image](https://user-images.githubusercontent.com/60828821/186550469-bec9bad3-c76e-4f9f-a1d7-a0b76ec2f51c.png)
+The way state names are shown on the tooltip (raw or translated / device class dependent) will normally follow the mode set by `stateTextMode` for timeline charts on the card level. If you want the tooltips to use another mode, then it can be overridden. For example:
 
+```yaml
+tooltip:
+  stateTextMode: raw      # Show raw state names in the tooltip even if timelines show translated states
+```
 
 ### Multiple cards
 
