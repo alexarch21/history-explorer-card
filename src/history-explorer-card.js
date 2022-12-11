@@ -5,7 +5,7 @@ import "./deps/timeline.js";
 import "./deps/md5.min.js"
 import "./deps/FileSaver.js"
 
-const Version = '1.0.39';
+const Version = '1.0.40';
 
 var isMobile = ( navigator.appVersion.indexOf("Mobi") > -1 ) || ( navigator.userAgent.indexOf("HomeAssistant") > -1 );
 
@@ -936,7 +936,7 @@ class HistoryCardState {
         for( let entity in result ) {
             const a = result[entity];
             let j = [];
-            j.push({'last_changed' : a[0].start, 'state' : a[0][m] ?? a[0].state, 'entity_id' : a[0].statistic_id});
+            j.push({'last_changed' : a[0].start, 'state' : a[0][m] ?? a[0].state, 'entity_id' : entity});
             for( let i = 1; i < a.length; i++ ) {
                 j.push({'last_changed' : a[i].start, 'state' : a[i][m] ?? a[i].state});
             }

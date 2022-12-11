@@ -97,7 +97,7 @@ class StatisticsCSVExporter {
         for( let entity in result ) {
             const r = result[entity];
             if( !r.length ) continue;
-            data.push(r[0].statistic_id + "\r\n");
+            data.push(entity + "\r\n");
             for( let e of r ) {
                 const t = moment(e.start).format(this.timeFormat);
                 data.push(t + this.separator + (e.state ?? '') + this.separator + (e['mean'] ?? '') + this.separator + (e['min'] ?? '') + this.separator + (e['max'] ?? '') + "\r\n");
