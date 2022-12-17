@@ -194,6 +194,26 @@ function hecHookInfoPanel()
             ro.observe(this);
     };
 
+    function getDomainForEntity(entity)
+    {
+        return entity.substr(0, entity.indexOf("."));
+    }
+
+    function getDeviceClass(hass, entity)
+    {
+        return hass.states[entity]?.attributes?.device_class;
+    }
+
+    function isExcluded(hass, entity_id)
+    {
+        if( hec_panel?.config?.exclude ) {
+            return hec_panel.config.exclude[entity_id] || 
+                   hec_panel.config.exclude[getDomainForEntity(entity_id)] || 
+                   hec_panel.config.exclude[getDeviceClass(hass, entity_id)];
+        }
+        return false;
+    }
+
     __fn.prototype._hec_updated = function(changedProps) 
     {
         if( !this.hec_instance ) {
@@ -208,6 +228,10 @@ function hecHookInfoPanel()
             this.hec_instance._hass = this.__hass;
 
             this.hec_instance.version = this.__hass.config.version.split('.').map(Number);
+
+            if( isExcluded(this.__hass, this.__entityId) ) {
+                return this._oldUpdated(changedProps);
+            }
 
             this._injectHistoryExplorer(this.hec_instance);
 
@@ -229,6 +253,10 @@ function hecHookInfoPanel()
             readLocalConfig();
 
         const entity_id = this.__entityId;
+
+        if( isExcluded(this.__hass, entity_id) ) {
+            return this._oldRender();
+        }
 
         const type = ( this.__hass.states[entity_id]?.attributes?.unit_of_measurement == undefined ) ? 'timeline' : ( this.__hass.states[entity_id]?.attributes?.state_class === 'total_increasing' ) ? 'bar' : 'line';
 
@@ -337,6 +365,8 @@ function hecHookInfoPanel()
     }
 
     if( infoPanelEnabled ) {
+        __fn.prototype._oldUpdated = __fn.prototype.updated;
+        __fn.prototype._oldRender = __fn.prototype.render;
         __fn.prototype.updated = __fn.prototype._hec_updated;
         __fn.prototype.render = __fn.prototype._hec_render;
     }
