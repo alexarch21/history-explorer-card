@@ -1096,7 +1096,7 @@ class HistoryCardState {
                         let t = moment(moment(m_start).format(f));
 
                         // Search for the first state in the time range
-                        while( i < n-1 && moment(result[id][i].last_changed) <= t ) {
+                        while( i < n && moment(result[id][i].last_changed) <= t ) {
                             y0 = this.process(result[id][i++].state, process) * 1.0;
                         }
 
