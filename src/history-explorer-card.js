@@ -5,7 +5,7 @@ import "./deps/timeline.js";
 import "./deps/md5.min.js"
 import "./deps/FileSaver.js"
 
-const Version = '1.0.40';
+const Version = '1.0.41';
 
 var isMobile = ( navigator.appVersion.indexOf("Mobi") > -1 ) || ( navigator.userAgent.indexOf("HomeAssistant") > -1 );
 
@@ -1068,9 +1068,11 @@ class HistoryCardState {
                         }
 
                         if( m_now > m_end && s.length > 0 && moment(s[s.length-1].x) < m_end ) {
-                            s.push({ x: m_end, y: this.process(result[id][n-1].state, process) * scale});
+                            const state = this.process(result[id][n-1].state, process);
+                            if( isDataValid(state) ) s.push({ x: m_end, y: state * scale});
                         } else if( m_now <= m_end && s.length > 0 && moment(s[s.length-1].x) < m_now ) {
-                            s.push({ x: m_now, y: this.process(result[id][n-1].state, process) * scale});
+                            const state = this.process(result[id][n-1].state, process);
+                            if( isDataValid(state) ) s.push({ x: m_now, y: state * scale});
                         }
 
                     } else if( g.type == 'bar' && n > 0 ) {
@@ -1105,9 +1107,8 @@ class HistoryCardState {
                             y1 = y0;
                             let d = 0;
                             while( i < n && moment(result[id][i].last_changed) < te ) {
-                                const rawstate = result[id][i].state;
-                                if( !['unavailable', 'unknown'].includes(rawstate) ) {
-                                    const state = this.process(rawstate, process) * 1.0;
+                                const state = this.process(result[id][i].state, process) * 1.0;
+                                if( !isNaN(state) ) {
                                     if( state < y1 ) {
                                         d += y1 - y0;
                                         y0 = state;
