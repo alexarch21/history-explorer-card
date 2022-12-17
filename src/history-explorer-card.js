@@ -74,6 +74,7 @@ class HistoryCardState {
         this.ui.optionStyle   = '';
         this.ui.hideHeader    = false;
         this.ui.hideInterval  = false;
+        this.ui.hideSelector  = false;
         this.ui.stickyTools   = 0;
 
         this.i18n = {};
@@ -2556,6 +2557,9 @@ class HistoryCardState {
 
         this.entitiesPopulated = true;
 
+        // No point populating the datalist if the selector is not visible
+        if( this.ui.hideSelector ) return;
+
         this.ui.inputField[0] = this._this.querySelector(`#b7_0`);
         this.ui.inputField[1] = this._this.querySelector(`#b7_1`);
 
@@ -2793,6 +2797,7 @@ class HistoryExplorerCard extends HTMLElement
         const tools = bitmask[config.uiLayout?.toolbar] ?? 1;
         const selector = bitmask[config.uiLayout?.selector] ?? 2;
         this.instance.ui.stickyTools = bitmask[config.uiLayout?.sticky] ?? 0;
+        this.instance.ui.hideSelector = selector === 0;
 
         const invertZoom = config.uiLayout?.invertZoom === true;
 
