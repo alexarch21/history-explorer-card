@@ -134,6 +134,7 @@ class HistoryCardState {
         this.state.updateCanvas  = null;
         this.state.loading       = false;
         this.state.zoomMode      = false;
+        this.state.shiftGraph    = null;
 
         this.activeRange = {};
         this.activeRange.timeRangeHours  = 24;
@@ -1406,7 +1407,8 @@ class HistoryCardState {
                     displayColors: ( graphtype == 'line' ) ? this.pconfig.showTooltipColors[0] : ( graphtype == 'timeline' ) ? this.pconfig.showTooltipColors[1] : false
                 },
                 hover: {
-                    mode: 'nearest'
+                    mode: 'nearest',
+                    intersect: graphtype != 'line'
                 },
                 legend: {
                     display: ( graphtype == 'line' || graphtype == 'bar' ) && this.pconfig.hideLegend != true,
@@ -1676,6 +1678,21 @@ class HistoryCardState {
             ctx.fillRect(x0, panstate.g.chart.chartArea.top, x1-x0, panstate.g.chart.chartArea.bottom - panstate.g.chart.chartArea.top);
 
             panstate.st1 = this.pixelPositionToTimecode(x1);
+
+        } else if( !this.state.shiftGraph && event.shiftKey ) {
+
+            for( let g of this.graphs ) {
+                if( g.canvas === event.target ) {
+                    this.state.shiftGraph = g;
+                    g.chart.options.hover.mode = 'dataset';
+                    break;
+                }
+            }
+
+        } else if( this.state.shiftGraph && !event.shiftKey ) {
+
+            this.state.shiftGraph.chart.options.hover.mode = 'nearest';
+            this.state.shiftGraph = null;
 
         }
     }
@@ -2482,7 +2499,7 @@ class HistoryCardState {
         let regex = [];
         if( this.pconfig.filterEntities ) {
             if( Array.isArray(this.pconfig.filterEntities) ) {
-                for( let j of this.pconfig.filterEntities ) regex.push(this.matchWildcardPattern(j));
+                for( let j of this.pconfig.filterEntities ) if( j ) regex.push(this.matchWildcardPattern(j));
             } else
                 regex.push(this.matchWildcardPattern(this.pconfig.filterEntities));
         }
