@@ -2477,6 +2477,25 @@ class HistoryCardState {
     // Entity listbox populators
     // --------------------------------------------------------------------------------------
 
+    buildFilterRegexList()
+    {
+        let regex = [];
+        if( this.pconfig.filterEntities ) {
+            if( Array.isArray(this.pconfig.filterEntities) ) {
+                for( let j of this.pconfig.filterEntities ) regex.push(this.matchWildcardPattern(j));
+            } else
+                regex.push(this.matchWildcardPattern(this.pconfig.filterEntities));
+        }
+        return regex;
+    }
+
+    matchRegexList(regex, v)
+    {
+        if( !regex.length ) return true;
+        for( let j of regex ) if( j.test(v) ) return true;
+        return false;
+    }
+
     entityCollectorCallback(result)
     { 
         for( let i = 0; i < (isMobile ? 2 : 1); ++i ) {
@@ -2486,10 +2505,10 @@ class HistoryCardState {
 
             while( datalist.firstChild ) datalist.removeChild(datalist.firstChild);
 
-            const regex = this.pconfig.filterEntities ? this.matchWildcardPattern(this.pconfig.filterEntities) : undefined;
+            const regex = this.buildFilterRegexList();
 
             for( let r of result ) {
-                if( regex && !regex.test(r[0].entity_id) ) continue;
+                if( !this.matchRegexList(regex, r[0].entity_id) ) continue;
                 let o;
                 if( isMobile ) {
                     o = document.createElement('a');
@@ -2528,10 +2547,10 @@ class HistoryCardState {
 
             while( datalist.firstChild ) datalist.removeChild(datalist.firstChild);
 
-            const regex = this.pconfig.filterEntities ? this.matchWildcardPattern(this.pconfig.filterEntities) : undefined;
+            const regex = this.buildFilterRegexList();
 
             for( let e in this._hass.states ) {
-                if( regex && !regex.test(e) ) continue;
+                if( !this.matchRegexList(regex, e) ) continue;
                 const d = this.getDomainForEntity(e);
                 if( !['automation', 'script', 'zone', 'camera', 'persistent_notification', 'timer'].includes(d) ) {
                     let o;
