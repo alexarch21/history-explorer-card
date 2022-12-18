@@ -73,6 +73,9 @@ The entities shown in the list can be further filtered using the `filterEntities
 ```yaml
 type: custom:history-explorer-card
 filterEntities: 'binary_sensor.*'   # Show only binary sensors in the selector dropdown list
+filterEntities:                     # Or use multiple filters, entities matching any of the filters will be added
+  - '*power*'
+  - 'sensor.*energy*'
 ```
 
 Dynamically added entities can be individually removed by clicking the `x` close button next to them or all together using the option in the entity action dropdown menu:
