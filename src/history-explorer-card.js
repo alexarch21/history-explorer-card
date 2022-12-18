@@ -957,7 +957,12 @@ class HistoryCardState {
 
     process(sample, process)
     {
-        return process ? process(sample) : sample;
+        if( process ) {
+            let v = sample * 1.0;
+            if( isNaN(v) || !sample.length ) v = sample;
+            return process(v);
+        } else
+            return sample;
     }
 
     buildProcessFunction(p)
