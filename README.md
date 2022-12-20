@@ -179,7 +179,7 @@ Entities that represent a monotonically increasing total can be visualized as ad
 
 Bar charts use the `bar` chart type and can be used in both dynamically and statically added entities by setting the type accordingly. When dynamically adding an entity with a state class of `total_increasing`, then the bar chart type is automatically used. If the entity does not have this state class, then its type must be explicitly set to `bar`.
 
-Use the selector on the top right of the graph to choose the time interval your data is displayed at. You can add the same entity multiple times in separate graphs with different intervals. The default interval is hourly. It can be overridden using the `interval` option. Possible values are `10m`, `hourly` or `daily`.
+Use the selector on the top right of the graph to choose the time interval your data is displayed at. You can add the same entity multiple times in separate graphs with different intervals. The default interval is hourly. It can be overridden using the `interval` option. Possible values are `10m`, `hourly`, `daily` or `monthly`.
 
 Example configuration of a bar chart display for the entity `sensor.rain_amount` when added dynamically. The default interval is 10 minutes and the type is explicitly set to `bar`. The latter is not needed if the entity has a `total_increasing` state class.
 
@@ -188,7 +188,7 @@ entityOptions:
   sensor.rain_amount:
     type: bar
     color: '#3e95cd'
-    interval: 10m     # Default interval for this entity can be 10m, hourly or daily
+    interval: 10m     # Default interval for this entity can be 10m, hourly, daily or monthly
 ```
 
 Bar graphs can be manually added in the YAML too. Multiple entities can be combined into a single graph. The bars for each entity will then be displayed side by side:
