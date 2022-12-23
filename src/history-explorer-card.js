@@ -1136,7 +1136,8 @@ class HistoryCardState {
 
                         // Fill timeline chart buffer
 
-                        let enableClustering = (g.entities[j].decimation ?? this.pconfig.decimation) != undefined;
+                        const clusterMode = g.entities[j].decimation ?? this.pconfig.decimation ?? 'fast';
+                        let enableClustering = clusterMode != false;
 
                         if( g.type == 'arrowline' || process ) enableClustering = false;
 
