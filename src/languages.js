@@ -151,15 +151,15 @@ const lang_es =
         }, 
         "popup" : {
             "remove_all" : "Borrar gráficos añadidos dinámicamente ?",
-            "enable_panel" : "Enable entity history info panel ?",      // TODO !
-            "disable_panel" : "Disable entity history info panel ?"     // TODO !
+            "enable_panel" : "Habilitar panel info historia entidades ?",
+            "disable_panel" : "Deshabilitar panel info historia entidades ?"
         },
         "menu" : {  
             "export_csv" : "Exportar como CSV",
-            "export_stats" : "Export statistics as CSV",       // TODO !
+            "export_stats" : "Exportar estadísticas como CSV",
             "remove_all" : "Borrar gráficos añadidos",
-            "enable_panel" : "Enable history info panel",      // TODO !
-            "disable_panel" : "Disable history info panel"     // TODO !
+            "enable_panel" : "Activar panel info historia",
+            "disable_panel" : "Desactivar panel info historia"
         },
         "ranges" : {
             "l_hour" : "< 1 H",
@@ -174,10 +174,10 @@ const lang_es =
             "year" : "1 Año"
         },
         "interval" : {
-            "_10m" : "10 min",      // TODO !
-            "hourly" : "Hourly",    // TODO !
-            "daily" : "Daily",      // TODO !
-            "monthly" : "Monthly"   // TODO !
+            "_10m" : "10 min",
+            "hourly" : "Horario",
+            "daily" : "Diario",
+            "monthly" : "Mensual"
         }
     }
 }
