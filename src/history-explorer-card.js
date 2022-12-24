@@ -5,7 +5,7 @@ import "./deps/timeline.js";
 import "./deps/md5.min.js"
 import "./deps/FileSaver.js"
 
-const Version = '1.0.41';
+const Version = '1.0.42';
 
 var isMobile = ( navigator.appVersion.indexOf("Mobi") > -1 ) || ( navigator.userAgent.indexOf("HomeAssistant") > -1 );
 
@@ -957,12 +957,25 @@ class HistoryCardState {
 
     process(sample, process)
     {
+        if( sample === '' || sample === null || sample === undefined ) {
+            sample = 'unavailable';
+        }
+
         if( process ) {
             let v = sample * 1.0;
-            if( isNaN(v) || !sample.length ) v = sample;
+            if( isNaN(v) ) v = sample;
             return process(v);
         } else
             return sample;
+    }
+
+    processRaw(sample, process)
+    {
+        if( sample === null || sample === undefined ) {
+            sample = 'unavailable';
+        }
+
+        return process ? process(sample) : sample;
     }
 
     buildProcessFunction(p)
@@ -1157,10 +1170,10 @@ class HistoryCardState {
                             if( !merged ) {
 
                                 // State of the current block
-                                state = this.process(result[id][i].state, process);
+                                state = this.processRaw(result[id][i].state, process);
 
                                 // Skip noop state changes (can happen at cache slot boundaries)
-                                while( i < n-1 && this.process(result[id][i].state, process) == this.process(result[id][i+1].state, process) ) {
+                                while( i < n-1 && this.processRaw(result[id][i].state, process) == this.processRaw(result[id][i+1].state, process) ) {
                                     ++i;
                                     t1 = ( i < n-1 ) ? result[id][i+1].last_changed : m_max;
                                 }
@@ -1182,7 +1195,7 @@ class HistoryCardState {
                                 }
                             } else {
                                 // Below merge limit, start merge (keep the first state for possible single block merges) or extend current one
-                                if( !merged ) { mt0 = t0; state = this.process(result[id][i].state, process); }
+                                if( !merged ) { mt0 = t0; state = this.processRaw(result[id][i].state, process); }
                                 mt1 = t1;
                                 merged++;
                                 continue;
