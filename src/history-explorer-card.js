@@ -114,6 +114,7 @@ class HistoryCardState {
         this.pconfig.axisAddMarginMin     = true;
         this.pconfig.axisAddMarginMax     = true;
         this.pconfig.defaultTimeRange     = '24';
+        this.pconfig.defaultTimeOffset    = undefined;
         this.pconfig.timeTickDensity      = 'high';
         this.pconfig.exportSeparator      = undefined;
         this.pconfig.exportTimeFormat     = undefined;
@@ -284,7 +285,17 @@ class HistoryCardState {
 
             if( resetRange ) this.setTimeRange(24, false);
 
-            this.endTime = moment().format('YYYY-MM-DDTHH:mm[:00]');
+            let endTime = moment();
+            if( this.pconfig.defaultTimeOffset ) {
+                const s = this.pconfig.defaultTimeOffset.slice(0, -1);
+                switch( this.pconfig.defaultTimeOffset.slice(-1)[0] ) {
+                    case 'm': endTime = endTime.add(s, 'minute'); break;
+                    case 'h': endTime = endTime.add(s, 'hour'); break;
+                    case 'd': endTime = endTime.add(s, 'day'); break;
+                }
+            }
+
+            this.endTime = endTime.format('YYYY-MM-DDTHH:mm[:00]');
             this.startTime = moment(this.endTime).subtract(this.activeRange.timeRangeHours, "hour").subtract(this.activeRange.timeRangeMinutes, "minute").format('YYYY-MM-DDTHH:mm[:00]');
 
             this.updateHistory();
@@ -2830,6 +2841,7 @@ class HistoryExplorerCard extends HTMLElement
         this.instance.pconfig.filterEntities  =        config.filterEntities;
         this.instance.pconfig.combineSameUnits =       config.combineSameUnits === true;
         this.instance.pconfig.defaultTimeRange =       config.defaultTimeRange ?? '24';
+        this.instance.pconfig.defaultTimeOffset =      config.defaultTimeOffset ?? undefined;
         this.instance.pconfig.timeTickDensity =        config.timeTickDensity ?? 'high';
         this.instance.pconfig.lineGraphHeight =      ( config.lineGraphHeight ?? 250 ) * 1;
         this.instance.pconfig.barGraphHeight =       ( config.barGraphHeight ?? 150 ) * 1;

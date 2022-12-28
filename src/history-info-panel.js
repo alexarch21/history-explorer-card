@@ -128,6 +128,7 @@ function hecHookInfoPanel()
             instance.pconfig.filterEntities  =        null;
             instance.pconfig.combineSameUnits =       false;
             instance.pconfig.defaultTimeRange =       config.defaultTimeRange ?? '24';
+            instance.pconfig.defaultTimeOffset =      config.defaultTimeOffset ?? undefined;
             instance.pconfig.timeTickDensity =        config.timeTickDensity ?? 'high';
             instance.pconfig.lineGraphHeight =      ( config.lineGraphHeight ?? 250 ) * 1;
             instance.pconfig.barGraphHeight =       ( config.barGraphHeight ?? 150 ) * 1;
