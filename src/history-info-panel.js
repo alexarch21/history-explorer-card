@@ -110,7 +110,7 @@ function hecHookInfoPanel()
 
             const uom = instance.getUnitOfMeasure(entity_id);
             const sc = instance.getStateClass(entity_id);
-            const type = entityOptions?.type ? entityOptions.type : ( uom == undefined ) ? 'timeline' : ( sc === 'total_increasing' ) ? 'bar' : 'line';
+            const type = entityOptions?.type ? entityOptions.type : ( sc === 'total_increasing' ) ? 'bar' : ( uom == undefined && sc !== 'measurement' ) ? 'timeline' : 'line';
 
             instance.pconfig.labelAreaWidth =       ( type == 'timeline' ) ? 0 : 55;
             instance.pconfig.labelsVisible =          false;
@@ -280,7 +280,7 @@ function hecHookInfoPanel()
 
         const uom = this.__hass.states[entity_id]?.attributes?.unit_of_measurement;
         const sc = this.__hass.states[entity_id]?.attributes?.state_class;
-        const type = entityOptions?.type ? entityOptions.type : ( uom == undefined ) ? 'timeline' : ( sc === 'total_increasing' ) ? 'bar' : 'line';
+        const type = entityOptions?.type ? entityOptions.type : ( sc === 'total_increasing' ) ? 'bar' : ( uom == undefined && sc !== 'measurement' ) ? 'timeline' : 'line';
 
         const h = calcGraphHeight(type);
 

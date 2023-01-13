@@ -2031,7 +2031,9 @@ class HistoryCardState {
 
         var entityOptions = this.getEntityOptions(entity_id);
 
-        const type = entityOptions?.type ? entityOptions.type : ( this.getUnitOfMeasure(entity_id) == undefined ) ? 'timeline' : ( this.getStateClass(entity_id) === 'total_increasing' ) ? 'bar' : 'line';
+        const uom = this.getUnitOfMeasure(entity_id);
+        const sc = this.getStateClass(entity_id);
+        const type = entityOptions?.type ? entityOptions.type : ( sc === 'total_increasing' ) ? 'bar' : ( uom == undefined && sc !== 'measurement' ) ? 'timeline' : 'line';
 
         let entities = [{ "entity": entity_id, "color": "#000000", "fill": "#00000000", "process": entityOptions?.process }];
 
