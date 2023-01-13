@@ -82,8 +82,6 @@ function hecHookInfoPanel()
 
             const entity_id = this.__entityId;
 
-            const type = ( instance.getUnitOfMeasure(entity_id) == undefined ) ? 'timeline' : ( instance.getStateClass(entity_id) === 'total_increasing' ) ? 'bar' : 'line';
-
             instance.pconfig.customStateColors = {};
 
             instance.stateColors = { ...stateColors };
@@ -107,6 +105,12 @@ function hecHookInfoPanel()
             }
 
             instance.pconfig.entityOptions = config.entityOptions;
+
+            const entityOptions = instance.getEntityOptions(entity_id);
+
+            const uom = instance.getUnitOfMeasure(entity_id);
+            const sc = instance.getStateClass(entity_id);
+            const type = entityOptions?.type ? entityOptions.type : ( uom == undefined ) ? 'timeline' : ( sc === 'total_increasing' ) ? 'bar' : 'line';
 
             instance.pconfig.labelAreaWidth =       ( type == 'timeline' ) ? 0 : 55;
             instance.pconfig.labelsVisible =          false;
@@ -146,8 +150,6 @@ function hecHookInfoPanel()
 
             instance.pconfig.graphLabelColor = parseColor(config.uiColors?.labels ?? (instance.ui.darkMode ? '#9b9b9b' : '#333'));
             instance.pconfig.graphGridColor  = parseColor(config.uiColors?.gridlines ?? (instance.ui.darkMode ? "rgba(255, 255, 255, 0.1)" : "rgba(0, 0, 0, 0.1)"));
-
-            var entityOptions = instance.getEntityOptions(entity_id);
 
             let entities = [ { 'entity' : entity_id, "process": entityOptions?.process } ];
 
@@ -205,6 +207,21 @@ function hecHookInfoPanel()
         return hass.states[entity]?.attributes?.device_class;
     }
 
+    function getEntityOptions(hass, entityOptions, entity)
+    {
+        let c = entityOptions?.[entity];
+        if( !c ) {
+            const dc = getDeviceClass(hass, entity);
+            c = dc ? entityOptions?.[dc] : undefined;
+            if( !c ) {
+                const dm = getDomainForEntity(entity);
+                c = dm ? entityOptions?.[dm] : undefined;
+            }
+        }
+
+        return c ?? undefined;
+    }
+
     function isExcluded(hass, entity_id)
     {
         if( hec_panel?.config?.exclude ) {
@@ -218,7 +235,7 @@ function hecHookInfoPanel()
     __fn.prototype._hec_updated = function(changedProps) 
     {
         if( !this.hec_instance ) {
-            
+
             hec_panel.show = undefined;
 
             readLocalConfig();
@@ -259,7 +276,11 @@ function hecHookInfoPanel()
             return this._oldRender();
         }
 
-        const type = ( this.__hass.states[entity_id]?.attributes?.unit_of_measurement == undefined ) ? 'timeline' : ( this.__hass.states[entity_id]?.attributes?.state_class === 'total_increasing' ) ? 'bar' : 'line';
+        const entityOptions = getEntityOptions(this.__hass, hec_panel?.config?.entityOptions, entity_id);
+
+        const uom = this.__hass.states[entity_id]?.attributes?.unit_of_measurement;
+        const sc = this.__hass.states[entity_id]?.attributes?.state_class;
+        const type = entityOptions?.type ? entityOptions.type : ( uom == undefined ) ? 'timeline' : ( sc === 'total_increasing' ) ? 'bar' : 'line';
 
         const h = calcGraphHeight(type);
 
