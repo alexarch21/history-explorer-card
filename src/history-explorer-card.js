@@ -2432,6 +2432,8 @@ class HistoryCardState {
         const dropdown = this._this.querySelector(`#eo_${idx}`);
         if( !dropdown ) return;
 
+        this._this.querySelector(`#bo_${idx}`).style.transform = show ? 'scale(1,-1)' : 'scale(1,1)';
+
         if( show ) {
             dropdown.style.display = 'block';
             const w = this._this.querySelector('#maincard').clientWidth - 4;
