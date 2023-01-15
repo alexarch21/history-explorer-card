@@ -105,7 +105,7 @@ refresh:
   automatic: true
 ```
 
-If you have many fast changing entities displayed in your graphs, then auto refresh can strain your database bandwidth due to the constant requests. In this case it is better to use a regular update interval, independent of the sensor changes. The following example will refresh the card at a fixed rate, every 30 seconds:
+If you have many fast changing entities displayed in your graphs, then auto refresh can strain your database bandwidth due to the constant requests. In this case it is better to use a regular update interval, independent of the sensor changes. The following example will refresh the card at a fixed rate, every 30 seconds. You will need to reload the page after changing the refresh interval.
 ```yaml
 type: custom:history-explorer-card
 refresh:
@@ -168,6 +168,17 @@ If your history data contains an unavailable state, for example if a sensor went
 type: custom:history-explorer-card
 showUnavailable: true
 ```
+
+### Showing current sensor values
+
+The current sensor values can be optionally shown next to their label names in line or bar graphs:
+```yaml
+type: custom:history-explorer-card
+showCurrentValues: true
+```
+
+![image](https://user-images.githubusercontent.com/60828821/212548277-002254da-4159-435b-9ae7-913a00948dbd.png)
+
 
 ### Data decimation
 
