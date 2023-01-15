@@ -5,7 +5,7 @@ import "./deps/timeline.js";
 import "./deps/md5.min.js"
 import "./deps/FileSaver.js"
 
-const Version = '1.0.42';
+const Version = '1.0.43';
 
 var isMobile = ( navigator.appVersion.indexOf("Mobi") > -1 ) || ( navigator.userAgent.indexOf("HomeAssistant") > -1 );
 
@@ -57,6 +57,7 @@ class HistoryCardState {
         this.colorMap = new Map();
         this.timeCache = new Map();
         this.stateTexts = new Map();
+        this.stateMap = new Map();
 
         this.csvExporter = new HistoryCSVExporter();
         this.statsExporter = new StatisticsCSVExporter();
@@ -111,11 +112,14 @@ class HistoryCardState {
         this.pconfig.defaultLineMode      = undefined;
         this.pconfig.nextDefaultColor     = 0;
         this.pconfig.showUnavailable      = true;
+        this.pconfig.showCurrentValues    = false;
         this.pconfig.axisAddMarginMin     = true;
         this.pconfig.axisAddMarginMax     = true;
         this.pconfig.defaultTimeRange     = '24';
         this.pconfig.defaultTimeOffset    = undefined;
         this.pconfig.timeTickDensity      = 'high';
+        this.pconfig.refreshEnabled       = false;
+        this.pconfig.refreshInterval      = undefined;
         this.pconfig.exportSeparator      = undefined;
         this.pconfig.exportTimeFormat     = undefined;
         this.pconfig.exportStatsPeriod    = undefined;
@@ -170,6 +174,7 @@ class HistoryCardState {
         this.contentValid = false;
         this.entitiesPopulated = false;
         this.iid = 0;
+        this.tid = 0;
         this.lastWidth = 0;
 
         this.defocusCall = this.entitySelectorDefocus.bind(this);
@@ -699,6 +704,22 @@ class HistoryCardState {
             if( predicate(array[l]) ) return l;
         }
         return -1;
+    }
+
+
+    // --------------------------------------------------------------------------------------
+    // Return entity label name with current value
+    // --------------------------------------------------------------------------------------
+
+    getFormattedLabelName(name, entity, unit)
+    {
+        let label = name;
+        const p = 10 ** this.pconfig.roundingPrecision;
+        const v = Math.round(this._hass.states[entity].state * p) / p;
+        if( !isNaN(v) ) {
+            label += ' (' + v + (unit ? ' ' + unit : '') + ')';
+        }
+        return label; 
     }
 
 
@@ -1301,7 +1322,8 @@ class HistoryCardState {
                     borderWidth: d.width,
                     pointRadius: 0,
                     hitRadius: 5,
-                    label: d.name,
+                    label: this.pconfig.showCurrentValues ? this.getFormattedLabelName(d.name, d.entity_id, d.unit) : d.name,
+                    name: d.name,
                     steppedLine: d.mode === 'stepped',
                     cubicInterpolationMode: ( d.mode !== 'stepped' && d.mode !== 'lines' ) ? 'monotone' : 'default',
                     lineTension: ( d.mode === 'lines' ) ? 0 : undefined,
@@ -1404,7 +1426,7 @@ class HistoryCardState {
                         label: (item, data) => {
                             if( graphtype == 'line' || graphtype == 'bar' ) {
                                 let label = '';
-                                if( this.pconfig.tooltipShowLabel ) label = data.datasets[item.datasetIndex].label || '';
+                                if( this.pconfig.tooltipShowLabel ) label = data.datasets[item.datasetIndex].name || '';
                                 if( label ) label += ': ';
                                 const p = 10 ** this.pconfig.roundingPrecision;
                                 label += Math.round(item.yLabel * p) / p;
@@ -1488,6 +1510,11 @@ class HistoryCardState {
 
     updateHistory()
     {
+        if( this.tid ) {
+            clearTimeout(this.tid);
+            this.tid = 0;
+        }
+
         for( let i of this.ui.dateSelector )
             if( i ) i.innerHTML = moment(this.startTime).format(this.i18n.styleDateSelector);
 
@@ -2407,7 +2434,18 @@ class HistoryCardState {
             // Update the info panel config in the browser local storage to sync with the YAML
             this.writeInfoPanelConfig();
 
+            // Set auto refresh interval, if any
+            if( this.pconfig.refreshInterval )
+                setInterval(this.refresh.bind(this), this.pconfig.refreshInterval * 1000);
+
         }
+    }
+
+    refresh()
+    {
+        this.cache[cacheSize].valid = false;
+        this.updateHistory();
+        console.log('updated');
     }
 
     updateContent()
@@ -2727,6 +2765,36 @@ class HistoryCardState {
             window.localStorage.setItem('history-explorer-info-panel', JSON.stringify(data));
         }
     }
+
+
+    // --------------------------------------------------------------------------------------
+    // On demand refresh handling
+    // --------------------------------------------------------------------------------------
+
+    handleChangedEntities()
+    {
+        if( !this.pconfig.showCurrentValues && !this.pconfig.refreshEnabled ) return false;
+
+        let changed = false;
+
+        for( let g of this.graphs ) {
+            let i = 0;
+            for( let e of g.entities ) {
+                const lc = this._hass.states[e.entity].last_changed;
+                if( this.stateMap.has(e.entity) && lc != this.stateMap.get(e.entity) ) {
+                    if( this.pconfig.showCurrentValues ) {
+                        let d = g.chart.data.datasets[i];
+                        d.label = this.getFormattedLabelName(d.name, e.entity, d.unit);
+                    }
+                    changed = true;
+                }
+                this.stateMap.set(e.entity, lc);
+                i++;
+            }
+        }
+
+        return changed;
+    }
 }
 
 
@@ -2785,6 +2853,17 @@ class HistoryExplorerCard extends HTMLElement
         if( !this.instance.contentValid && !this.instance.iid )
             this.instance.iid = setInterval(this.instance.updateContent.bind(this.instance), 100);
 
+        if( this.instance.contentValid && this.instance.handleChangedEntities() ) {
+            if( this.instance.pconfig.showCurrentValues ) 
+                this.instance.updateHistory();
+            if( this.instance.pconfig.refreshEnabled ) {
+                this.instance.cache[cacheSize].valid = false;
+                if( this.instance.tid ) clearTimeout(this.instance.tid);
+                this.instance.tid = setTimeout(this.instance.updateHistory.bind(this.instance), 2000);
+                console.log('update scheduled');
+            }
+        }
+
     }
 
     set panel(panel)
@@ -2839,6 +2918,7 @@ class HistoryExplorerCard extends HTMLElement
         this.instance.pconfig.roundingPrecision =      config.rounding || 2;
         this.instance.pconfig.defaultLineMode =        config.lineMode;
         this.instance.pconfig.showUnavailable =        config.showUnavailable ?? false;
+        this.instance.pconfig.showCurrentValues =      config.showCurrentValues ?? false;
         this.instance.pconfig.axisAddMarginMin =     ( config.axisAddMarginMin !== undefined ) ? config.axisAddMarginMin : true;
         this.instance.pconfig.axisAddMarginMax =     ( config.axisAddMarginMax !== undefined ) ? config.axisAddMarginMax : true;
         this.instance.pconfig.recordedEntitiesOnly =   config.recordedEntitiesOnly ?? false;
@@ -2849,6 +2929,8 @@ class HistoryExplorerCard extends HTMLElement
         this.instance.pconfig.timeTickDensity =        config.timeTickDensity ?? 'high';
         this.instance.pconfig.lineGraphHeight =      ( config.lineGraphHeight ?? 250 ) * 1;
         this.instance.pconfig.barGraphHeight =       ( config.barGraphHeight ?? 150 ) * 1;
+        this.instance.pconfig.refreshEnabled =         config.refresh?.enabled ?? false;
+        this.instance.pconfig.refreshInterval =        config.refresh?.interval ?? undefined;
         this.instance.pconfig.exportSeparator =        config.csv?.separator;
         this.instance.pconfig.exportTimeFormat =       config.csv?.timeFormat;
         this.instance.pconfig.exportStatsPeriod =      config.csv?.statisticsPeriod ?? 'hour';
