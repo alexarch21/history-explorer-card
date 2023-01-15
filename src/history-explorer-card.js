@@ -2445,7 +2445,6 @@ class HistoryCardState {
     {
         this.cache[cacheSize].valid = false;
         this.updateHistory();
-        console.log('updated');
     }
 
     updateContent()
@@ -2860,7 +2859,6 @@ class HistoryExplorerCard extends HTMLElement
                 this.instance.cache[cacheSize].valid = false;
                 if( this.instance.tid ) clearTimeout(this.instance.tid);
                 this.instance.tid = setTimeout(this.instance.updateHistory.bind(this.instance), 2000);
-                console.log('update scheduled');
             }
         }
 
