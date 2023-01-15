@@ -1,4 +1,7 @@
-[![hacs_badge](https://img.shields.io/badge/HACS-Default-41BDF5.svg?style=for-the-badge)](https://github.com/hacs/integration)
+[![hacs_badge](https://img.shields.io/badge/HACS-Default-41BDF5.svg?style=for-the-badge)](https://github.com/hacs/integration)  
+[![bymecoffee](https://user-images.githubusercontent.com/60828821/212549591-950f90de-6884-4bc2-bb66-d2cd1d6f00b6.png)](https://www.buymeacoffee.com/alexarch)
+
+
 
 # History explorer card
 
@@ -94,6 +97,24 @@ defaultTimeRange: 6o   // or 6 months
 defaultTimeRange: 1y   // or 1 year
 ```
 
+### Auto refresh
+
+By default the card will not refresh on its own when sensor values change. It can be manually refreshed by reloading the page. If you would like your card to automatically reflect changing values on the fly, two strategies can be enabled. Both can be combined if needed. 
+
+Automatic refresh will monitor the entities that are displayed in your graphs for changes and refresh the graphs as needed. This strategy will usually cover the most common use cases and is recommended if you have just a few entities display in your history explorer card and if these entities don't change too often.
+```yaml
+type: custom:history-explorer-card
+refresh:
+  automatic: true
+```
+
+If you have many fast changing entities displayed in your graphs, then auto refresh can strain your database bandwidth due to the constant requests. In this case it is better to use a regular update interval, independent of the sensor changes. The following example will refresh the card at a fixed rate, every 30 seconds. You will need to reload the page after changing the refresh interval.
+```yaml
+type: custom:history-explorer-card
+refresh:
+  interval: 30
+```
+
 ### Grouping multiple entities into a single graph
 
 For line graphs, each dynamically added entity will be displayed in its own graph by default. If you prefer having entities with compatible units of measure grouped into a single graph, then you can override this default behavior with the following YAML setting:
@@ -150,6 +171,17 @@ If your history data contains an unavailable state, for example if a sensor went
 type: custom:history-explorer-card
 showUnavailable: true
 ```
+
+### Showing current sensor values
+
+The current sensor values can be optionally shown next to their label names in line or bar graphs:
+```yaml
+type: custom:history-explorer-card
+showCurrentValues: true
+```
+
+![image](https://user-images.githubusercontent.com/60828821/212548277-002254da-4159-435b-9ae7-913a00948dbd.png)
+
 
 ### Data decimation
 
