@@ -2929,7 +2929,7 @@ class HistoryExplorerCard extends HTMLElement
         this.instance.pconfig.timeTickDensity =        config.timeTickDensity ?? 'high';
         this.instance.pconfig.lineGraphHeight =      ( config.lineGraphHeight ?? 250 ) * 1;
         this.instance.pconfig.barGraphHeight =       ( config.barGraphHeight ?? 150 ) * 1;
-        this.instance.pconfig.refreshEnabled =         config.refresh?.enabled ?? false;
+        this.instance.pconfig.refreshEnabled =         config.refresh?.automatic ?? false;
         this.instance.pconfig.refreshInterval =        config.refresh?.interval ?? undefined;
         this.instance.pconfig.exportSeparator =        config.csv?.separator;
         this.instance.pconfig.exportTimeFormat =       config.csv?.timeFormat;
