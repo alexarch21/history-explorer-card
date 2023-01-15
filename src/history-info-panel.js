@@ -25,6 +25,7 @@ let hec_panel = {};
     hec_panel.show = undefined;
     hec_panel.entity = null;
     hec_panel.iid = null;
+    hec_panel.lc = null;
 
 function hecHookInfoPanel()
 {
@@ -126,6 +127,7 @@ function hecHookInfoPanel()
             instance.pconfig.roundingPrecision =      config.rounding || 2;
             instance.pconfig.defaultLineMode =        config.lineMode ?? 'lines';
             instance.pconfig.showUnavailable =        config.showUnavailable ?? false;
+            instance.pconfig.showCurrentValues =      false;
             instance.pconfig.axisAddMarginMin =     ( config.axisAddMarginMin !== undefined ) ? config.axisAddMarginMin : false;
             instance.pconfig.axisAddMarginMax =     ( config.axisAddMarginMax !== undefined ) ? config.axisAddMarginMax : false;
             instance.pconfig.recordedEntitiesOnly =   false;
@@ -137,6 +139,8 @@ function hecHookInfoPanel()
             instance.pconfig.lineGraphHeight =      ( config.lineGraphHeight ?? 250 ) * 1;
             instance.pconfig.barGraphHeight =       ( config.barGraphHeight ?? 150 ) * 1;
             instance.pconfig.hideLegend =             true;
+            instance.pconfig.refreshEnabled =       ( config.refresh?.automatic !== undefined ) ? config.refresh.automatic : true;
+            instance.pconfig.refreshInterval =        undefined;
             instance.statistics.enabled =             config.statistics?.enabled ?? true;
             instance.statistics.mode =                config.statistics?.mode ?? 'mean';
             instance.statistics.retention =           config.statistics?.retention ?? undefined;
@@ -252,6 +256,21 @@ function hecHookInfoPanel()
             }
 
             this._injectHistoryExplorer(this.hec_instance);
+
+            hec_panel.lc = this.__hass.states[this.__entityId]?.last_changed;
+
+        } else {
+
+            const lc = this.__hass.states[this.__entityId]?.last_changed;
+
+            if( hec_panel.lc != lc ) {
+                hec_panel.lc = lc;
+                if( this.hec_instance.pconfig.refreshEnabled ) {
+                    this.hec_instance.cache[cacheSize].valid = false;
+                    if( this.hec_instance.tid ) clearTimeout(this.hec_instance.tid);
+                    this.hec_instance.tid = setTimeout(this.hec_instance.updateHistory.bind(this.hec_instance), 2000);
+                }
+            }
 
         }
     };
