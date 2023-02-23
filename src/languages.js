@@ -230,6 +230,52 @@ const lang_nl =
 
 
 // --------------------------------------------------------------------------------------
+// Polish (pl)
+// --------------------------------------------------------------------------------------
+
+const lang_pl =
+{
+    "ui" : {
+        "label" : {
+            "type_to_search" : "Wpisz, aby wyszukać i dodać encję",
+            "error_retreiving" : "Nie można pobrać dostępnych elementów !",
+            "loading" : "Ładowanie dostępnych elementów...",
+        }, 
+        "popup" : {
+            "remove_all" : "Usuń wszystkie wykresy ?",
+            "enable_panel" : "Włącz panel informacji o historii ?",
+            "disable_panel" : "Wyłącz panel informacji o historii ?"
+        },
+        "menu" : {  
+            "export_csv" : "Eksportuj w CSV",
+            "export_stats" : "Eksportuj statystyki w CSV",
+            "remove_all" : "Usuń wszystkie dodane grafiki",
+            "enable_panel" : "Włącz panel historia",
+            "disable_panel" : "Wyłącz panel historia"
+        },
+        "ranges" : {
+            "l_hour" : "< 1 H",
+            "hour" : "1 H",
+            "n_hours" : "%1 H",
+            "day" : "1 Dzień",
+            "n_days" : "%1 Dni",
+            "week" : "1 Tydzień",
+            "n_weeks" : "%1 Tyg",
+            "month" : "1 Miesiąc",
+            "n_months" : "%1 Mies",
+            "year" : "1 Rok"
+        },
+        "interval" : {
+            "_10m" : "10 minut",
+            "hourly" : "Godzina",
+            "daily" : "Dzień",
+            "monthly" : "Miesiąc"
+        }
+    }
+}
+
+
+// --------------------------------------------------------------------------------------
 // Language localization helper functions
 // --------------------------------------------------------------------------------------
 
@@ -238,7 +284,8 @@ var languages = {
     'fr': lang_fr,
     'de': lang_de,
     'es': lang_es,
-    'nl': lang_nl
+    'nl': lang_nl,
+    'pl': lang_pl
 };
 
 var language = 'en';
