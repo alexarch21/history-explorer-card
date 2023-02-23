@@ -5,7 +5,7 @@ import "./deps/timeline.js";
 import "./deps/md5.min.js"
 import "./deps/FileSaver.js"
 
-const Version = '1.0.43';
+const Version = '1.0.44';
 
 var isMobile = ( navigator.appVersion.indexOf("Mobi") > -1 ) || ( navigator.userAgent.indexOf("HomeAssistant") > -1 );
 
@@ -31,6 +31,8 @@ const cacheSize = 365;
 var panstate = {};
     panstate.mx = 0;
     panstate.lx = 0;
+    panstate.my = 0;
+    panstate.ly = 0;
     panstate.tc = 0;
     panstate.g 	= null;
     panstate.overlay = null;
@@ -139,7 +141,7 @@ class HistoryCardState {
         this.state.updateCanvas  = null;
         this.state.loading       = false;
         this.state.zoomMode      = false;
-        this.state.shiftGraph    = null;
+        this.state.altGraph      = null;
 
         this.activeRange = {};
         this.activeRange.timeRangeHours  = 24;
@@ -479,6 +481,55 @@ class HistoryCardState {
     {
         const options = { '10m' : 0, 'hourly' : 1, 'daily' : 2, 'monthly' : 3 };
         return options[s];
+    }
+
+
+    // --------------------------------------------------------------------------------------
+    // Y axis scale lock / unlock
+    // --------------------------------------------------------------------------------------
+
+    scaleLockClicked(event)
+    {
+        const id = event.currentTarget.id.substr(event.currentTarget.id.indexOf("-") + 1);
+
+        for( let i = 0; i < this.graphs.length; i++ ) {
+            if( this.graphs[i].id == id ) {
+                let c = this.graphs[i].chart;
+
+                if( this.graphs[i].yaxisLock ) {
+                    c.options.scales.yAxes[0].ticks.min = c.options.scales.yAxes[0].ticks.forceMin;
+                    c.options.scales.yAxes[0].ticks.removeEdgeTicks = false;
+                    c.options.scales.yAxes[0].ticks.max = c.options.scales.yAxes[0].ticks.forceMax;
+                    c.options.scales.yAxes[0].ticks.removeEdgeTicks = false;
+                    this.graphs[i].yaxisLock = 0;   
+                } else
+                    this.graphs[i].yaxisLock = 1;
+
+                this.updateScaleLockState(this.graphs[i], false);
+
+                break;
+            }
+        }
+
+        this.updateHistory();
+    }
+
+    createScaleLockIconHtml(gid, h)
+    {
+        return `<button id='ca-${gid}' style="position:absolute;left:${(this.pconfig.labelAreaWidth-18) * 0 + 10}px;margin-top:${-h+5}px;background:none;opacity:1.0;border:0px solid black;">
+            <svg style='display:none' width="18" height="18" viewBox="0 0 24 24"><path fill="var(--primary-text-color)" d="M12,17C10.89,17 10,16.1 10,15C10,13.89 10.89,13 12,13A2,2 0 0,1 14,15A2,2 0 0,1 12,17M18,20V10H6V20H18M18,8A2,2 0 0,1 20,10V20A2,2 0 0,1 18,22H6C4.89,22 4,21.1 4,20V10C4,8.89 4.89,8 6,8H7V6A5,5 0 0,1 12,1A5,5 0 0,1 17,6V8H18M12,3A3,3 0 0,0 9,6V8H15V6A3,3 0 0,0 12,3Z" /></svg>
+            </button>`;
+    }
+
+    updateScaleLockState(g, axisInteraction)
+    {
+        const fixedScale = ( g.chart.options.scales.yAxes[0].ticks.forceMin && g.chart.options.scales.yAxes[0].ticks.forceMax );
+
+        let e = this._this.querySelector(`#ca-${g.id}`);
+        if( e ) {
+            e.children[0].style.display = ( fixedScale && !axisInteraction ) ? 'none' : 'inherit';
+            e.style.opacity = ( axisInteraction || g.yaxisLock ) ? 1.0 : 0.3;
+        }
     }
 
 
@@ -1644,8 +1695,8 @@ class HistoryCardState {
             if( g.canvas === event.target ) {
                 panstate.g = g;
                 g.chart.options.tooltips.enabled = false;
-                g.chart.options.scales.yAxes[0].ticks.min = g.chart.scales["y-axis-0"].min;
-                g.chart.options.scales.yAxes[0].ticks.max = g.chart.scales["y-axis-0"].max;
+                g.chart.options.scales.yAxes[0].ticks.min = panstate.y0 = g.chart.scales["y-axis-0"].min;
+                g.chart.options.scales.yAxes[0].ticks.max = panstate.y1 = g.chart.scales["y-axis-0"].max;
                 g.chart.options.topClipMargin = 0;
                 g.chart.options.bottomClipMargin = 0;
                 break;
@@ -1656,6 +1707,8 @@ class HistoryCardState {
 
             panstate.mx = event.clientX;
             panstate.lx = event.clientX;
+            panstate.my = event.clientY;
+            panstate.ly = event.clientY;
 
             event.target?.setPointerCapture(event.pointerId);
 
@@ -1728,7 +1781,34 @@ class HistoryCardState {
 
             }
 
+            if( event.shiftKey && Math.abs(event.clientY - panstate.ly) > 0 ) {
+
+                // Drag with shift pressed, unlock the Y axis
+
+                panstate.ly = event.clientY;
+
+                const h = panstate.g.chart.chartArea.bottom - panstate.g.chart.chartArea.top;
+                const y = (event.clientY - panstate.my) * (panstate.y1 - panstate.y0) / h;
+
+                panstate.g.chart.options.scales.yAxes[0].ticks.min = panstate.y0 + y;
+                panstate.g.chart.options.scales.yAxes[0].ticks.max = panstate.y1 + y;
+                panstate.g.chart.options.scales.yAxes[0].ticks.removeEdgeTicks = true;
+                panstate.g.chart.update();
+
+            }
+
+            if( !event.shiftKey ) {
+                panstate.ly = panstate.my = event.clientY;
+                panstate.y0 = panstate.g.chart.options.scales.yAxes[0].ticks.min;
+                panstate.y1 = panstate.g.chart.options.scales.yAxes[0].ticks.max;
+            } else {
+                if( panstate.g.yaxisLock !== 2 ) this.updateScaleLockState(panstate.g, true);
+                panstate.g.yaxisLock = 2;
+            }
+
         } else if( this.state.selecting && panstate.overlay ) {
+
+            // Selection rectangle dragging
 
             let ctx = panstate.overlay.getContext('2d');
             ctx.clearRect(0, 0, panstate.overlay.width, panstate.overlay.height);
@@ -1742,20 +1822,24 @@ class HistoryCardState {
 
             panstate.st1 = this.pixelPositionToTimecode(x1);
 
-        } else if( !this.state.shiftGraph && event.shiftKey ) {
+        } else if( !this.state.altGraph && event.altKey ) {
+
+            // Alt key pressed, show individual samples
 
             for( let g of this.graphs ) {
                 if( g.canvas === event.target ) {
-                    this.state.shiftGraph = g;
+                    this.state.altGraph = g;
                     g.chart.options.hover.mode = 'dataset';
                     break;
                 }
             }
 
-        } else if( this.state.shiftGraph && !event.shiftKey ) {
+        } else if( this.state.altGraph && !event.altKey ) {
 
-            this.state.shiftGraph.chart.options.hover.mode = 'nearest';
-            this.state.shiftGraph = null;
+            // Alt not pressed, hide samples
+
+            this.state.altGraph.chart.options.hover.mode = 'nearest';
+            this.state.altGraph = null;
 
         }
     }
@@ -1769,13 +1853,13 @@ class HistoryCardState {
 
             panstate.g.chart.options.tooltips.enabled = true;
 
-            if( panstate.g.chart.options.scales.yAxes[0].ticks.forceMin === undefined ) {
+            if( panstate.g.chart.options.scales.yAxes[0].ticks.forceMin === undefined && !panstate.g.yaxisLock ) {
                 panstate.g.chart.options.scales.yAxes[0].ticks.min = undefined;
                 panstate.g.chart.options.bottomClipMargin = 4;
             } else
                 panstate.g.chart.options.bottomClipMargin = 1;
 
-            if( panstate.g.chart.options.scales.yAxes[0].ticks.forceMax === undefined ) {
+            if( panstate.g.chart.options.scales.yAxes[0].ticks.forceMax === undefined && !panstate.g.yaxisLock ) {
                 panstate.g.chart.options.scales.yAxes[0].ticks.max = undefined;
                 panstate.g.chart.options.topClipMargin = 4;
             } else 
@@ -1869,6 +1953,7 @@ class HistoryCardState {
 
     wheelScrolled(event)
     {
+        // Zoom x time scale
         if( event.ctrlKey ) {
             event.preventDefault();
             if( !this.graphs.length || this.state.loading ) return;
@@ -1879,6 +1964,32 @@ class HistoryCardState {
             const tc = this.factorToTimecode(f);
             if( event.deltaY < 0 ) this.incZoomStep(tc, f); else
             if( event.deltaY > 0 ) this.decZoomStep(tc, f);
+        }
+
+        // Zoom Y axis
+        if( event.shiftKey ) {
+            let wd = ( Math.abs(event.deltaX) > Math.abs(event.deltaY) ) ? event.deltaX : event.deltaY;
+            for( let g of this.graphs ) {
+                const rect = g.canvas.getBoundingClientRect();
+                if( event.clientY >= rect.top && event.clientY <= rect.bottom ) {
+
+                    let f = ( wd < 0 ) ? 0.9 : 1.0/0.9;
+
+                    let t = g.chart.options.scales.yAxes[0].ticks;
+                    if( t.min === undefined ) 
+                        t.min = g.chart.scales["y-axis-0"].min;
+                    if( t.max === undefined ) 
+                        t.max = g.chart.scales["y-axis-0"].max;
+
+                    let d = t.max - t.min;
+                    d = d - (d * f);
+                    t.max -= d * 0.5;
+                    t.min += d * 0.5;
+
+                    g.chart.update();
+                    break;
+                }
+            }
         }
     }
 
@@ -2048,6 +2159,10 @@ class HistoryCardState {
         // For bar graphs, connect the interval selector dropdown listener
         if( g.graph.type == 'bar' )
             this._this.querySelector(`#bd-${g.id}`)?.addEventListener('change', this.selectBarInterval.bind(this));
+
+        // For line and bar graphs connect the scale lock button listener
+        if( g.graph.type == 'line' || g.graph.type == 'bar' )
+            this._this.querySelector(`#ca-${g.id}`)?.addEventListener('click', this.scaleLockClicked.bind(this));
     }
 
     addDynamicGraph(entity_id)
@@ -2112,6 +2227,8 @@ class HistoryCardState {
         html += `<button id='bc-${this.g_id}' style="position:absolute;right:20px;margin-top:${-h+5}px;color:var(--primary-text-color);background-color:${this.pconfig.closeButtonColor};border:0px solid black;">×</button>`;
         if( type == 'bar' && !this.ui.hideInterval ) 
             html += this.createIntervalSelectorHtml(this.g_id, h, this.parseIntervalConfig(entityOptions?.interval), this.ui.optionStyle);
+        if( type == 'line' || type == 'bar' )
+            html += this.createScaleLockIconHtml(this.g_id, h);
         html += `</div>`;
 
         let e = document.createElement('div');
@@ -2120,11 +2237,18 @@ class HistoryCardState {
         let gl = this._this.querySelector('#graphlist');
         gl.appendChild(e);
 
+        // For bar graphs, connect the interval selector dropdown listener
         if( type == 'bar' && !this.ui.hideInterval )
             this._this.querySelector(`#bd-${this.g_id}`).addEventListener('change', this.selectBarInterval.bind(this));
 
+        // For line and bar graphs connect the scale lock button listener
+        if( type == 'line' || type == 'bar' )
+            this._this.querySelector(`#ca-${this.g_id}`)?.addEventListener('click', this.scaleLockClicked.bind(this));
+
+        // Connect the close button event listener
         this._this.querySelector(`#bc-${this.g_id}`).addEventListener('click', this.removeGraph.bind(this));
 
+        // Create the graph
         this.addGraphToCanvas(this.g_id++, type, entities, entityOptions);
     }
 
@@ -2161,6 +2285,9 @@ class HistoryCardState {
         canvas.addEventListener('pointermove', this.pointerMove.bind(this));
         canvas.addEventListener('pointerup', this.pointerUp.bind(this));
         canvas.addEventListener('pointercancel', this.pointerCancel.bind(this));
+
+        if( type == 'line' || type == 'bar' )
+            this.updateScaleLockState(g, false);
     }
 
 
@@ -2984,6 +3111,8 @@ class HistoryExplorerCard extends HTMLElement
             html += `<canvas id="graph${g.id}" height="${h}px" style='touch-action:pan-y'></canvas>`;
             if( g.graph.type == 'bar' && !this.instance.ui.hideInterval ) 
                 html += this.instance.createIntervalSelectorHtml(g.id, h, this.instance.parseIntervalConfig(g.graph.options?.interval), optionStyle);
+            if( g.graph.type == 'line' || g.graph.type == 'bar' )
+                html += this.instance.createScaleLockIconHtml(g.id, h);
             html += `</div>`;
             spacing = !( g.graph.options?.showTimeLabels === false );
         }

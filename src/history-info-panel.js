@@ -363,7 +363,7 @@ function hecHookInfoPanel()
                         <button id="b${invertZoom ? 4 : 5}_${i}" style="margin:0px;border:0px solid black;color:inherit;background-color:#00000000;height:30px">+</button>
                     </div>
                 </div>
-                <div id='graphlist' style="margin-left:-10px;margin-right:-10px">
+                <div id='graphlist' style="margin-left:-2px;margin-right:-10px">
                     <div>
                         <select id='bd-0' style="display:${(type == 'bar' && interval) ? 'block' : 'none'};position:relative;float:right;width:80px;right:10px;color:var(--primary-text-color);background-color:${cbcol};border:0px solid black;">
                             <option value="0" style="color:${optColor};background-color:${optBack}">10m</option>
@@ -371,6 +371,9 @@ function hecHookInfoPanel()
                             <option value="2" style="color:${optColor};background-color:${optBack}">Daily</option>
                             <option value="3" style="color:${optColor};background-color:${optBack}">Monthly</option>
                         </select>
+                        <button id='ca-0' style="display:${(type == 'line' || type == 'bar') ? 'block' : 'none'};position:absolute;margin-left:-12px;background:none;opacity:1.0;border:0px solid black;">
+                            <svg style='display:none' width="18" height="18" viewBox="0 0 24 24"><path fill="var(--primary-text-color)" d="M12,17C10.89,17 10,16.1 10,15C10,13.89 10.89,13 12,13A2,2 0 0,1 14,15A2,2 0 0,1 12,17M18,20V10H6V20H18M18,8A2,2 0 0,1 20,10V20A2,2 0 0,1 18,22H6C4.89,22 4,21.1 4,20V10C4,8.89 4.89,8 6,8H7V6A5,5 0 0,1 12,1A5,5 0 0,1 17,6V8H18M12,3A3,3 0 0,0 9,6V8H15V6A3,3 0 0,0 12,3Z" /></svg>
+                        </button>
                         <canvas id="graph0" height="${h}px" style='touch-action:pan-y'></canvas>
                     </div>
                 </div>
@@ -381,7 +384,7 @@ function hecHookInfoPanel()
 
             return html`
                 <div id="maincard" style="display:${(hec_panel.show === false) ? 'none' : 'block'};margin-bottom: 16px">
-                <div id='graphlist' style="margin-left:-10px;margin-right:-10px">
+                <div id='graphlist' style="margin-left:-2px;margin-right:-10px">
                     <div>
                         <select id='bd-0' style="display:${(type == 'bar' && interval) ? 'block' : 'none'};position:relative;float:right;width:80px;right:10px;color:var(--primary-text-color);background-color:${cbcol};border:0px solid black;">
                             <option value="0" style="color:${optColor};background-color:${optBack}">10m</option>
@@ -389,6 +392,9 @@ function hecHookInfoPanel()
                             <option value="2" style="color:${optColor};background-color:${optBack}">Daily</option>
                             <option value="3" style="color:${optColor};background-color:${optBack}">Monthly</option>
                         </select>
+                        <button id='ca-0' style="display:${(type == 'line' || type == 'bar') ? 'block' : 'none'};position:absolute;margin-top:-6px;margin-left:-12px;background:none;opacity:1.0;border:0px solid black;">
+                            <svg style='display:none' width="18" height="18" viewBox="0 0 24 24"><path fill="var(--primary-text-color)" d="M12,17C10.89,17 10,16.1 10,15C10,13.89 10.89,13 12,13A2,2 0 0,1 14,15A2,2 0 0,1 12,17M18,20V10H6V20H18M18,8A2,2 0 0,1 20,10V20A2,2 0 0,1 18,22H6C4.89,22 4,21.1 4,20V10C4,8.89 4.89,8 6,8H7V6A5,5 0 0,1 12,1A5,5 0 0,1 17,6V8H18M12,3A3,3 0 0,0 9,6V8H15V6A3,3 0 0,0 12,3Z" /></svg>
+                        </button>
                         <canvas id="graph0" height="${h}px" style='touch-action:pan-y'></canvas>
                     </div>
                 </div>
