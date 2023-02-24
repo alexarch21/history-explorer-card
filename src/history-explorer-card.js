@@ -2109,10 +2109,15 @@ class HistoryCardState {
         return c ?? undefined;
     }
 
-    calcGraphHeight(type, n)
+    calcGraphHeight(type, n, h)
     {
-        const m = ( n >= 2 || this.pconfig.tooltipSize == 'full' ) ? 130 : ( this.pconfig.tooltipSize == 'slim' ) ? 90 : 115;
-        return ( type == 'line' ) ? this.pconfig.lineGraphHeight : ( type == 'bar' ) ? this.pconfig.barGraphHeight + 24 : Math.max(n * 45, m);
+        switch( type ) {
+            case 'line': return ( h ? h : this.pconfig.lineGraphHeight );
+            case 'bar':  return ( h ? h : this.pconfig.barGraphHeight ) + 24;
+            default:
+                const m = ( n >= 2 || this.pconfig.tooltipSize == 'full' ) ? 130 : ( this.pconfig.tooltipSize == 'slim' ) ? 90 : 115;
+                return Math.max(n * 45, m);
+        }
     }
 
     removeGraph(event)
@@ -2219,7 +2224,7 @@ class HistoryCardState {
 
         }
 
-        const h = this.calcGraphHeight(type, entities.length);
+        const h = this.calcGraphHeight(type, entities.length, entityOptions?.height);
 
         let html = '';
         html += `<div sytle='height:${h}px'>`;
@@ -2273,7 +2278,7 @@ class HistoryCardState {
 
         const chart = this.newGraph(canvas, type, datasets, config);
 
-        const h = this.calcGraphHeight(type, entities.length);
+        const h = this.calcGraphHeight(type, entities.length, config?.height);
 
         const interval = this.parseIntervalConfig(config?.interval) ?? 1;
 
@@ -3106,7 +3111,7 @@ class HistoryExplorerCard extends HTMLElement
         for( let g of this.instance.pconfig.graphConfig ) {
             if( g.id > 0 && spacing ) html += '<br>';
             if( g.graph.title !== undefined ) html += `<div style='text-align:center;'>${g.graph.title}</div>`;
-            const h = this.instance.calcGraphHeight(g.graph.type, g.graph.entities.length);
+            const h = this.instance.calcGraphHeight(g.graph.type, g.graph.entities.length, g.graph.options?.height);
             html += `<div style='height:${h}px'>`;
             html += `<canvas id="graph${g.id}" height="${h}px" style='touch-action:pan-y'></canvas>`;
             if( g.graph.type == 'bar' && !this.instance.ui.hideInterval ) 
