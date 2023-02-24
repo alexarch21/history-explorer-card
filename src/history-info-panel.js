@@ -50,6 +50,55 @@ function hecHookInfoPanel()
         }
     }
 
+    __fn.prototype._setEntityOptions = function(instance)
+    {
+        const entity_id = this.__entityId;
+
+        const entityOptions = instance.getEntityOptions(entity_id);
+
+        const uom = instance.getUnitOfMeasure(entity_id);
+        const sc = instance.getStateClass(entity_id);
+        const type = entityOptions?.type ? entityOptions.type : ( sc === 'total_increasing' ) ? 'bar' : ( uom == undefined && sc !== 'measurement' ) ? 'timeline' : 'line';
+
+        // Make sure the panel always starts with the same default graph color
+        instance.pconfig.nextDefaultColor = 0;
+
+        // No label area for timelines
+        instance.pconfig.labelAreaWidth = ( type == 'timeline' || type == 'arrowline' ) ? 0 : 55;
+
+        // Init entity object
+        let entities = [ { 'entity' : entity_id, "process": entityOptions?.process } ];
+
+        // Get the options for line and arrow graphs (use per device_class options if available, otherwise use defaults)
+        if( type == 'line' || type == 'arrowline' || type == 'bar' ) {
+
+            if( entityOptions?.color ) {
+                entities[0].color = entityOptions?.color;
+                entities[0].fill = entityOptions?.fill ?? 'rgba(0,0,0,0)';
+            } else {
+                const c = instance.getNextDefaultColor();
+                entities[0].color = c.color;
+                entities[0].fill = entityOptions?.fill ?? c.fill;
+            }
+
+            entities[0].width = entityOptions?.width ?? 1.001;
+            entities[0].lineMode = entityOptions?.lineMode;
+            entities[0].scale = entityOptions?.scale;
+
+            if( type == 'bar' )
+                entities[0].fill = entities[0].color;
+
+        }
+
+        const graphs = { 'type': type, 'entities': entities, 'options':entityOptions };
+
+        instance.pconfig.graphConfig = [];
+        instance.pconfig.graphConfig.push({ graph: graphs, id:instance.g_id });
+
+        instance.graphs = [];
+        for( let g of instance.pconfig.graphConfig ) instance.addFixedGraph(g);
+    }
+
     __fn.prototype._injectHistoryExplorer = function(instance)
     {
             instance.initLocalization();
@@ -81,8 +130,6 @@ function hecHookInfoPanel()
 
             instance.g_id = 0;
 
-            const entity_id = this.__entityId;
-
             instance.pconfig.customStateColors = {};
 
             instance.stateColors = { ...stateColors };
@@ -107,13 +154,6 @@ function hecHookInfoPanel()
 
             instance.pconfig.entityOptions = config.entityOptions;
 
-            const entityOptions = instance.getEntityOptions(entity_id);
-
-            const uom = instance.getUnitOfMeasure(entity_id);
-            const sc = instance.getStateClass(entity_id);
-            const type = entityOptions?.type ? entityOptions.type : ( sc === 'total_increasing' ) ? 'bar' : ( uom == undefined && sc !== 'measurement' ) ? 'timeline' : 'line';
-
-            instance.pconfig.labelAreaWidth =       ( type == 'timeline' ) ? 0 : 55;
             instance.pconfig.labelsVisible =          false;
             instance.pconfig.showTooltipColors[0] =   config.tooltip?.showColorsLine ?? config.showTooltipColorsLine ?? true;
             instance.pconfig.showTooltipColors[1] =   config.tooltip?.showColorsTimeline ?? config.showTooltipColorsTimeline ?? true;
@@ -155,40 +195,11 @@ function hecHookInfoPanel()
             instance.pconfig.graphLabelColor = parseColor(config.uiColors?.labels ?? (instance.ui.darkMode ? '#9b9b9b' : '#333'));
             instance.pconfig.graphGridColor  = parseColor(config.uiColors?.gridlines ?? (instance.ui.darkMode ? "rgba(255, 255, 255, 0.1)" : "rgba(0, 0, 0, 0.1)"));
 
-            let entities = [ { 'entity' : entity_id, "process": entityOptions?.process } ];
-
-            // Get the options for line and arrow graphs (use per device_class options if available, otherwise use defaults)
-            if( type == 'line' || type == 'arrowline' || type == 'bar' ) {
-
-                if( entityOptions?.color ) {
-                    entities[0].color = entityOptions?.color;
-                    entities[0].fill = entityOptions?.fill ?? 'rgba(0,0,0,0)';
-                } else {
-                    const c = instance.getNextDefaultColor();
-                    entities[0].color = c.color;
-                    entities[0].fill = entityOptions?.fill ?? c.fill;
-                }
-
-                entities[0].width = entityOptions?.width ?? 1.001;
-                entities[0].lineMode = entityOptions?.lineMode;
-                entities[0].scale = entityOptions?.scale;
-
-                if( type == 'bar' )
-                    entities[0].fill = entities[0].color;
-
-            }
+            this._setEntityOptions(instance);
 
             instance.contentValid = true;
 
             instance.databaseCallback = this._databaseCallback.bind(this);
-
-            const graphs = { 'type': type, 'entities': entities, 'options':entityOptions };
-
-            instance.pconfig.graphConfig = [];
-            instance.pconfig.graphConfig.push({ graph: graphs, id:instance.g_id++ });
-
-            instance.graphs = [];
-            for( let g of instance.pconfig.graphConfig ) instance.addFixedGraph(g);
 
             instance.setTimeRangeFromString(String(instance.pconfig.defaultTimeRange));
 
@@ -238,6 +249,7 @@ function hecHookInfoPanel()
 
     __fn.prototype._hec_updated = function(changedProps) 
     {
+
         if( !this.hec_instance ) {
 
             hec_panel.show = undefined;
@@ -261,8 +273,16 @@ function hecHookInfoPanel()
 
         } else {
 
+            // If the entity changed without reopening the popup, then create a new graph with new settings
+            if( this._recreate ) {
+                this._recreate = false;
+                this._setEntityOptions(this.hec_instance);
+                this.hec_instance.updateHistoryWithClearCache();
+            }
+
             const lc = this.__hass.states[this.__entityId]?.last_changed;
 
+            // Update history when the shown entity state changes
             if( hec_panel.lc != lc ) {
                 hec_panel.lc = lc;
                 if( this.hec_instance.pconfig.refreshEnabled ) {
@@ -315,6 +335,7 @@ function hecHookInfoPanel()
         if( hec_panel.entity !== this.__entityId ) {
             hec_panel.entity = this.__entityId;
             hec_panel.show = undefined;
+            if( this.hec_instance ) this._recreate = true;
         }
 
         const i = 0;
