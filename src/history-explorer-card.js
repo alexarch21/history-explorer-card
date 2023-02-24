@@ -3064,7 +3064,7 @@ class HistoryExplorerCard extends HTMLElement
         this.instance.pconfig.exportSeparator =        config.csv?.separator;
         this.instance.pconfig.exportTimeFormat =       config.csv?.timeFormat;
         this.instance.pconfig.exportStatsPeriod =      config.csv?.statisticsPeriod ?? 'hour';
-        this.instance.statistics.enabled =             config.statistics?.enabled ?? false;
+        this.instance.statistics.enabled =             config.statistics?.enabled ?? true;
         this.instance.statistics.mode =                config.statistics?.mode ?? 'mean';
         this.instance.statistics.retention =           config.statistics?.retention ?? undefined;
         this.instance.statistics.period =              config.statistics?.period ?? 'hour';
