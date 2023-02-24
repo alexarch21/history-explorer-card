@@ -1371,7 +1371,7 @@ class HistoryCardState {
                     borderColor: d.bColor,
                     backgroundColor: d.fillColor,
                     borderWidth: d.width,
-                    pointRadius: 0,
+                    pointRadius: config?.showSamples ? 4 : 0,
                     hitRadius: 5,
                     label: this.pconfig.showCurrentValues ? this.getFormattedLabelName(d.name, d.entity_id, d.unit) : d.name,
                     name: d.name,
