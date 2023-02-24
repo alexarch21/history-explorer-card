@@ -89,12 +89,20 @@ When the dashboard is opened, the card will show the last 24 hours by default. Y
 
 ```yaml
 type: custom:history-explorer-card
-defaultTimeRange: 4h   // show the last 4 hours when opening the card
-defaultTimeRange: 2d   // or 2 days...
-defaultTimeRange: 15m  // or 15 minutes...
-defaultTimeRange: 3w   // or 3 weeks
-defaultTimeRange: 6o   // or 6 months
-defaultTimeRange: 1y   // or 1 year
+defaultTimeRange: 4h     # show the last 4 hours when opening the card
+defaultTimeRange: 2d     # or 2 days...
+defaultTimeRange: 15m    # or 15 minutes...
+defaultTimeRange: 3w     # or 3 weeks
+defaultTimeRange: 6o     # or 6 months
+defaultTimeRange: 1y     # or 1 year
+```
+
+By default the card will open the graphs with the current date and time aligned to the right of the chart. You can define a custom time offset using the `defaultTimeOffset` setting which will be applied when you open the card or click the date button.
+
+```yaml
+type: custom:history-explorer-card
+defaultTimeOffset: 1h       # Add 1 hour of empty space after the current time
+defaultTimeOffset: -1d      # Show the previous days' data
 ```
 
 ### Auto refresh
