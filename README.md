@@ -217,6 +217,27 @@ Decimation works on state timelines by merging very small state changes into 'mu
 ![history-panel-timeline-multiple](https://github.com/alexarch21/history-explorer-card/raw/main/images/screenshots/history-panel-timeline-multiple.png)
 
 
+### Displaying individual samples
+
+Holding the `Alt` key (or `Option` key on Mac) while hovering over a graph will reveal all the individual samples making up the line chart:
+
+![image](https://user-images.githubusercontent.com/60828821/221272054-abb884df-b95f-4c88-83f0-921ac8709a93.png)
+
+If you would like to permanently show individual samples for certain graphs, this can be configured per graph using the `showSamples` option:
+
+```yaml
+type: custom:history-explorer-card
+entityOptions:
+  humidity:
+    showSamples: true      # always show samples for humidity graphs
+graphs:
+  - type: line
+    options:
+      showSamples: true    # explicitly show samples for this manually defined graph
+    entities:
+      - entity: sensor.outside_temperature
+```
+
 ### Bar graphs for total increasing entities
 
 Entities that represent a monotonically increasing total can be visualized as adaptive bar charts. This applies to entities such as, for example, consumed energy, water or gas, rainfall, or network data usage. The data is visualized over a time interval (10 minutes, hourly or daily) that can be toggled on the fly and independently for each graph.
