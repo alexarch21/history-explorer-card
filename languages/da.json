@@ -1,0 +1,39 @@
+{
+    "ui" : {
+        "label" : {
+            "type_to_search" : "Indtast for at søge efter en entitet, der skal tilføjes",
+            "error_retreiving" : "Fejl ved indlæsning af entiteter !",
+            "loading" : "Indlæser tilgængelige entiteter...",
+        }, 
+        "popup" : {
+            "remove_all" : "Fjern alle dynamisk tilføjede grafer ?",
+            "enable_panel" : "Brug historik graf som standard ?",
+            "disable_panel" : "Fravælg historik graf som standard ?"
+        },
+        "menu" : {  
+            "export_csv" : "Eksporter som CSV",
+            "export_stats" : "Eksporter statistik som CSV",
+            "remove_all" : "Fjern alle tilføjede grafer ",
+            "enable_panel" : "Brug historik graf som standard",
+            "disable_panel" : "Deaktivér historik graf som standard"
+        },
+        "ranges" : {
+            "l_hour" : "< 1 T",
+            "hour" : "1 T",
+            "n_hours" : "%1 T",
+            "day" : "1 dag",
+            "n_days" : "%1 dage",
+            "week" : "1 uge",
+            "n_weeks" : "%1 uger",
+            "month" : "1 måned",
+            "n_months" : "%1 måneder",
+            "year" : "1 år"
+        },
+        "interval" : {
+            "_10m" : "10 min",
+            "hourly" : "Hver time",
+            "daily" : "Daglig",
+            "monthly" : "Månedlig"
+        }
+    }
+}
