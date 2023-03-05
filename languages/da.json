@@ -1,7 +1,7 @@
 {
     "ui" : {
         "label" : {
-            "type_to_search" : "Indtast for at søge efter en entitit, der skal tilføjes",
+            "type_to_search" : "Indtast for at søge efter en entitet, der skal tilføjes",
             "error_retreiving" : "Fejl ved indlæsning af entiteter !",
             "loading" : "Indlæser tilgængelige entiteter...",
         }, 
@@ -11,8 +11,8 @@
             "disable_panel" : "Fravælg historik graf som standard ?"
         },
         "menu" : {  
-            "export_csv" : "Ekporter som CSV",
-            "export_stats" : "Ekporter statistik som CSV",
+            "export_csv" : "Eksporter som CSV",
+            "export_stats" : "Eksporter statistik som CSV",
             "remove_all" : "Fjern alle tilføjede grafer ",
             "enable_panel" : "Brug historik graf som standard",
             "disable_panel" : "Deaktivér historik graf som standard"
@@ -31,7 +31,7 @@
         },
         "interval" : {
             "_10m" : "10 min",
-            "hourly" : "Time",
+            "hourly" : "Hver time",
             "daily" : "Daglig",
             "monthly" : "Månedlig"
         }
