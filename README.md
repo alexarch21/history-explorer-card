@@ -158,9 +158,15 @@ axisAddMarginMin: false
 axisAddMarginMax: false
 ```
 
-### Y axis min and max
+### Y axis scaling
 
 By default the min/max scales for the Y axis are adjusted automatically to the data you are currently viewing. You can override the automatic range with your own values for both fixed graphs defined in the YAML, as well as for dynamically added entities or device classes. See the customizing dynamic line graphs section and the advanced YAML example below.
+
+Pressing the axis lock icon will temporarily disable autoscaling and lock the Y axis to the currently active range. Pressing it again will revert back to the defaults for the graph:
+
+![image](https://user-images.githubusercontent.com/60828821/221268643-735e4b1a-81da-4709-aff8-913b9b8f95a8.png)
+
+The Y axis can also be interactively modified. Pressing and holding the `SHIFT` key will unlock interactive zooming and panning of the graph in vertical direction. Pressing your mouse button while holding `SHIFT` over a graph will allow you to drag the graph into both horizontal and vertical directions. Using the mousewheel while holding `SHIFT` will change the Y axis scale. When interacting with the Y axis, the axis lock icon will automatically be enabled. Click the icon to go back to the default scale at any time.
 
 ### Rounding
 
@@ -210,6 +216,27 @@ Decimation works on state timelines by merging very small state changes into 'mu
 
 ![history-panel-timeline-multiple](https://github.com/alexarch21/history-explorer-card/raw/main/images/screenshots/history-panel-timeline-multiple.png)
 
+
+### Displaying individual samples
+
+Holding the `Alt` key (or `Option` key on Mac) while hovering over a graph will reveal all the individual samples making up the line chart:
+
+![image](https://user-images.githubusercontent.com/60828821/221272054-abb884df-b95f-4c88-83f0-921ac8709a93.png)
+
+If you would like to permanently show individual samples for certain graphs, this can be configured per graph using the `showSamples` option:
+
+```yaml
+type: custom:history-explorer-card
+entityOptions:
+  humidity:
+    showSamples: true      # always show samples for humidity graphs
+graphs:
+  - type: line
+    options:
+      showSamples: true    # explicitly show samples for this manually defined graph
+    entities:
+      - entity: sensor.outside_temperature
+```
 
 ### Bar graphs for total increasing entities
 
@@ -507,6 +534,20 @@ The height of line and bar graphs can be set with these options:
 type: custom:history-explorer-card
 lineGraphHeight: 100   # default line graph height is 250
 barGraphHeight: 100    # default bar graph height is 150
+```
+
+Alternatively you can set a custom height for individual graphs, both dynamic ones and manually defined ones. Per-graph height will override global height options:
+```yaml
+type: custom:history-explorer-card
+entityOptions:
+  humidity:
+    height: 150        # set the height of all humidity graphs to 150
+graphs:
+  - type: line
+    options:
+      height: 200      # explicitly set the height of this manually defined graph
+    entities:
+      - entity: sensor.outside_temperature
 ```
 
 #### Configuring the tooltip popup

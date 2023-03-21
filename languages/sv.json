@@ -1,0 +1,39 @@
+{
+	"ui": {
+		"label": {
+			"type_to_search": "Skriv för att söka efter en enhet att lägga till",
+			"error_retreiving": "Kunde inte hämta tillgängliga enheter!",
+			"loading": "Laddar tillgängliga enheter..."
+		},
+		"popup": {
+			"remove_all": "Ta bort alla dynamiskt tillagda grafer?",
+			"enable_panel": "Aktivera panelen för enhetens historikinformation?",
+			"disable_panel": "Inaktivera panelen för enhetens historikinformation?"
+		},
+		"menu": {
+			"export_csv": "Exportera som CSV",
+			"export_stats": "Exportera statistik som CSV",
+			"remove_all": "Ta bort alla tillagda grafer",
+			"enable_panel": "Aktivera historikinfo-panelen",
+			"disable_panel": "Inaktivera historikinfo-panelen"
+		},
+		"ranges": {
+			"l_hour": "< 1 tim",
+			"hour": "1 tim",
+			"n_hours": "%1 timmar",
+			"day": "1 dag",
+			"n_days": "%1 dagar",
+			"week": "1 vecka",
+			"n_weeks": "%1 veckor",
+			"month": "1 månad",
+			"n_months": "%1 månader",
+			"year": "1 år"
+		},
+		"interval": {
+			"_10m": "10 min",
+			"hourly": "Varje timme",
+			"daily": "Varje dag",
+			"monthly": "Varje månad"
+		}
+	}
+}
