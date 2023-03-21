@@ -3049,8 +3049,8 @@ class HistoryExplorerCard extends HTMLElement
         this.instance.pconfig.defaultLineMode =        config.lineMode;
         this.instance.pconfig.showUnavailable =        config.showUnavailable ?? false;
         this.instance.pconfig.showCurrentValues =      config.showCurrentValues ?? false;
-        this.instance.pconfig.axisAddMarginMin =     ( config.axisAddMarginMin !== undefined ) ? config.axisAddMarginMin : true;
-        this.instance.pconfig.axisAddMarginMax =     ( config.axisAddMarginMax !== undefined ) ? config.axisAddMarginMax : true;
+        this.instance.pconfig.axisAddMarginMin =     ( config.axisAddMarginMin !== undefined ) ? config.axisAddMarginMin : false;
+        this.instance.pconfig.axisAddMarginMax =     ( config.axisAddMarginMax !== undefined ) ? config.axisAddMarginMax : false;
         this.instance.pconfig.recordedEntitiesOnly =   config.recordedEntitiesOnly ?? false;
         this.instance.pconfig.filterEntities  =        config.filterEntities;
         this.instance.pconfig.combineSameUnits =       config.combineSameUnits === true;
