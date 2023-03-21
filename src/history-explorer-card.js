@@ -79,6 +79,7 @@ class HistoryCardState {
         this.ui.hideInterval  = false;
         this.ui.hideSelector  = false;
         this.ui.stickyTools   = 0;
+        this.ui.wideInterval  = false;
 
         this.i18n = {};
         this.i18n.valid                = false;
@@ -469,7 +470,7 @@ class HistoryCardState {
     {
         if( selected === undefined ) selected = 1;
 
-        return `<select id='bd-${gid}' style="position:absolute;right:50px;width:80px;margin-top:${-h+5}px;color:var(--primary-text-color);background-color:${this.pconfig.closeButtonColor};border:0px solid black;">
+        return `<select id='bd-${gid}' style="position:absolute;right:50px;width:${this.ui.wideInterval ? 100 : 80}px;margin-top:${-h+5}px;color:var(--primary-text-color);background-color:${this.pconfig.closeButtonColor};border:0px solid black;">
                     <option value="0" ${optionStyle} ${(selected == 0) ? 'selected' : ''}>${i18n('ui.interval._10m')}</option>
                     <option value="1" ${optionStyle} ${(selected == 1) ? 'selected' : ''}>${i18n('ui.interval.hourly')}</option>
                     <option value="2" ${optionStyle} ${(selected == 2) ? 'selected' : ''}>${i18n('ui.interval.daily')}</option>
@@ -2850,6 +2851,8 @@ class HistoryCardState {
         let locale = this._hass.language ? this._hass.language : 'en-GB';
 
         setLanguage(locale);
+
+        this.ui.wideInterval = ['da', 'nl', 'sv'].includes(locale);
 
         const ds = getLocalizedDateString(locale, { dateStyle: 'medium' });
         this.i18n.styleDateTicks = ( ds[0] == 'D' ) ? 'D MMM' : 'MMM D';

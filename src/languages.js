@@ -276,6 +276,98 @@ const lang_pl =
 
 
 // --------------------------------------------------------------------------------------
+// Swedish (sv)
+// --------------------------------------------------------------------------------------
+
+const lang_sv =
+{
+	"ui": {
+		"label": {
+			"type_to_search": "Skriv för att söka efter en enhet att lägga till",
+			"error_retreiving": "Kunde inte hämta tillgängliga enheter!",
+			"loading": "Laddar tillgängliga enheter..."
+		},
+		"popup": {
+			"remove_all": "Ta bort alla dynamiskt tillagda grafer?",
+			"enable_panel": "Aktivera panelen för enhetens historikinformation?",
+			"disable_panel": "Inaktivera panelen för enhetens historikinformation?"
+		},
+		"menu": {
+			"export_csv": "Exportera som CSV",
+			"export_stats": "Exportera statistik som CSV",
+			"remove_all": "Ta bort alla tillagda grafer",
+			"enable_panel": "Aktivera historikinfo-panelen",
+			"disable_panel": "Inaktivera historikinfo-panelen"
+		},
+		"ranges": {
+			"l_hour": "< 1 tim",
+			"hour": "1 tim",
+			"n_hours": "%1 timmar",
+			"day": "1 dag",
+			"n_days": "%1 dagar",
+			"week": "1 vecka",
+			"n_weeks": "%1 veckor",
+			"month": "1 månad",
+			"n_months": "%1 månader",
+			"year": "1 år"
+		},
+		"interval": {
+			"_10m": "10 min",
+			"hourly": "Varje timme",
+			"daily": "Varje dag",
+			"monthly": "Varje månad"
+		}
+	}
+}
+
+
+// --------------------------------------------------------------------------------------
+// Danish (da)
+// --------------------------------------------------------------------------------------
+
+const lang_da =
+{
+    "ui" : {
+        "label" : {
+            "type_to_search" : "Indtast for at søge efter en entitet, der skal tilføjes",
+            "error_retreiving" : "Fejl ved indlæsning af entiteter !",
+            "loading" : "Indlæser tilgængelige entiteter...",
+        }, 
+        "popup" : {
+            "remove_all" : "Fjern alle dynamisk tilføjede grafer ?",
+            "enable_panel" : "Brug historik graf som standard ?",
+            "disable_panel" : "Fravælg historik graf som standard ?"
+        },
+        "menu" : {  
+            "export_csv" : "Eksporter som CSV",
+            "export_stats" : "Eksporter statistik som CSV",
+            "remove_all" : "Fjern alle tilføjede grafer ",
+            "enable_panel" : "Brug historik graf som standard",
+            "disable_panel" : "Deaktivér historik graf som standard"
+        },
+        "ranges" : {
+            "l_hour" : "< 1 T",
+            "hour" : "1 T",
+            "n_hours" : "%1 T",
+            "day" : "1 dag",
+            "n_days" : "%1 dage",
+            "week" : "1 uge",
+            "n_weeks" : "%1 uger",
+            "month" : "1 måned",
+            "n_months" : "%1 måneder",
+            "year" : "1 år"
+        },
+        "interval" : {
+            "_10m" : "10 min",
+            "hourly" : "Hver time",
+            "daily" : "Daglig",
+            "monthly" : "Månedlig"
+        }
+    }
+}
+
+
+// --------------------------------------------------------------------------------------
 // Language localization helper functions
 // --------------------------------------------------------------------------------------
 
@@ -285,7 +377,9 @@ var languages = {
     'de': lang_de,
     'es': lang_es,
     'nl': lang_nl,
-    'pl': lang_pl
+    'pl': lang_pl,
+    'sv': lang_sv,
+    'da': lang_da
 };
 
 var language = 'en';
