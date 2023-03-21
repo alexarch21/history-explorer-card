@@ -18,12 +18,13 @@ class HistoryCSVExporter {
 
         data.push(`Time stamp${this.separator}State\r\n`);
 
-        for( let r of result ) {
+        for( let entity in result ) {
+            const r = result[entity];
             if( !r.length ) continue;
-            data.push(r[0].entity_id + "\r\n");
+            data.push(entity + "\r\n");
             for( let e of r ) {
-                const t = moment(e.last_changed).format(this.timeFormat);
-                data.push(t + this.separator + e.state + "\r\n");
+                const t = moment(e.lu * 1000).format(this.timeFormat);
+                data.push(t + this.separator + e.s + "\r\n");
             }
         }
 
@@ -50,13 +51,10 @@ class HistoryCSVExporter {
 
         let t0 = cardstate.startTime.replace('+', '%2b');
         let t1 = cardstate.endTime.replace('+', '%2b');
-        let url = `history/period/${t0}?end_time=${t1}&filter_entity_id`;
-        let separator = '=';
+        let l = [];
         for( let g of cardstate.graphs ) {
             for( let e of g.entities ) {
-                url += separator;
-                url += e.entity;
-                separator = ',';
+                l.push(e.entity);
                 n++;
             }
         }
@@ -66,8 +64,16 @@ class HistoryCSVExporter {
             this.overlay = cardstate.ui.spinOverlay;
             document.body.appendChild(this.overlay);
 
-            const p = cardstate.callHassAPIGet(url);
-            p.then(this.exportCallback.bind(this), this.exportFailed.bind(this));
+            // Issue statistics retrieval call
+            let d = { 
+                type: "history/history_during_period",
+                start_time: t0,
+                end_time: t1,
+                minimal_response: true,
+                no_attributes: true,
+                entity_ids: l
+            };
+            cardstate._hass.callWS(d).then(this.exportCallback.bind(this), this.exportFailed.bind(this));
 
         }
     }

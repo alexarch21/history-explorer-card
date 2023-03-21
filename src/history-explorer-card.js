@@ -5,7 +5,7 @@ import "./deps/timeline.js";
 import "./deps/md5.min.js"
 import "./deps/FileSaver.js"
 
-const Version = '1.0.44';
+const Version = '1.0.45';
 
 var isMobile = ( navigator.appVersion.indexOf("Mobi") > -1 ) || ( navigator.userAgent.indexOf("HomeAssistant") > -1 );
 
@@ -1039,6 +1039,23 @@ class HistoryCardState {
         this.loaderCallback(r);
     }
 
+    loaderCallbackWS(result)
+    {
+        let r = [];
+
+        for( let entity in result ) {
+            const a = result[entity];
+            let j = [];
+            j.push({'last_changed' : a[0].lu * 1000, 'state' : a[0].s, 'entity_id' : entity});
+            for( let i = 1; i < a.length; i++ ) {
+                j.push({'last_changed' : a[i].lu * 1000, 'state' : a[i].s});
+            }
+            r.push(j);
+        }
+
+        this.loaderCallback(r);
+    }
+
 
     // --------------------------------------------------------------------------------------
     // User defined state process function
@@ -1606,14 +1623,9 @@ class HistoryCardState {
             let t0 = this.loader.startTime.replace('+', '%2b');
             let t1 = this.loader.endTime.replace('+', '%2b');
             let l = [];
-            let url = `history/period/${t0}?end_time=${t1}&minimal_response&no_attributes&filter_entity_id`;
-            let separator = '=';
             for( let g of this.graphs ) {
                 for( let e of g.entities ) {
                     l.push(e.entity);
-                    url += separator;
-                    url += e.entity;
-                    separator = ',';
                     n++;
                 }
             }
@@ -1624,9 +1636,16 @@ class HistoryCardState {
 
                 if( !this.statistics.enabled || l0 > this.limitSlot ) {
 
-                    // Issue retrieval call, initiate async cache loading
-                    const p = this.callHassAPIGet(url);
-                    p.then(this.loaderCallback.bind(this), this.loaderFailed.bind(this));
+                    // Issue history retrieval call, initiate async cache loading
+                    let d = { 
+                        type: "history/history_during_period",
+                        start_time: t0,
+                        end_time: t1,
+                        minimal_response: true,
+                        no_attributes: true,
+                        entity_ids: l
+                    };
+                    this._hass.callWS(d).then(this.loaderCallbackWS.bind(this), this.loaderFailed.bind(this));
 
                 } else {
 
