@@ -1638,7 +1638,7 @@ class HistoryCardState {
                 if( !this.statistics.enabled || l0 > this.limitSlot ) {
 
                     // Issue history retrieval call, initiate async cache loading
-                    let d = { 
+                    const d = { 
                         type: "history/history_during_period",
                         start_time: t0,
                         end_time: t1,
@@ -1651,7 +1651,7 @@ class HistoryCardState {
                 } else {
 
                     // Issue statistics retrieval call
-                    let d = { 
+                    const d = { 
                         type: ( this.version[0] > 2022 || this.version[1] >= 11 ) ? "recorder/statistics_during_period" : "history/statistics_during_period",
                         start_time: t0,
                         end_time: t1,
@@ -2753,18 +2753,24 @@ class HistoryCardState {
 
             const regex = this.buildFilterRegexList();
 
-            for( let r of result ) {
-                if( !this.matchRegexList(regex, r[0].entity_id) ) continue;
+            let entities = [];
+            for( let entity in result ) {
+                if( this.matchRegexList(regex, entity) ) entities.push(entity);
+            }
+
+            entities.sort();
+
+            for( let entity of entities ) {
                 let o;
                 if( isMobile ) {
                     o = document.createElement('a');
                     o.href = `#s_${i}`;
-                    o.id = r[0].entity_id;
+                    o.id = entity;
                     o.style = "display:block;padding:2px 5px;text-decoration:none;color:inherit";
                     o.addEventListener('click', this.entitySelectorEntryClicked.bind(this), true);
                 } else 
                     o = document.createElement('option');
-                o.innerHTML = r[0].entity_id;
+                o.innerHTML = entity;
                 datalist.appendChild(o);
             }
 
@@ -2795,22 +2801,29 @@ class HistoryCardState {
 
             const regex = this.buildFilterRegexList();
 
+            let entities = [];
             for( let e in this._hass.states ) {
                 if( !this.matchRegexList(regex, e) ) continue;
                 const d = this.getDomainForEntity(e);
                 if( !['automation', 'script', 'zone', 'camera', 'persistent_notification', 'timer'].includes(d) ) {
-                    let o;
-                    if( isMobile ) {
-                        o = document.createElement('a');
-                        o.href = `#s_${i}`;
-                        o.id = e;
-                        o.style = "display:block;padding:2px 5px;text-decoration:none;color:inherit";
-                        o.addEventListener('click', this.entitySelectorEntryClicked.bind(this), true);
-                    } else 
-                        o = document.createElement('option');
-                    o.innerHTML = e;
-                    datalist.appendChild(o);
+                    entities.push(e);
                 }
+            }
+
+            entities.sort();
+
+            for( let entity of entities ) {
+                let o;
+                if( isMobile ) {
+                    o = document.createElement('a');
+                    o.href = `#s_${i}`;
+                    o.id = entity;
+                    o.style = "display:block;padding:2px 5px;text-decoration:none;color:inherit";
+                    o.addEventListener('click', this.entitySelectorEntryClicked.bind(this), true);
+                } else 
+                    o = document.createElement('option');
+                o.innerHTML = entity;
+                datalist.appendChild(o);
             }
 
         }
@@ -2832,8 +2845,13 @@ class HistoryCardState {
             for( let i of this.ui.inputField )
                 if( i ) i.placeholder = i18n("ui.label.loading");
             const t0 = moment().subtract(1, "hour").format('YYYY-MM-DDTHH:mm:ss');
-            const url = `history/period/${t0}?minimal_response&no_attributes`;
-            this.callHassAPIGet(url).then(this.entityCollectorCallback.bind(this), this.entityCollectorFailed.bind(this));
+            const d = { 
+                type: "history/history_during_period",
+                start_time: t0,
+                minimal_response: true,
+                no_attributes: true
+            };
+            this._hass.callWS(d).then(this.entityCollectorCallback.bind(this), this.entityCollectorFailed.bind(this));
         } else
             this.entityCollectAll();
 
@@ -2865,16 +2883,6 @@ class HistoryCardState {
         this.i18n.styleDateTimeTooltip = this.i18n.styleDateTicks + ', ' + getLocalizedDateString(locale, { timeStyle: 'medium' });
 
         this.i18n.valid = true;
-    }
-
-
-    // --------------------------------------------------------------------------------------
-    // Hass API access
-    // --------------------------------------------------------------------------------------
-
-    callHassAPIGet(url)
-    {
-        return this._hass.callApi('GET', url);
     }
 
 
