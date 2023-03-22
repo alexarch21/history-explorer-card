@@ -331,7 +331,7 @@ class HistoryCardState {
 
             if( this.activeRange.timeRangeHours < 24 ) this.setTimeRange(24, false);
 
-            let t0 = moment(this.startTime).subtract(1, "day");
+            let t0 = moment(this.startTime).subtract(1, ( this.activeRange.timeRangeHours < 720 ) ? "day" : "month");
             let t1 = moment(t0).add(this.activeRange.timeRangeHours, "hour");
             this.startTime = t0.format("YYYY-MM-DD") + "T00:00:00";
             this.endTime = t1.format("YYYY-MM-DD") + "T00:00:00";
@@ -347,7 +347,7 @@ class HistoryCardState {
 
             if( this.activeRange.timeRangeHours < 24 ) this.setTimeRange(24, false);
 
-            let t0 = moment(this.startTime).add(1, "day");
+            let t0 = moment(this.startTime).add(1, ( this.activeRange.timeRangeHours < 720 ) ? "day" : "month");
             let t1 = moment(t0).add(this.activeRange.timeRangeHours, "hour");
             this.startTime = t0.format("YYYY-MM-DD") + "T00:00:00";
             this.endTime = t1.format("YYYY-MM-DD") + "T00:00:00";
