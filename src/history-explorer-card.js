@@ -143,6 +143,7 @@ class HistoryCardState {
         this.state.loading       = false;
         this.state.zoomMode      = false;
         this.state.altGraph      = null;
+        this.state.autoScroll    = false;
 
         this.activeRange = {};
         this.activeRange.timeRangeHours  = 24;
@@ -303,12 +304,15 @@ class HistoryCardState {
                 }
             }
 
-            this.endTime = endTime.format('YYYY-MM-DDTHH:mm[:00]');
-            this.startTime = moment(this.endTime).subtract(this.activeRange.timeRangeHours, "hour").subtract(this.activeRange.timeRangeMinutes, "minute").format('YYYY-MM-DDTHH:mm[:00]');
+            this.endTime = endTime.format('YYYY-MM-DDTHH:mm:ss');
+            this.startTime = moment(this.endTime).subtract(this.activeRange.timeRangeHours, "hour").subtract(this.activeRange.timeRangeMinutes, "minute").format('YYYY-MM-DDTHH:mm:ss');
 
             this.updateHistory();
 
         }
+
+        // Allow auto scroll if auto refresh is enabled
+        this.state.autoScroll = true;
     }
 
     todayNoReset()
@@ -1670,6 +1674,20 @@ class HistoryCardState {
             this.generateGraphDataFromCache();
     }
 
+    updateHistoryAutoRefresh()
+    {
+        const now = moment();
+        const last = moment(this.endTime);
+
+        // If auto scroll is allowed (scrolled at or past the previous last event) then adjust the x position
+        // if the new event is past the visible graph area.
+        if( this.state.autoScroll && last < now ) {
+            this.today();
+        } else {
+            this.updateHistory();
+        }
+    }
+
     updateHistoryWithClearCache()
     {
         if( !this.state.loading ) {
@@ -1724,6 +1742,8 @@ class HistoryCardState {
         }
 
         if( panstate.g ) {
+
+            this.state.autoScroll = false;
 
             panstate.mx = event.clientX;
             panstate.lx = event.clientX;
@@ -1940,6 +1960,9 @@ class HistoryCardState {
         }
 
         panstate.g = null;
+
+        // Allow auto scroll on refresh if the user dragged at or past the current time
+        this.state.autoScroll = moment() <= moment(this.endTime);
     }
 
     pointerCancel(event)
@@ -1969,6 +1992,9 @@ class HistoryCardState {
         }
 
         panstate.g = null;
+
+        // Allow auto scroll on refresh if the user dragged at or past the current time
+        this.state.autoScroll = moment() <= moment(this.endTime);
     }
 
     wheelScrolled(event)
@@ -3020,7 +3046,7 @@ class HistoryExplorerCard extends HTMLElement
             if( this.instance.pconfig.refreshEnabled ) {
                 this.instance.cache[cacheSize].valid = false;
                 if( this.instance.tid ) clearTimeout(this.instance.tid);
-                this.instance.tid = setTimeout(this.instance.updateHistory.bind(this.instance), 2000);
+                this.instance.tid = setTimeout(this.instance.updateHistoryAutoRefresh.bind(this.instance), 2000);
             }
         }
 

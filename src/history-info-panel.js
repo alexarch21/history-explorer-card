@@ -288,7 +288,7 @@ function hecHookInfoPanel()
                 if( this.hec_instance.pconfig.refreshEnabled ) {
                     this.hec_instance.cache[cacheSize].valid = false;
                     if( this.hec_instance.tid ) clearTimeout(this.hec_instance.tid);
-                    this.hec_instance.tid = setTimeout(this.hec_instance.updateHistory.bind(this.hec_instance), 2000);
+                    this.hec_instance.tid = setTimeout(this.hec_instance.updateHistoryAutoRefresh.bind(this.hec_instance), 2000);
                 }
             }
 
