@@ -1237,7 +1237,7 @@ class HistoryCardState {
                             let te = moment(t).add(td);
                             y1 = y0;
                             let d = 0;
-                            while( i < n && moment(result[id][i].last_changed) < te ) {
+                            while( i < n && this.momentCache(result[id][i].last_changed) < te ) {
                                 const state = this.process(result[id][i].state, process) * 1.0;
                                 if( !isNaN(state) ) {
                                     if( state < y1 ) {
