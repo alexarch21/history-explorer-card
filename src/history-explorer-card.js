@@ -1404,6 +1404,7 @@ class HistoryCardState {
                     domain: d.domain,
                     entity_id: d.entity_id,
                     unit: d.unit,
+                    hidden: d.hidden,
                     data: { }
                 });
                 scaleUnit = scaleUnit ?? d.unit;
@@ -2246,6 +2247,7 @@ class HistoryCardState {
             entities[0].width = entityOptions?.width;
             entities[0].lineMode = entityOptions?.lineMode;
             entities[0].scale = entityOptions?.scale;
+            entities[0].hidden = entityOptions?.hidden;
 
             if( type == 'bar' )
                 entities[0].fill = entities[0].color;
@@ -2319,6 +2321,7 @@ class HistoryCardState {
                 "unit": this.getUnitOfMeasure(d.entity, d.unit),
                 "domain": this.getDomainForEntity(d.entity),
                 "device_class": this.getDeviceClass(d.entity),
+                "hidden": d.hidden,
                 "entity_id" : d.entity
             });
         }
