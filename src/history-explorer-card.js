@@ -292,7 +292,8 @@ class HistoryCardState {
     {
         if( !this.state.loading ) {
 
-            if( resetRange ) this.setTimeRange(24, false);
+            if( resetRange ) 
+                this.setTimeRangeFromString(String(this.pconfig.defaultTimeRange));
 
             let endTime = moment();
             if( this.pconfig.defaultTimeOffset ) {
