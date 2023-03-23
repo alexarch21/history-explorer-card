@@ -21,6 +21,8 @@ Click or tap on a graph and drag left or right to slide it through time. The car
 
 Once you release the mouse button after dragging (or release your finger from the chart), the card will automatically readjust the y axes on all charts to better reflect the new data. The card will also synchronize all other charts in the history to the same point in time. That way you will always see the same time range on all your data and everything will be aligned.
 
+Clicking the date selector will bring you back to the current date and time without changing your zoom level. A double click on the date selector will bring your back and also reset your zoom to the configured default range.
+
 Like in the native HA history panel, you can hover over the chart line or state timelines to get a tooltip of the selected values or state.
 
 ### Overriding the HA more info history
@@ -134,6 +136,8 @@ combineSameUnits: true
 Timeline graphs will always automatically group if possible. Graphs defined manually in the YAML will never auto-group, their grouping can be controlled in the YAML.
 
 ![image](https://user-images.githubusercontent.com/60828821/156686448-919cbd9c-4e77-4efc-a725-e53a7049a092.png)
+
+You can hide an entity in a graph by clicking its label on the top. Click it a second time to make the entity visible again. An entity can be hidden by default using the `hidden` property in your entityOptions or in the manual YAML (see the advanced YAML example at the end of this readme).
 
 ### Line interpolation modes
 
@@ -662,6 +666,7 @@ graphs:
         color: '#ee3452'
         fill: rgba(0,0,0,0)
         lineMode: lines
+        hidden: true         # This entity is hidden by default !
   - type: line
     entities:
       - entity: sensor.outside_pressure
