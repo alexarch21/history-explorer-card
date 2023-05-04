@@ -275,7 +275,7 @@ class HistoryCardState {
 
         let v = this.stateTexts.get(s);
         if( !v ) {
-            v = ( device_class && this._hass.localize(`component.${domain}.state.${device_class}.${state}`) ) || 
+            v = ( device_class && this._hass.localize(`component.${domain}.entity_component.${device_class}.state.${state}`) ) || 
                   this._hass.localize(`component.${domain}.entity_component._.state.${state}`) || state;
             this.stateTexts.set(s, v);
         }
