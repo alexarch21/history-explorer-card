@@ -3117,6 +3117,7 @@ class HistoryExplorerCard extends HTMLElement
 
         this.instance.pconfig.labelAreaWidth =         config.labelAreaWidth ?? 65;
         this.instance.pconfig.labelsVisible =          config.labelsVisible ?? true;
+        this.instance.pconfig.hideLegend =           ( config.legendVisible == false ) ? true : undefined;
         this.instance.pconfig.showTooltipColors[0] =   config.tooltip?.showColorsLine ?? config.showTooltipColorsLine ?? true;
         this.instance.pconfig.showTooltipColors[1] =   config.tooltip?.showColorsTimeline ?? config.showTooltipColorsTimeline ?? true;
         this.instance.pconfig.tooltipSize =            config.tooltip?.size ?? config.tooltipSize ?? 'auto';
