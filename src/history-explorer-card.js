@@ -2883,11 +2883,21 @@ class HistoryCardState {
 
             const t0 = moment().subtract(1, "hour").format('YYYY-MM-DDTHH:mm:ss');
 
+            const regex = this.buildFilterRegexList();
+
+            let l = [];
+            for( let e in this._hass.states ) {
+                if( !this.matchRegexList(regex, e) ) continue;
+                const d = this.getDomainForEntity(e);
+                if( !['automation', 'script', 'zone', 'camera', 'persistent_notification', 'timer'].includes(d) ) l.push(e);
+            }
+
             const d = { 
                 type: "history/history_during_period",
                 start_time: t0,
                 minimal_response: true,
-                no_attributes: true
+                no_attributes: true,
+                entity_ids: l
 
             };
             this._hass.callWS(d).then(this.entityCollectorCallback.bind(this), this.entityCollectorFailed.bind(this));
