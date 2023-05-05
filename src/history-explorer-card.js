@@ -5,7 +5,7 @@ import "./deps/timeline.js";
 import "./deps/md5.min.js"
 import "./deps/FileSaver.js"
 
-const Version = '1.0.45';
+const Version = '1.0.46';
 
 var isMobile = ( navigator.appVersion.indexOf("Mobi") > -1 ) || ( navigator.userAgent.indexOf("HomeAssistant") > -1 );
 
@@ -275,8 +275,11 @@ class HistoryCardState {
 
         let v = this.stateTexts.get(s);
         if( !v ) {
-            v = ( device_class && this._hass.localize(`component.${domain}.state.${device_class}.${state}`) ) || 
-                  this._hass.localize(`component.${domain}.state._.${state}`) || state;
+            v = ( device_class && this._hass.localize(`component.${domain}.entity_component.${device_class}.state.${state}`) ) || 
+                  this._hass.localize(`component.${domain}.entity_component._.state.${state}`) ||
+                ( device_class && this._hass.localize(`component.${domain}.state.${device_class}.${state}`) ) || 
+                  this._hass.localize(`component.${domain}.state._.${state}`) || 
+                  state;
             this.stateTexts.set(s, v);
         }
         
