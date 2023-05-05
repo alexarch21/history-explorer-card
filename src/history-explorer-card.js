@@ -2450,7 +2450,6 @@ class HistoryCardState {
         let eh = this._this.querySelector(`#eh_${i}`); if( eh ) eh.innerHTML = i18n('ui.menu.export_stats');
         let eg = this._this.querySelector(`#eg_${i}`); if( eg ) eg.innerHTML = i18n('ui.menu.remove_all');
         let ei = this._this.querySelector(`#ei_${i}`); if( ei ) ei.innerHTML = infoPanelEnabled ? i18n('ui.menu.disable_panel') : i18n('ui.menu.enable_panel');
-        let b7 = this._this.querySelector(`#b7_${i}`); if( b7 ) b7.placeholder = i18n('ui.label.type_to_search');
         let by = this._this.querySelector(`#by_${i}`); 
         if( by ) {
             by.children[0].innerHTML = i18n('ui.ranges.l_hour');
@@ -2860,6 +2859,9 @@ class HistoryCardState {
             }
 
         }
+
+        for( let i of this.ui.inputField )
+            if( i ) i.placeholder = i18n("ui.label.type_to_search");
     }
 
     requestEntityCollection()
@@ -2875,17 +2877,23 @@ class HistoryCardState {
         this.ui.inputField[1] = this._this.querySelector(`#b7_1`);
 
         if( this.pconfig.recordedEntitiesOnly ) {
+
             for( let i of this.ui.inputField )
                 if( i ) i.placeholder = i18n("ui.label.loading");
+
             const t0 = moment().subtract(1, "hour").format('YYYY-MM-DDTHH:mm:ss');
+
             const d = { 
                 type: "history/history_during_period",
                 start_time: t0,
                 minimal_response: true,
                 no_attributes: true
+
             };
             this._hass.callWS(d).then(this.entityCollectorCallback.bind(this), this.entityCollectorFailed.bind(this));
+
         } else
+
             this.entityCollectAll();
 
     }
@@ -3038,11 +3046,11 @@ class HistoryExplorerCard extends HTMLElement
 
         this.instance.version = hass.config.version.split('.').map(Number);
 
-        if( !this.instance.entitiesPopulated )
-            this.instance.requestEntityCollection();
-
         if( !this.instance.i18n.valid )
             this.instance.initLocalization();
+
+        if( !this.instance.entitiesPopulated )
+            this.instance.requestEntityCollection();
 
         if( !this.instance.contentValid && !this.instance.iid )
             this.instance.iid = setInterval(this.instance.updateContent.bind(this.instance), 100);
