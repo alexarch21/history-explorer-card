@@ -2043,6 +2043,13 @@ class HistoryCardState {
                     t.max -= d * 0.5;
                     t.min += d * 0.5;
 
+                    if( !g.yaxisLock ) {
+                        g.yaxisLock = 2;
+                        this.updateScaleLockState(g, true);
+                    }
+
+                    g.chart.options.scales.yAxes[0].ticks.removeEdgeTicks = true;
+
                     g.chart.update();
                     break;
                 }
