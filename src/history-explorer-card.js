@@ -5,7 +5,7 @@ import "./deps/timeline.js";
 import "./deps/md5.min.js"
 import "./deps/FileSaver.js"
 
-const Version = '1.0.46';
+const Version = '1.0.47';
 
 var isMobile = ( navigator.appVersion.indexOf("Mobi") > -1 ) || ( navigator.userAgent.indexOf("HomeAssistant") > -1 );
 
@@ -3047,10 +3047,18 @@ var gcid = 0;
 class HistoryExplorerCard extends HTMLElement 
 {
     instance = null;
+    configSet = false;
 
     // Whenever the state changes, a new `hass` object is set. Use this to update your content.
     set hass(hass) 
     {
+        if( this.configSet ) {
+            this.configSet = false;
+            this.InitWithConfig(hass);
+        }
+
+        if( !this.instance ) return;
+
         this.instance._this = this;
         this.instance._hass = hass;
 
@@ -3086,9 +3094,17 @@ class HistoryExplorerCard extends HTMLElement
     setConfig(config) 
     {
         this.config = config;
+        this.configSet = true;
+    }
+
+    InitWithConfig(hass)
+    {
+        const config = this.config;
 
         if( !this.instance )
             this.instance = new HistoryCardState();
+
+        this.instance._hass = hass;
 
         this.instance.g_id = 0;
 
