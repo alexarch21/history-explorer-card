@@ -10,22 +10,50 @@ class HistoryCSVExporter {
         this.overlay = null;
         this.separator = undefined;
         this.timeFormat = undefined;
+        this.saveAttributes = undefined;
+        this._hass = null;
     }
 
     exportCallback(result)
     { 
         let data = [];
+        let attributes = [];
 
         data.push(`Time stamp${this.separator}State\r\n`);
 
         for( let entity in result ) {
+
             const r = result[entity];
             if( !r.length ) continue;
-            data.push(entity + "\r\n");
+
+            let v = entity;
+
+            if( this.saveAttributes ) {
+                attributes = [];
+                if( this._hass.states[entity] ) {
+                    v += `${this.separator}State`;
+                    for( let a in this._hass.states[entity].attributes ) {
+                        if( !_STATE_ATTRIBUTES.includes(a) ) {
+                            attributes.push(a);
+                            v += `${this.separator}${a}`;
+                        }
+                    }
+                }
+            }
+
+            data.push(v + "\r\n");
+
             for( let e of r ) {
                 const t = moment(e.lu * 1000).format(this.timeFormat);
-                data.push(t + this.separator + e.s + "\r\n");
+                let v = t + this.separator + e.s;
+                if( this.saveAttributes ) {
+                    for( let a of attributes ) {
+                        v += this.separator + (e.a ? e.a[a] : '');
+                    }
+                }
+                data.push(v + "\r\n");
             }
+
         }
 
         const blob = new Blob(data, { type: "text/plain;charset=utf-8"});
@@ -46,6 +74,9 @@ class HistoryCSVExporter {
     {
         this.separator = cardstate.pconfig.exportSeparator ?? ',';
         this.timeFormat = cardstate.pconfig.exportTimeFormat ?? 'YYYY-MM-DD HH:mm:ss';
+        this.saveAttributes = cardstate.pconfig.exportAttributes;
+
+        this._hass = cardstate._hass;
 
         let n = 0;
 
@@ -69,8 +100,8 @@ class HistoryCSVExporter {
                 type: "history/history_during_period",
                 start_time: t0,
                 end_time: t1,
-                minimal_response: true,
-                no_attributes: true,
+                minimal_response: !this.saveAttributes,
+                no_attributes: !this.saveAttributes,
                 entity_ids: l
             };
             cardstate._hass.callWS(d).then(this.exportCallback.bind(this), this.exportFailed.bind(this));
@@ -161,3 +192,30 @@ class StatisticsCSVExporter {
 
 }
 
+
+// --------------------------------------------------------------------------------------
+// HA core built-in state attributes
+// --------------------------------------------------------------------------------------
+
+var _STATE_ATTRIBUTES = [
+    "entity_id",
+    "assumed_state",
+    "attribution",
+    "custom_ui_more_info",
+    "custom_ui_state_card",
+    "device_class",
+    "editable",
+    "emulated_hue_name",
+    "emulated_hue",
+    "entity_picture",
+    "friendly_name",
+    "haaska_hidden",
+    "haaska_name",
+    "icon",
+    "initial_state",
+    "last_reset",
+    "restored",
+    "state_class",
+    "supported_features",
+    "unit_of_measurement",
+];
