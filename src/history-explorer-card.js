@@ -1367,8 +1367,14 @@ class HistoryCardState {
     generateTooltipContents(label, d, mode, n = 1)
     {
         if( this.pconfig.tooltipShowDuration ) {
-            const duration = moment(d[1]).diff(moment(d[0]));
-            const s = moment.utc(duration).format('HH:mm:ss');
+            let s = "";
+            let duration = moment(d[1]).diff(moment(d[0]));
+            if( duration > 24*60*60*1000 ) {
+                const days = Math.floor(duration / (24*60*60*1000));
+                duration -= days * 24*60*60*1000;
+                s = ( days > 1 ) ? `${i18n('ui.ranges.n_days', days)}, ` : `${i18n('ui.ranges.day')}, `;
+            }
+            s += moment.utc(duration).format('HH:mm:ss');
             label = `${label}  (for ${s})`;
         }
 
