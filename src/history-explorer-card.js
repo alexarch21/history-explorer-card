@@ -1650,6 +1650,9 @@ class HistoryCardState {
 
                 this.state.loading = true;
 
+                if( this.statistics.force ) 
+                    this.limitSlot = cacheSize + 1;
+
                 if( !this.statistics.enabled || l0 > this.limitSlot ) {
 
                     // Issue history retrieval call, initiate async cache loading
@@ -3180,6 +3183,7 @@ class HistoryExplorerCard extends HTMLElement
         this.instance.statistics.mode =                config.statistics?.mode ?? 'mean';
         this.instance.statistics.retention =           config.statistics?.retention ?? undefined;
         this.instance.statistics.period =              config.statistics?.period ?? 'hour';
+        this.instance.statistics.force =               config.statistics?.force ?? undefined;
 
         this.instance.pconfig.closeButtonColor = parseColor(config.uiColors?.closeButton ?? '#0000001f');
 

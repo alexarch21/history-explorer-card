@@ -185,6 +185,7 @@ function hecHookInfoPanel()
             instance.statistics.mode =                config.statistics?.mode ?? 'mean';
             instance.statistics.retention =           config.statistics?.retention ?? undefined;
             instance.statistics.period =              config.statistics?.period ?? 'hour';
+            instance.statistics.force =               undefined;
 
             instance.ui.darkMode = (instance._hass.selectedTheme && instance._hass.selectedTheme.dark) || (instance._hass.themes && instance._hass.themes.darkMode);
             if( config.uimode ) {
