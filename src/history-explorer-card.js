@@ -93,6 +93,8 @@ class HistoryCardState {
         this.pconfig.graphGridColor       = '#00000000';
         this.pconfig.lineGraphHeight      = 250;
         this.pconfig.barGraphHeight       = 150;
+        this.pconfig.timelineBarHeight    = 24;
+        this.pconfig.timelineBarSpacing   = 40;
         this.pconfig.labelAreaWidth       = 65;
         this.pconfig.labelsVisible        = true;
         this.pconfig.showTooltipColors    = [true, true];
@@ -1497,7 +1499,8 @@ class HistoryCardState {
                             display: scaleUnit !== undefined && scaleUnit !== '' && this.pconfig.labelsVisible,
                             labelString: scaleUnit,
                             fontColor: this.pconfig.graphLabelColor
-                        }
+                        },
+                        barThickness: this.pconfig.timelineBarHeight - 4
                     }],
                 },
                 topClipMargin : ( config?.ymax == null ) ? 4 : 1,
@@ -2182,8 +2185,8 @@ class HistoryCardState {
             case 'line': return ( h ? h : this.pconfig.lineGraphHeight );
             case 'bar':  return ( h ? h : this.pconfig.barGraphHeight ) + 24;
             default:
-                const m = ( n >= 2 || this.pconfig.tooltipSize == 'full' ) ? 130 : ( this.pconfig.tooltipSize == 'slim' ) ? 90 : 115;
-                return Math.max(n * 45, m);
+                const m = ( this.pconfig.tooltipSize == 'full' ) ? 130 : ( this.pconfig.tooltipSize == 'slim' ) ? 90 : 115;
+                return Math.max(34 + n * this.pconfig.timelineBarSpacing, m);
         }
     }
 
@@ -3173,6 +3176,8 @@ class HistoryExplorerCard extends HTMLElement
         this.instance.pconfig.timeTickDensity =        config.timeTickDensity ?? 'high';
         this.instance.pconfig.lineGraphHeight =      ( config.lineGraphHeight ?? 250 ) * 1;
         this.instance.pconfig.barGraphHeight =       ( config.barGraphHeight ?? 150 ) * 1;
+        this.instance.pconfig.timelineBarHeight =    ( config.timelineBarHeight ?? 24 ) * 1;
+        this.instance.pconfig.timelineBarSpacing =   ( config.timelineBarSpacing ?? 40 ) * 1;
         this.instance.pconfig.refreshEnabled =         config.refresh?.automatic ?? false;
         this.instance.pconfig.refreshInterval =        config.refresh?.interval ?? undefined;
         this.instance.pconfig.exportSeparator =        config.csv?.separator;

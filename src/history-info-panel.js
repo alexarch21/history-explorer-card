@@ -178,6 +178,8 @@ function hecHookInfoPanel()
             instance.pconfig.timeTickDensity =        config.timeTickDensity ?? 'high';
             instance.pconfig.lineGraphHeight =      ( config.lineGraphHeight ?? 250 ) * 1;
             instance.pconfig.barGraphHeight =       ( config.barGraphHeight ?? 150 ) * 1;
+            instance.pconfig.timelineBarHeight =    ( config.timelineBarHeight ?? 24 ) * 1;
+            instance.pconfig.timelineBarSpacing =     40;
             instance.pconfig.hideLegend =             true;
             instance.pconfig.refreshEnabled =       ( config.refresh?.automatic !== undefined ) ? config.refresh.automatic : true;
             instance.pconfig.refreshInterval =        undefined;
