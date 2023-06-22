@@ -468,7 +468,27 @@ class HistoryCardState {
 
         for( let i = 0; i < this.graphs.length; i++ ) {
             if( this.graphs[i].id == id ) {
+
                 this.graphs[i].interval = event.target.value;
+
+                const ntype = ( event.target.value == 4 ) ? 'line' : 'bar';
+
+                if( ntype !== this.graphs[i].type ) {
+                    if( ntype == 'line' ) {
+                        for( let d of this.graphs[i].chart.data.datasets ) { 
+                            d.backgroundColor = 'rgba(0,0,0,0)';
+                            if( d.borderColor && Array.isArray(d.borderColor) ) d.borderColor = d.borderColor[0];
+                        }
+                    } else {
+                        for( let d of this.graphs[i].chart.data.datasets ) d.backgroundColor = d.borderColor;
+                    }
+
+                    this.graphs[i].chart.type = this.graphs[i].chart.config.type = this.graphs[i].type = ntype;
+                    this.graphs[i].chart.update();
+
+                    if( this.graphs[i].yaxisLock ) this.scaleLockClicked({currentTarget:{id:`-${i}`}});
+                }
+
                 break;
             }
         }
@@ -485,6 +505,7 @@ class HistoryCardState {
                     <option value="1" ${optionStyle} ${(selected == 1) ? 'selected' : ''}>${i18n('ui.interval.hourly')}</option>
                     <option value="2" ${optionStyle} ${(selected == 2) ? 'selected' : ''}>${i18n('ui.interval.daily')}</option>
                     <option value="3" ${optionStyle} ${(selected == 3) ? 'selected' : ''}>${i18n('ui.interval.monthly')}</option>
+                    <option value="4" ${optionStyle} ${(selected == 4) ? 'selected' : ''}>${i18n('ui.interval.rawline')}</option>
                 </select>`;
     }
 
@@ -1371,7 +1392,7 @@ class HistoryCardState {
         if( this.pconfig.tooltipShowDuration ) {
             let s = "";
             let duration = moment(d[1]).diff(moment(d[0]));
-            if( duration > 24*60*60*1000 ) {
+            if( duration >= 24*60*60*1000 ) {
                 const days = Math.floor(duration / (24*60*60*1000));
                 duration -= days * 24*60*60*1000;
                 s = ( days > 1 ) ? `${i18n('ui.ranges.n_days', days)}, ` : `${i18n('ui.ranges.day')}, `;
