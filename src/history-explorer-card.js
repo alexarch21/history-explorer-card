@@ -1236,6 +1236,7 @@ class HistoryCardState {
                     } else if( g.type == 'bar' && n > 0 ) {
 
                         const scale = g.entities[j].scale ?? 1.0;
+                        const netBars = g.entities[j].netBars ?? false;
 
                         const colorRange = ( g.entities[j].color && g.entities[j].color.constructor == Object ) ? g.entities[j].color : null;
 
@@ -1267,7 +1268,7 @@ class HistoryCardState {
                             while( i < n && this.momentCache(result[id][i].last_changed) < te ) {
                                 const state = this.process(result[id][i].state, process) * 1.0;
                                 if( !isNaN(state) ) {
-                                    if( state < y1 ) {
+                                    if( !netBars && state < y1 ) {
                                         d += y1 - y0;
                                         y0 = state;
                                     }
@@ -2291,6 +2292,7 @@ class HistoryCardState {
             entities[0].lineMode = entityOptions?.lineMode;
             entities[0].scale = entityOptions?.scale;
             entities[0].hidden = entityOptions?.hidden;
+            entities[0].netBars = entityOptions?.netBars;
 
             if( type == 'bar' )
                 entities[0].fill = entities[0].color;
