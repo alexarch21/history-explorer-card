@@ -3154,10 +3154,17 @@ class HistoryExplorerCard extends HTMLElement
 
         if( config.graphs ) {
             for( let i = 0; i < config.graphs.length; i++ ) {
+                let l = { ...config.graphs[i], 'entities' : [] };
                 for( let e of config.graphs[i].entities ) {
-                    if( !e.entity ) throw new Error(`Invalid entity ${e.entity}`);
+                    if( e.entity.indexOf('*') >= 0 ) {
+                        const regex = this.instance.matchWildcardPattern(e.entity);
+                        for( let s in hass.states ) {
+                            if( regex && regex.test(s) ) l.entities.push({...e, 'entity' : s});
+                        }
+                    } else
+                        l.entities.push(e);
                 }
-                this.instance.pconfig.graphConfig.push({ graph: config.graphs[i], id:this.instance.g_id++ });
+                this.instance.pconfig.graphConfig.push({ graph: l, id:this.instance.g_id++ });
             }
         }
 
