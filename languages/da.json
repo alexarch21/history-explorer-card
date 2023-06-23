@@ -33,7 +33,8 @@
             "_10m" : "10 min",
             "hourly" : "Hver time",
             "daily" : "Daglig",
-            "monthly" : "Månedlig"
+            "monthly" : "Månedlig",
+            "rawline" : "As line"       // TODO
         }
     }
 }

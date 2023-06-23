@@ -39,7 +39,8 @@ const lang_en =
             "_10m" : "10 min",
             "hourly" : "Hourly",
             "daily" : "Daily",
-            "monthly" : "Monthly"
+            "monthly" : "Monthly",
+            "rawline" : "As line"
         }
     }
 }
@@ -85,7 +86,8 @@ const lang_fr =
             "_10m" : "10 min",
             "hourly" : "Heure",
             "daily" : "Journée",
-            "monthly" : "Mensuel"
+            "monthly" : "Mensuel",
+            "rawline" : "Linéaire"
         }
     }
 }
@@ -131,7 +133,8 @@ const lang_de =
             "_10m" : "10 Min",
             "hourly" : "Stündlich",
             "daily" : "Täglich",
-            "monthly" : "Monatlich"
+            "monthly" : "Monatlich",
+            "rawline" : "Als Linie"
         }
     }
 }
@@ -177,7 +180,8 @@ const lang_es =
             "_10m" : "10 min",
             "hourly" : "Horario",
             "daily" : "Diario",
-            "monthly" : "Mensual"
+            "monthly" : "Mensual",
+            "rawline" : "Línea"
         }
     }
 }
@@ -223,7 +227,8 @@ const lang_nl =
             "_10m" : "10 minuten",
             "hourly" : "Per uur",
             "daily" : "Dagelijks",
-            "monthly" : "Maandelijks"
+            "monthly" : "Maandelijks",
+            "rawline" : "Lijngrafiek"
         }
     }
 }
@@ -269,7 +274,8 @@ const lang_pl =
             "_10m" : "10 minut",
             "hourly" : "Godzina",
             "daily" : "Dzień",
-            "monthly" : "Miesiąc"
+            "monthly" : "Miesiąc",
+            "rawline" : "As line"       // TODO
         }
     }
 }
@@ -315,7 +321,8 @@ const lang_sv =
 			"_10m": "10 min",
 			"hourly": "Varje timme",
 			"daily": "Varje dag",
-			"monthly": "Varje månad"
+			"monthly": "Varje månad",
+            "rawline" : "As line"       // TODO
 		}
 	}
 }
@@ -361,7 +368,8 @@ const lang_da =
             "_10m" : "10 min",
             "hourly" : "Hver time",
             "daily" : "Daglig",
-            "monthly" : "Månedlig"
+            "monthly" : "Månedlig",
+            "rawline" : "As line"       // TODO
         }
     }
 }

@@ -33,7 +33,8 @@
             "_10m" : "10 minuten",
             "hourly" : "Per uur",
             "daily" : "Dagelijks",
-            "monthly" : "Maandelijks"
+            "monthly" : "Maandelijks",
+            "rawline" : "Lijngrafiek"
         }
     }
 }

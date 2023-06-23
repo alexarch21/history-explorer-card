@@ -33,7 +33,8 @@
             "_10m" : "10 minut",
             "hourly" : "Godzina",
             "daily" : "Dzień",
-            "monthly" : "Miesiąc"
+            "monthly" : "Miesiąc",
+            "rawline" : "As line"       // TODO
         }
     }
 }

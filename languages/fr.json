@@ -33,7 +33,8 @@
             "_10m" : "10 min",
             "hourly" : "Heure",
             "daily" : "Journée",
-            "monthly" : "Mensuel"
+            "monthly" : "Mensuel",
+            "rawline" : "Linéaire"
         }
     }
 }
