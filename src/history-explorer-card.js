@@ -3051,6 +3051,46 @@ class HistoryCardState {
 
         return changed;
     }
+
+
+    // --------------------------------------------------------------------------------------
+    // Build initial graph list from YAML
+    // --------------------------------------------------------------------------------------
+
+    buildEntityExclusionList(exclude)
+    {
+        let exregex = [];
+
+        if( exclude )
+            for( let i of exclude ) {
+                const regex = this.matchWildcardPattern(i.entity);
+                if( regex ) exregex.push(regex);
+            }
+
+        return exregex;
+    }
+
+    buildGraphListFromConfig(graphs)
+    {
+        const testEntityExclusionList = function(entity, excludes) { for( let i of excludes ) if( i.test(entity) ) return true; return false; };
+
+        for( let i = 0; i < graphs.length; i++ ) {
+            let l = { ...graphs[i], 'entities' : [] };
+            for( let e of graphs[i].entities ) {
+                if( e.entity.indexOf('*') >= 0 ) {
+                    const regexExcludes = this.buildEntityExclusionList(e.exclude);
+                    const regex = this.matchWildcardPattern(e.entity);
+                    for( let s in this._hass.states ) {
+                        if( regex && regex.test(s) && !testEntityExclusionList(s, regexExcludes) ) {
+                            l.entities.push({...e, 'entity' : s});
+                        }
+                    }
+                } else
+                    l.entities.push(e);
+            }
+            this.pconfig.graphConfig.push({ graph: l, id:this.g_id++ });
+        }
+    }
 }
 
 
@@ -3154,21 +3194,8 @@ class HistoryExplorerCard extends HTMLElement
 
         this.instance.pconfig.graphConfig = [];
 
-        if( config.graphs ) {
-            for( let i = 0; i < config.graphs.length; i++ ) {
-                let l = { ...config.graphs[i], 'entities' : [] };
-                for( let e of config.graphs[i].entities ) {
-                    if( e.entity.indexOf('*') >= 0 ) {
-                        const regex = this.instance.matchWildcardPattern(e.entity);
-                        for( let s in hass.states ) {
-                            if( regex && regex.test(s) ) l.entities.push({...e, 'entity' : s});
-                        }
-                    } else
-                        l.entities.push(e);
-                }
-                this.instance.pconfig.graphConfig.push({ graph: l, id:this.instance.g_id++ });
-            }
-        }
+        if( config.graphs ) 
+            this.instance.buildGraphListFromConfig(config.graphs)
 
         this.instance.firstDynamicId = this.instance.g_id;
 
