@@ -11,6 +11,11 @@ var defaultColors = [
     { 'color': '#3ecd95', 'fill': 'rgba(151,205,187,0.15)' },
     { 'color': '#cd953e', 'fill': 'rgba(205,187,151,0.15)' },
 
+    { 'color': '#953ecd', 'fill': 'rgba(187,151,205,0.15)' },
+    { 'color': '#175ec8', 'fill': 'rgba(151,187,205,0.15)' },
+    { 'color': '#ff7f00', 'fill': 'rgba(225,179,133,0.15)' },
+    { 'color': '#cd3e95', 'fill': 'rgba(205,151,187,0.15)' },
+
 ];
 
 
