@@ -956,7 +956,13 @@ class HistoryCardState {
                 if( v && v < m ) m = v;
             }
 
-            // 
+            // The entire query was out of valid history, the first valid slot is the one after the end of the query (or later, if this was due to a large jump into the past)
+            if( !result.length ) {
+                //console.log(`result empty, start=${this.loader.startIndex}, end=${this.loader.endIndex}`);
+                m = this.loader.endIndex+1;
+            }
+
+            // User defined retention period limits
             if( m > this.loader.startIndex && this.statistics.retention ) {
                 const limit = cacheSize - this.statistics.retention;
                 if( m > limit ) {
@@ -967,8 +973,9 @@ class HistoryCardState {
 
             // If the first slot with data doesn't cover the full requested time period, then switch to statistics from the that slot and earlier ones
             // Don't switch to statistics on entities that have less than one day of history (newly added to recorder)
-            if( m > this.loader.startIndex && (result.length == 0 || m < cacheSize) ) {
+            if( m > this.loader.startIndex && m < cacheSize ) {
                 m++;        // Replace partially filled slot with statistics data
+                this.cache[m-1].valid = false;
                 this.limitSlot = m-1;
                 reload = true;
                 //console.log(`Loader switched to statistics (slot ${this.loader.startIndex} to ${this.loader.endIndex}, first full at ${m})`);
