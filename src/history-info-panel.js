@@ -85,8 +85,10 @@ function hecHookInfoPanel()
             entities[0].lineMode = entityOptions?.lineMode;
             entities[0].scale = entityOptions?.scale;
 
-            if( type == 'bar' )
+            if( type == 'bar' ) {
                 entities[0].fill = entities[0].color;
+                entities[0].lineMode = entityOptions?.lineMode ?? 'lines';
+            }
 
         }
 

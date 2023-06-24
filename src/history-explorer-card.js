@@ -2294,8 +2294,10 @@ class HistoryCardState {
             entities[0].hidden = entityOptions?.hidden;
             entities[0].netBars = entityOptions?.netBars;
 
-            if( type == 'bar' )
+            if( type == 'bar' ) {
                 entities[0].fill = entities[0].color;
+                entities[0].lineMode = entityOptions?.lineMode ?? 'lines';
+            }
 
         }
 
