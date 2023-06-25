@@ -137,7 +137,16 @@ Timeline graphs will always automatically group if possible. Graphs defined manu
 
 ![image](https://user-images.githubusercontent.com/60828821/156686448-919cbd9c-4e77-4efc-a725-e53a7049a092.png)
 
+### Legend / entity labels
+
 You can hide an entity in a graph by clicking its label on the top. Click it a second time to make the entity visible again. An entity can be hidden by default using the `hidden` property in your entityOptions or in the manual YAML (see the advanced YAML example at the end of this readme).
+
+If you would like to entirely remove the labels from the UI, use the `legendVisible` flag:
+
+```yaml
+type: custom:history-explorer-card
+legendVisible: false
+```
 
 ### Line interpolation modes
 
@@ -244,13 +253,13 @@ graphs:
 
 ### Bar graphs for total increasing entities
 
-Entities that represent a monotonically increasing total can be visualized as adaptive bar charts. This applies to entities such as, for example, consumed energy, water or gas, rainfall, or network data usage. The data is visualized over a time interval (10 minutes, hourly or daily) that can be toggled on the fly and independently for each graph.
+Entities that represent a total (monotonically increasing or net metering) can be visualized as adaptive bar charts. This applies to entities such as, for example, consumed energy, water or gas, rainfall, or network data usage. The data is visualized over a time interval (10 minutes, hourly, daily or monthly) that can be toggled on the fly and independently for each graph.
 
 ![image](https://user-images.githubusercontent.com/60828821/193383950-53242b11-d467-42ba-9859-3b3df0b0dcb8.png)
 
 Bar charts use the `bar` chart type and can be used in both dynamically and statically added entities by setting the type accordingly. When dynamically adding an entity with a state class of `total_increasing`, then the bar chart type is automatically used. If the entity does not have this state class, then its type must be explicitly set to `bar`.
 
-Use the selector on the top right of the graph to choose the time interval your data is displayed at. You can add the same entity multiple times in separate graphs with different intervals. The default interval is hourly. It can be overridden using the `interval` option. Possible values are `10m`, `hourly`, `daily` or `monthly`.
+Use the selector on the top right of the graph to choose the time interval your data is displayed at. You can add the same entity multiple times in separate graphs with different intervals. Selecting `as line` will show the raw data of the entity as a line graph. The default interval is hourly. It can be overridden using the `interval` option. Possible values are `10m`, `hourly`, `daily` or `monthly`.
 
 Example configuration of a bar chart display for the entity `sensor.rain_amount` when added dynamically. The default interval is 10 minutes and the type is explicitly set to `bar`. The latter is not needed if the entity has a `total_increasing` state class.
 
@@ -292,6 +301,23 @@ entityOptions:
       '1.5': red    # Bar is red at 1.5 kWh and above
 ```
 ![image](https://user-images.githubusercontent.com/60828821/197369661-9c75c9fe-e33f-4790-8348-8ae103880bfb.png)
+
+#### Net metering
+
+By default bar graphs will adhere to the standards defined by HA for the `total_increasing` state class, meaning that a decrease of the data value will be interpreted as a meter reset. This prevents the use with net metering sensors, as those can have decreasing totals as part of their operation. If you would like to visualize total accumulating sensors that can decrease (net metering), use the `netBars` setting (available in both entityOptions and manual predefined YAML). You can mix net metered and non-net metered (total increasing) sensors in the same graph.
+
+```yaml
+graphs:
+  - type: bar
+    entities:
+      - entity: sensor.net_meter
+        netBars: true
+        color:
+          '-1000': red   # Red for negative bars
+          '0.0': green   # Green for positive bars
+```
+
+NOTE: This is very similar to the way HA implements the `total` state class and you can visualize `total` net metered sensors with this option. However, the `last_reset` attribute is not implemented in this card, so the bar just following a meter reset will be wrong.
 
 ### Timeline charts
 
@@ -459,6 +485,7 @@ csv:
   separator: ';'            # Use a semicolon as a separator, the default is a comma
   timeFormat: 'DD/MM/YYYY'  # Customize the date/time format used in the CSV. The default is 'YYYY-MM-DD HH:mm:ss'.
   statisticsPeriod: hour    # Period used for statistics export. Hour, day or month is supported. Default is hour.
+  exportAttributes: true    # Export all entity attributes along with their state, in separate columns. Default if off (no attrbutes).
 ```
 
 ### Configuring the UI 
@@ -533,14 +560,16 @@ labelsVisible: false   # this will hide the unit of measure labels and the entit
 labelAreaWidth: 10     # the width of the label area in pixels, default is 65
 ```
 
-The height of line and bar graphs can be set with these options:
+The height of graphs can be set with these options:
 ```yaml
 type: custom:history-explorer-card
-lineGraphHeight: 100   # default line graph height is 250
-barGraphHeight: 100    # default bar graph height is 150
+lineGraphHeight: 100     # default line graph height is 250
+barGraphHeight: 100      # default bar graph height is 150
+timelineBarHeight: 18    # timeline bar height (default is 24)
+timelineBarSpacing: 30   # spacing from the top of one timeline bar to the next (default is 40)
 ```
 
-Alternatively you can set a custom height for individual graphs, both dynamic ones and manually defined ones. Per-graph height will override global height options:
+Alternatively you can set a custom height for individual line or bar graphs, both dynamic ones and manually defined ones. Per-graph height will override global height options:
 ```yaml
 type: custom:history-explorer-card
 entityOptions:
@@ -639,7 +668,21 @@ graphs:
 
 ```
 
-And a more advanced one:
+Use wildcards to automatically add multiple entities. The following snippet will add all sensors with `temperature` in their name to a line graph, except for entities with `fridge` in their name and the `cpu_temperature` sensor:
+
+```yaml
+type: custom:history-explorer-card
+graphs:
+  - type: line
+    entities:
+      - entity: sensor.*temperature*
+        exclude:
+          - entity: '*fridge*'
+          - entity: sensor.cpu_temperature
+        fill: rgba(0,0,0,0)
+```
+
+And a more advanced example:
 
 ```yaml
 type: custom:history-explorer-card
