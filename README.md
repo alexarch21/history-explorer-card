@@ -141,7 +141,7 @@ Timeline graphs will always automatically group if possible. Graphs defined manu
 
 You can hide an entity in a graph by clicking its label on the top. Click it a second time to make the entity visible again. An entity can be hidden by default using the `hidden` property in your entityOptions or in the manual YAML (see the advanced YAML example at the end of this readme).
 
-If you would like to entirely remove the labels from the UI, using the `legendVisible` flag:
+If you would like to entirely remove the labels from the UI, use the `legendVisible` flag:
 
 ```yaml
 type: custom:history-explorer-card
@@ -253,13 +253,13 @@ graphs:
 
 ### Bar graphs for total increasing entities
 
-Entities that represent a total (monotonically increasing or net metering) can be visualized as adaptive bar charts. This applies to entities such as, for example, consumed energy, water or gas, rainfall, or network data usage. The data is visualized over a time interval (10 minutes, hourly or daily) that can be toggled on the fly and independently for each graph.
+Entities that represent a total (monotonically increasing or net metering) can be visualized as adaptive bar charts. This applies to entities such as, for example, consumed energy, water or gas, rainfall, or network data usage. The data is visualized over a time interval (10 minutes, hourly, daily or monthly) that can be toggled on the fly and independently for each graph.
 
 ![image](https://user-images.githubusercontent.com/60828821/193383950-53242b11-d467-42ba-9859-3b3df0b0dcb8.png)
 
 Bar charts use the `bar` chart type and can be used in both dynamically and statically added entities by setting the type accordingly. When dynamically adding an entity with a state class of `total_increasing`, then the bar chart type is automatically used. If the entity does not have this state class, then its type must be explicitly set to `bar`.
 
-Use the selector on the top right of the graph to choose the time interval your data is displayed at. You can add the same entity multiple times in separate graphs with different intervals. The default interval is hourly. It can be overridden using the `interval` option. Possible values are `10m`, `hourly`, `daily` or `monthly`. Select `as line` will show the raw data of the entity as a line graph.
+Use the selector on the top right of the graph to choose the time interval your data is displayed at. You can add the same entity multiple times in separate graphs with different intervals. The default interval is hourly. It can be overridden using the `interval` option. Possible values are `10m`, `hourly`, `daily` or `monthly`. Selecting `as line` will show the raw data of the entity as a line graph.
 
 Example configuration of a bar chart display for the entity `sensor.rain_amount` when added dynamically. The default interval is 10 minutes and the type is explicitly set to `bar`. The latter is not needed if the entity has a `total_increasing` state class.
 
@@ -485,6 +485,7 @@ csv:
   separator: ';'            # Use a semicolon as a separator, the default is a comma
   timeFormat: 'DD/MM/YYYY'  # Customize the date/time format used in the CSV. The default is 'YYYY-MM-DD HH:mm:ss'.
   statisticsPeriod: hour    # Period used for statistics export. Hour, day or month is supported. Default is hour.
+  exportAttributes: true    # Export all entity attributes along with their state, in separate columns. Default if off (no attrbutes).
 ```
 
 ### Configuring the UI 
@@ -559,14 +560,16 @@ labelsVisible: false   # this will hide the unit of measure labels and the entit
 labelAreaWidth: 10     # the width of the label area in pixels, default is 65
 ```
 
-The height of line and bar graphs can be set with these options:
+The height of graphs can be set with these options:
 ```yaml
 type: custom:history-explorer-card
-lineGraphHeight: 100   # default line graph height is 250
-barGraphHeight: 100    # default bar graph height is 150
+lineGraphHeight: 100     # default line graph height is 250
+barGraphHeight: 100      # default bar graph height is 150
+timelineBarHeight: 18    # timeline bar height (default is 24)
+timelineBarSpacing: 30   # spacing from the top of one timeline bar to the next (default is 40)
 ```
 
-Alternatively you can set a custom height for individual graphs, both dynamic ones and manually defined ones. Per-graph height will override global height options:
+Alternatively you can set a custom height for individual line or bar graphs, both dynamic ones and manually defined ones. Per-graph height will override global height options:
 ```yaml
 type: custom:history-explorer-card
 entityOptions:
@@ -665,7 +668,7 @@ graphs:
 
 ```
 
-Using wildcards to automatically add multiple entities. The following snippet will add all sensors with `temperature` in their name to a line graph, except for entities with `fridge` in their name and the `cpu_temperature` sensor:
+Use wildcards to automatically add multiple entities. The following snippet will add all sensors with `temperature` in their name to a line graph, except for entities with `fridge` in their name and the `cpu_temperature` sensor:
 
 ```yaml
 type: custom:history-explorer-card
@@ -679,7 +682,7 @@ graphs:
         fill: rgba(0,0,0,0)
 ```
 
-And a more advanced one:
+And a more advanced example:
 
 ```yaml
 type: custom:history-explorer-card
