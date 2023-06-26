@@ -5,7 +5,7 @@ import "./deps/timeline.js";
 import "./deps/md5.min.js"
 import "./deps/FileSaver.js"
 
-const Version = '1.0.47';
+const Version = '1.0.48';
 
 var isMobile = ( navigator.appVersion.indexOf("Mobi") > -1 ) || ( navigator.userAgent.indexOf("HomeAssistant") > -1 );
 
@@ -2598,7 +2598,10 @@ class HistoryCardState {
             for( let i = 0; i < 2; i++ )
                 this.insertUIHtmlText(i);
 
+            let bgcol = getComputedStyle(this._this.querySelector('#maincard')).backgroundColor.match(/^rgb\s*\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)$/i);
+
             this.ui.darkMode = (this._hass.selectedTheme && this._hass.selectedTheme.dark) || (this._hass.themes && this._hass.themes.darkMode);
+            this.ui.darkMode |= bgcol && bgcol.length == 4 && (((+bgcol[1]) + (+bgcol[2]) + (+bgcol[3])) / 3 <= 100);
             if( this._this.config.uimode ) {
                 if( this._this.config.uimode === 'dark' ) this.ui.darkMode = true; else
                 if( this._this.config.uimode === 'light' ) this.ui.darkMode = false;
