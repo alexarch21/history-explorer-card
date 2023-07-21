@@ -1,0 +1,40 @@
+{
+    "ui" : {
+        "label" : {
+            "type_to_search" : "Napíšte, ak chcete vyhľadať entitu, ktorú chcete pridať",
+            "error_retreiving" : "Nepodarilo sa načítať dostupné entity!",
+            "loading" : "Načítavajú sa dostupné entity...",
+        }, 
+        "popup" : {
+            "remove_all" : "Chcete odstrániť všetky dynamicky pridané grafy?",
+            "enable_panel" : "Povoliť informačný panel histórie entity?",
+            "disable_panel" : "Zakázať informačný panel histórie entity?"
+        },
+        "menu" : {  
+            "export_csv" : "Export ako CSV",
+            "export_stats" : "Export štatistiky ako CSV",
+            "remove_all" : "Odstráňte všetky pridané grafy",
+            "enable_panel" : "Povoliť informačný panel histórie",
+            "disable_panel" : "Zakázať informačný panel histórie"
+        },
+        "ranges" : {
+            "l_hour" : "< 1 H",
+            "hour" : "1 H",
+            "n_hours" : "%1 H",
+            "day" : "1 deň",
+            "n_days" : "%1 dní",
+            "week" : "1 týždeň",
+            "n_weeks" : "%1 týždňov",
+            "month" : "1 mesiac",
+            "n_months" : "%1 mesiacov",
+            "year" : "1 rok"
+        },
+        "interval" : {
+            "_10m" : "10 min",
+            "hourly" : "Hodinovo",
+            "daily" : "Denne",
+            "monthly" : "Mesačne",
+            "rawline" : "Ako čiara"
+        }
+    }
+}
