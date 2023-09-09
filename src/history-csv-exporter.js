@@ -98,8 +98,8 @@ class HistoryCSVExporter {
             // Issue statistics retrieval call
             let d = { 
                 type: "history/history_during_period",
-                start_time: t0,
-                end_time: t1,
+                start_time: moment(t0).format('YYYY-MM-DDTHH:mm:ssZ'),
+                end_time: moment(t1).format('YYYY-MM-DDTHH:mm:ssZ'),
                 minimal_response: !this.saveAttributes,
                 no_attributes: !this.saveAttributes,
                 entity_ids: l
@@ -180,8 +180,8 @@ class StatisticsCSVExporter {
             // Issue statistics retrieval call
             let d = { 
                 type: ( cardstate.version[0] > 2022 || cardstate.version[1] >= 11 ) ? "recorder/statistics_during_period" : "history/statistics_during_period",
-                start_time: t0,
-                end_time: t1,
+                start_time: moment(t0).format('YYYY-MM-DDTHH:mm:ssZ'),
+                end_time: moment(t1).format('YYYY-MM-DDTHH:mm:ssZ'),
                 period: cardstate.pconfig.exportStatsPeriod ?? 'hour',
                 statistic_ids: l
             };

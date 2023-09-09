@@ -1690,8 +1690,8 @@ class HistoryCardState {
                     // Issue history retrieval call, initiate async cache loading
                     const d = { 
                         type: "history/history_during_period",
-                        start_time: t0,
-                        end_time: t1,
+                        start_time: moment(t0).format('YYYY-MM-DDTHH:mm:ssZ'),
+                        end_time: moment(t1).format('YYYY-MM-DDTHH:mm:ssZ'),
                         minimal_response: true,
                         no_attributes: true,
                         entity_ids: l
@@ -1703,8 +1703,8 @@ class HistoryCardState {
                     // Issue statistics retrieval call
                     const d = { 
                         type: ( this.version[0] > 2022 || this.version[1] >= 11 ) ? "recorder/statistics_during_period" : "history/statistics_during_period",
-                        start_time: t0,
-                        end_time: t1,
+                        start_time: moment(t0).format('YYYY-MM-DDTHH:mm:ssZ'),
+                        end_time: moment(t1).format('YYYY-MM-DDTHH:mm:ssZ'),
                         period: this.statistics.period,
                         statistic_ids: l
                     };
