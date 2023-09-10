@@ -301,6 +301,11 @@ class HistoryCardState {
                     case 'm': endTime = endTime.add(s, 'minute'); break;
                     case 'h': endTime = endTime.add(s, 'hour'); break;
                     case 'd': endTime = endTime.add(s, 'day'); break;
+                    case 'w': endTime = endTime.add(s, 'week'); break;
+                    case 'o': endTime = endTime.add(s, 'month'); break;
+                    case 'H': endTime = moment(endTime.format('YYYY-MM-DDTHH:00:00')).add(s, 'hour'); break;
+                    case 'D': endTime = moment(endTime.format('YYYY-MM-DDT00:00:00')).add(s, 'day'); break;
+                    case 'O': endTime = moment(endTime.format('YYYY-MM-01T00:00:00')).add(s, 'month'); break;
                 }
             }
 
@@ -2990,7 +2995,7 @@ class HistoryCardState {
 
         setLanguage(locale);
 
-        this.ui.wideInterval = ['da', 'nl', 'sv'].includes(locale);
+        this.ui.wideInterval = ['da', 'nl', 'sv', 'sk'].includes(locale);
 
         const ds = getLocalizedDateString(locale, { dateStyle: 'medium' });
         this.i18n.styleDateTicks = ( ds[0] == 'D' ) ? 'D MMM' : 'MMM D';
