@@ -18,13 +18,6 @@ const ranges = [1, 2, 6, 12, 24, 48, 72, 96, 120, 144, 168, 336, 504, 720, 2184,
 
 
 // --------------------------------------------------------------------------------------
-// Maximum size of data cache in days
-// --------------------------------------------------------------------------------------
-
-const cacheSize = 365;
-
-
-// --------------------------------------------------------------------------------------
 // Shared panning state
 // --------------------------------------------------------------------------------------
 
@@ -172,6 +165,7 @@ class HistoryCardState {
 
         this.limitSlot = 0;
 
+        this.cacheSize = 365 + 1;
         this.cache = [];
 
         this._hass = null;
@@ -813,20 +807,37 @@ class HistoryCardState {
     initCache()
     {
         let d = moment().format("YYYY-MM-DD") + "T00:00:00";
-        d = moment(d).subtract(cacheSize, "day").format("YYYY-MM-DD") + "T00:00:00";
+        d = moment(d).subtract(this.cacheSize, "day").format("YYYY-MM-DD") + "T00:00:00";
 
-        for( let i = 0; i < cacheSize+1; i++ ) {
+        for( let i = 0; i < this.cacheSize+1; i++ ) {
             let e = moment(d).add(1, "day").format("YYYY-MM-DD") + "T00:00:00";
             this.cache.push({ "start" : d, "end" : e, "start_m" : moment(d), "end_m": moment(e), "data" : [], "valid": false });
             d = e;
         }
     }
 
+    growCache(growSize)
+    {
+        if( this.cacheSize >= 20 * 365 ) return;
+
+        let e = this.cache[0].start;
+
+        for( let i = 0; i < growSize; i++ ) {
+            let d = moment(e).subtract(1, "day").format("YYYY-MM-DD") + "T00:00:00";
+            this.cache.unshift({ "start" : d, "end" : e, "start_m" : moment(d), "end_m": moment(e), "data" : [], "valid": false });
+            e = d;
+        }
+
+        this.cacheSize += growSize;
+
+        console.log(`Cache grown from ${this.cacheSize - growSize} to ${this.cacheSize} days`);
+    }
+
     mapStartTimeToCacheSlot(t)
     {
         let mt = moment(t);
 
-        for( let i = 0; i < cacheSize+1; i++ ) {
+        for( let i = 0; i < this.cacheSize+1; i++ ) {
             if( mt >= this.cache[i].start_m && mt < this.cache[i].end_m ) return i;
         }
 
@@ -839,11 +850,11 @@ class HistoryCardState {
     {
         let mt = moment(t);
 
-        for( let i = 0; i < cacheSize+1; i++ ) {
+        for( let i = 0; i < this.cacheSize+1; i++ ) {
             if( mt > this.cache[i].start_m && mt <= this.cache[i].end_m ) return i;
         }
 
-        if( mt > this.cache[cacheSize].end_m ) return cacheSize;
+        if( mt > this.cache[this.cacheSize].end_m ) return this.cacheSize;
 
         return -1;
     }
@@ -949,7 +960,7 @@ class HistoryCardState {
         if( this.statistics.enabled && !this.loader.loadingStats ) {
 
             // Get the first slot affected by the returned result
-            m = cacheSize;
+            m = this.cacheSize;
             for( let j of result ) {
                 let v = this.searchFirstAffectedSlot(this.loader.startIndex, this.loader.endIndex, moment(j[0].last_changed));
                 //console.log(`${j[0].entity_id} -> ${j[0].last_changed} -> slot ${v}`);
@@ -964,7 +975,7 @@ class HistoryCardState {
 
             // User defined retention period limits
             if( m > this.loader.startIndex && this.statistics.retention ) {
-                const limit = cacheSize - this.statistics.retention;
+                const limit = this.cacheSize - this.statistics.retention;
                 if( m > limit ) {
                     console.warn(`first partial slot ${m}, first history slot is ${limit}`);
                     m = limit;
@@ -973,7 +984,7 @@ class HistoryCardState {
 
             // If the first slot with data doesn't cover the full requested time period, then switch to statistics from the that slot and earlier ones
             // Don't switch to statistics on entities that have less than one day of history (newly added to recorder)
-            if( m > this.loader.startIndex && m < cacheSize ) {
+            if( m > this.loader.startIndex && m < this.cacheSize ) {
                 m++;        // Replace partially filled slot with statistics data
                 this.cache[m-1].valid = false;
                 this.limitSlot = m-1;
@@ -1637,6 +1648,9 @@ class HistoryCardState {
         // Prime the cache on first call
         if( !this.cache.length ) this.initCache();
 
+        // Check if we need to grow the cache due to an overflow
+        if( moment(this.startTime) < this.cache[0].start_m ) this.growCache(365);
+
         // Get cache slot indices for beginning and end of requested time range
         let c0 = this.mapStartTimeToCacheSlot(this.startTime);
         let c1 = this.mapEndTimeToCacheSlot(this.endTime);
@@ -1683,7 +1697,7 @@ class HistoryCardState {
                 this.state.loading = true;
 
                 if( this.statistics.force ) 
-                    this.limitSlot = cacheSize + 1;
+                    this.limitSlot = this.cacheSize + 1;
 
                 if( !this.statistics.enabled || l0 > this.limitSlot ) {
 
@@ -2681,7 +2695,7 @@ class HistoryCardState {
 
     refresh()
     {
-        this.cache[cacheSize].valid = false;
+        this.cache[this.cacheSize].valid = false;
         this.updateHistory();
     }
 
@@ -3171,7 +3185,7 @@ class HistoryExplorerCard extends HTMLElement
             if( this.instance.pconfig.showCurrentValues ) 
                 this.instance.updateHistory();
             if( this.instance.pconfig.refreshEnabled ) {
-                this.instance.cache[cacheSize].valid = false;
+                this.instance.cache[this.cacheSize].valid = false;
                 if( this.instance.tid ) clearTimeout(this.instance.tid);
                 this.instance.tid = setTimeout(this.instance.updateHistoryAutoRefresh.bind(this.instance), 2000);
             }
