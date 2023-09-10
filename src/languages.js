@@ -376,6 +376,53 @@ const lang_da =
 
 
 // --------------------------------------------------------------------------------------
+// Slovak (sk)
+// --------------------------------------------------------------------------------------
+
+const lang_sk =
+{
+    "ui" : {
+        "label" : {
+            "type_to_search" : "Napíšte, ak chcete vyhľadať entitu, ktorú chcete pridať",
+            "error_retreiving" : "Nepodarilo sa načítať dostupné entity !",
+            "loading" : "Načitavanie dostupných entít...",
+        }, 
+        "popup" : {
+            "remove_all" : "Odstrániť všetky dynamicky pridané grafy ?",
+            "enable_panel" : "Povoliť informačný panel histórie ?",
+            "disable_panel" : "Zakázať informačný panel histórie ?"
+        },
+        "menu" : {  
+            "export_csv" : "Export ako CSV",
+            "export_stats" : "Export štatistiky ako CSV",
+            "remove_all" : "Odstrániť všetky pridané grafy",
+            "enable_panel" : "Povoliť informačný panel histórie",
+            "disable_panel" : "Zakázať informačný panel histórie"
+        },
+        "ranges" : {
+            "l_hour" : "< 1 H",
+            "hour" : "1 H",
+            "n_hours" : "%1 H",
+            "day" : "1 deň",
+            "n_days" : "%1 dní",
+            "week" : "1 týždeň",
+            "n_weeks" : "%1 týždňov",
+            "month" : "1 mesiac",
+            "n_months" : "%1 mesiacov",
+            "year" : "1 rok"
+        },
+        "interval" : {
+            "_10m" : "10 min",
+            "hourly" : "Hodinovo",
+            "daily" : "Denne",
+            "monthly" : "Mesačné",
+            "rawline" : "Ako čiara"
+        }
+    }
+}
+
+
+// --------------------------------------------------------------------------------------
 // Language localization helper functions
 // --------------------------------------------------------------------------------------
 
@@ -387,7 +434,8 @@ var languages = {
     'nl': lang_nl,
     'pl': lang_pl,
     'sv': lang_sv,
-    'da': lang_da
+    'da': lang_da,
+    'sk': lang_sk
 };
 
 var language = 'en';
