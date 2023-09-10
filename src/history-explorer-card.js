@@ -5,7 +5,7 @@ import "./deps/timeline.js";
 import "./deps/md5.min.js"
 import "./deps/FileSaver.js"
 
-const Version = '1.0.48';
+const Version = '1.0.49';
 
 var isMobile = ( navigator.appVersion.indexOf("Mobi") > -1 ) || ( navigator.userAgent.indexOf("HomeAssistant") > -1 );
 
@@ -3194,7 +3194,7 @@ class HistoryExplorerCard extends HTMLElement
             if( this.instance.pconfig.showCurrentValues ) 
                 this.instance.updateHistory();
             if( this.instance.pconfig.refreshEnabled ) {
-                this.instance.cache[this.cacheSize].valid = false;
+                this.instance.cache[this.instance.cacheSize].valid = false;
                 if( this.instance.tid ) clearTimeout(this.instance.tid);
                 this.instance.tid = setTimeout(this.instance.updateHistoryAutoRefresh.bind(this.instance), 2000);
             }
