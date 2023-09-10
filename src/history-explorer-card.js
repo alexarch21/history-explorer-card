@@ -1531,6 +1531,7 @@ class HistoryCardState {
                             max: config?.ymax ?? undefined,
                             forceMin: config?.ymin ?? undefined,
                             forceMax: config?.ymax ?? undefined,
+                            stepSize: config?.ystepSize ?? undefined
                         },
                         gridLines: {
                             color: ( graphtype == 'line' || graphtype == 'bar' || datasets.length > 1 ) ? this.pconfig.graphGridColor : 'rgba(0,0,0,0)'
