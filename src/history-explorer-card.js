@@ -1450,6 +1450,7 @@ class HistoryCardState {
                     borderColor: d.bColor,
                     backgroundColor: d.fillColor,
                     borderWidth: d.width,
+                    borderDash: ( d.dashMode === 'points' ) ? [1, 5] : ( d.dashMode === 'shortlines' ) ? [5, 5] : ( d.dashMode === 'longlines' ) ? [10, 8] : ( d.dashMode === 'pointline' ) ? [15, 3, 3, 3] : undefined,
                     pointRadius: config?.showSamples ? 4 : 0,
                     hitRadius: 5,
                     label: this.pconfig.showCurrentValues ? this.getFormattedLabelName(d.name, d.entity_id, d.unit) : d.name,
@@ -2315,6 +2316,7 @@ class HistoryCardState {
                 entities[0].fill = entityOptions?.fill ?? c.fill;
             }
 
+            entities[0].dashMode = entityOptions?.dashMode;
             entities[0].width = entityOptions?.width;
             entities[0].lineMode = entityOptions?.lineMode;
             entities[0].scale = entityOptions?.scale;
@@ -2390,6 +2392,7 @@ class HistoryCardState {
                 "name": ( d.name === undefined ) ? this._hass.states[d.entity]?.attributes?.friendly_name : d.name,
                 "bColor": parseColor(d.color),
                 "fillColor": parseColor(d.fill), 
+                "dashMode": d.dashMode,
                 "mode": d.lineMode || this.pconfig.defaultLineMode, 
                 "width": d.width || 2.0,
                 "unit": this.getUnitOfMeasure(d.entity, d.unit),
