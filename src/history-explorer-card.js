@@ -2995,7 +2995,7 @@ class HistoryCardState {
 
         setLanguage(locale);
 
-        this.ui.wideInterval = ['da', 'nl', 'sv', 'sk'].includes(locale);
+        this.ui.wideInterval = ['da', 'nl', 'sv', 'sk', 'ru'].includes(locale);
 
         const ds = getLocalizedDateString(locale, { dateStyle: 'medium' });
         this.i18n.styleDateTicks = ( ds[0] == 'D' ) ? 'D MMM' : 'MMM D';
