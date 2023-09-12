@@ -5,7 +5,7 @@ import "./deps/timeline.js";
 import "./deps/md5.min.js"
 import "./deps/FileSaver.js"
 
-const Version = '1.0.50 dev';
+const Version = '1.0.50';
 
 var isMobile = ( navigator.appVersion.indexOf("Mobi") > -1 ) || ( navigator.userAgent.indexOf("HomeAssistant") > -1 );
 
@@ -116,6 +116,8 @@ class HistoryCardState {
         this.pconfig.defaultTimeRange     = '24';
         this.pconfig.defaultTimeOffset    = undefined;
         this.pconfig.timeTickDensity      = 'high';
+        this.pconfig.timeTickOverride     = undefined;
+        this.pconfig.timeTickShortDate    = false;
         this.pconfig.refreshEnabled       = false;
         this.pconfig.refreshInterval      = undefined;
         this.pconfig.exportSeparator      = undefined;
@@ -573,7 +575,10 @@ class HistoryCardState {
         const densities = { 'low' : 4, 'medium' : 3, 'high' : 2, 'higher' : 1, 'highest' : 0 };
         let densityLimit = densities[this.pconfig.timeTickDensity];
         if( densityLimit === undefined ) densityLimit = 2;
-        return Math.max(( width < 650 ) ? 4 : ( width < 1100 ) ? 3 : ( width < 1300 ) ? 2 : ( width < 1900 ) ? 1 : 0, densityLimit);
+        if( this.pconfig.timeTickOverride === undefined ) 
+            return Math.max(( width < 650 ) ? 4 : ( width < 1100 ) ? 3 : ( width < 1300 ) ? 2 : ( width < 1900 ) ? 1 : 0, densityLimit);
+        else
+            return densities[this.pconfig.timeTickOverride] ?? 2;
     }
 
     setStepSize(update = false)
@@ -3001,7 +3006,7 @@ class HistoryCardState {
         this.ui.wideInterval = ['da', 'nl', 'sv', 'sk', 'ru'].includes(locale);
 
         const ds = getLocalizedDateString(locale, { dateStyle: 'medium' });
-        this.i18n.styleDateTicks = ( ds[0] == 'D' ) ? 'D MMM' : 'MMM D';
+        this.i18n.styleDateTicks = this.pconfig.timeTickShortDate ? 'D' : ( ds[0] == 'D' ) ? 'D MMM' : 'MMM D';
         this.i18n.styleDateSelector = isMobile ? this.i18n.styleDateTicks : ds;
 
         if( this._hass.locale?.time_format === '24' ) locale = 'en-GB';
@@ -3265,7 +3270,9 @@ class HistoryExplorerCard extends HTMLElement
         this.instance.pconfig.combineSameUnits =       config.combineSameUnits === true;
         this.instance.pconfig.defaultTimeRange =       config.defaultTimeRange ?? '24';
         this.instance.pconfig.defaultTimeOffset =      config.defaultTimeOffset ?? undefined;
-        this.instance.pconfig.timeTickDensity =        config.timeTickDensity ?? 'high';
+        this.instance.pconfig.timeTickDensity =        config.timeTicks?.density ?? config.timeTickDensity ?? 'high';
+        this.instance.pconfig.timeTickOverride =       config.timeTicks?.densityOverride ?? undefined;
+        this.instance.pconfig.timeTickShortDate =      config.timeTicks?.dateFormat === 'short';
         this.instance.pconfig.lineGraphHeight =      ( config.lineGraphHeight ?? 250 ) * 1;
         this.instance.pconfig.barGraphHeight =       ( config.barGraphHeight ?? 150 ) * 1;
         this.instance.pconfig.timelineBarHeight =    ( config.timelineBarHeight ?? 24 ) * 1;

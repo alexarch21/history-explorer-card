@@ -177,7 +177,9 @@ function hecHookInfoPanel()
             instance.pconfig.combineSameUnits =       false;
             instance.pconfig.defaultTimeRange =       config.defaultTimeRange ?? '24';
             instance.pconfig.defaultTimeOffset =      config.defaultTimeOffset ?? undefined;
-            instance.pconfig.timeTickDensity =        config.timeTickDensity ?? 'high';
+            instance.pconfig.timeTickDensity =        config.timeTicks?.density ?? config.timeTickDensity ?? 'high';
+            instance.pconfig.timeTickOverride =       config.timeTicks?.densityOverride ?? undefined;
+            instance.pconfig.timeTickShortDate =      config.timeTicks?.dateFormat === 'short';
             instance.pconfig.lineGraphHeight =      ( config.lineGraphHeight ?? 250 ) * 1;
             instance.pconfig.barGraphHeight =       ( config.barGraphHeight ?? 150 ) * 1;
             instance.pconfig.timelineBarHeight =    ( config.timelineBarHeight ?? 24 ) * 1;
