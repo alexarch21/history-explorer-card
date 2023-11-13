@@ -2999,21 +2999,31 @@ class HistoryCardState {
     {
         if( this.i18n.valid ) return;
 
-        let locale = this._hass.language ? this._hass.language : 'en-GB';
+        const locale = this._hass.language ?? 'en-GB';
 
         setLanguage(locale);
 
         this.ui.wideInterval = ['da', 'nl', 'sv', 'sk', 'ru'].includes(locale);
 
-        const ds = getLocalizedDateString(locale, { dateStyle: 'medium' });
-        this.i18n.styleDateTicks = this.pconfig.timeTickShortDate ? 'D' : ( ds[0] == 'D' ) ? 'D MMM' : 'MMM D';
-        this.i18n.styleDateSelector = isMobile ? this.i18n.styleDateTicks : ds;
+        // for later use
+        const display_timezone = this._hass.locale?.time_zone === "server" ? this._hass.config.time_zone : Intl.DateTimeFormat().resolvedOptions().timeZone
 
-        if( this._hass.locale?.time_format === '24' ) locale = 'en-GB';
-        if( this._hass.locale?.time_format === '12' ) locale = 'en-US';
+        const date_format = this._hass.locale?.date_format
+        const date_locale = date_format === 'system' ? undefined : locale
 
-        this.i18n.styleTimeTicks = getLocalizedDateString(locale, { timeStyle: 'short' });
-        this.i18n.styleDateTimeTooltip = this.i18n.styleDateTicks + ', ' + getLocalizedDateString(locale, { timeStyle: 'medium' });
+        const shortes_date_format = 'D'
+        const medium_date_format = getLocalizedDateString(date_locale, { day: 'numeric', month: 'short' });
+        const long_date_format = getLocalizedDateString(date_locale, { dateStyle: 'medium' });
+
+        this.i18n.styleDateTicks = this.pconfig.timeTickShortDate ? short_date_format : medium_date_format;
+        this.i18n.styleDateSelector = isMobile ? this.i18n.styleDateTicks : long_date_format;
+
+        const time_format = this._hass.locale?.time_format
+        const time_locale = time_format === 'system' ? undefined : locale 
+        const hour12 = ['12', '24'].includes(time_format) ? '12' === time_format : undefined
+
+        this.i18n.styleTimeTicks = getLocalizedDateString(time_locale, { timeStyle: 'short', hour12: hour12 });
+        this.i18n.styleDateTimeTooltip = this.i18n.styleDateTicks + ', ' + getLocalizedDateString(time_locale, { timeStyle: 'medium', hour12: hour12 });
 
         this.i18n.valid = true;
     }
