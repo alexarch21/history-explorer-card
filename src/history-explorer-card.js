@@ -3011,7 +3011,7 @@ class HistoryCardState {
         const date_format = this._hass.locale?.date_format
         const date_locale = date_format === 'system' ? undefined : locale
 
-        const shortes_date_format = 'D'
+        const short_date_format = 'D'
         const medium_date_format = getLocalizedDateString(date_locale, { day: 'numeric', month: 'short' });
         const long_date_format = getLocalizedDateString(date_locale, { dateStyle: 'medium' });
 
