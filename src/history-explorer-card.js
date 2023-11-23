@@ -5,7 +5,7 @@ import "./deps/timeline.js";
 import "./deps/md5.min.js"
 import "./deps/FileSaver.js"
 
-const Version = '1.0.50';
+const Version = '1.0.51';
 
 var isMobile = ( navigator.appVersion.indexOf("Mobi") > -1 ) || ( navigator.userAgent.indexOf("HomeAssistant") > -1 );
 
@@ -1525,7 +1525,8 @@ class HistoryCardState {
                         },
                         gridLines: {
                             color: this.pconfig.graphGridColor
-                        }
+                        },
+                        stacked: config?.stacked
                     }],
                     yAxes: [{
                         afterFit: (scaleInstance) => {
@@ -1552,7 +1553,8 @@ class HistoryCardState {
                             labelString: scaleUnit,
                             fontColor: this.pconfig.graphLabelColor
                         },
-                        barThickness: this.pconfig.timelineBarHeight - 4
+                        barThickness: this.pconfig.timelineBarHeight - 4,
+                        stacked: config?.stacked
                     }],
                 },
                 topClipMargin : ( config?.ymax == null ) ? 4 : 1,
