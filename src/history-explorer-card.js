@@ -3025,8 +3025,9 @@ class HistoryCardState {
         this.ui.wideInterval = ['da', 'nl', 'sv', 'sk', 'ru'].includes(locale);
 
         const ds = getLocalizedDateString(locale, { dateStyle: 'medium' });
-        this.i18n.styleDateTicks = this.pconfig.timeTickShortDate ? 'D' : ( ds[0] == 'D' ) ? 'D MMM' : 'MMM D';
-        this.i18n.styleDateSelector = isMobile ? this.i18n.styleDateTicks : ds;
+        const dt = ( ds[0] == 'D' ) ? 'D MMM' : 'MMM D';
+        this.i18n.styleDateTicks = this.pconfig.timeTickShortDate ? 'D' : dt;
+        this.i18n.styleDateSelector = isMobile ? dt : ds;
 
         if( this._hass.locale?.time_format === '24' ) locale = 'en-GB';
         if( this._hass.locale?.time_format === '12' ) locale = 'en-US';
