@@ -99,12 +99,14 @@ defaultTimeRange: 6o     # or 6 months
 defaultTimeRange: 1y     # or 1 year
 ```
 
-By default the card will open the graphs with the current date and time aligned to the right of the chart. You can define a custom time offset using the `defaultTimeOffset` setting which will be applied when you open the card or click the date button.
+By default the card will open the graphs with the current date and time aligned to the right of the chart. You can define a custom time offset using the `defaultTimeOffset` setting which will be applied when you open the card or click the date button. Both relative time offsets (denoted by lower case time identifiers such as `h,d,w,o,y`) and offsets snapped to the current hour, day, month or year are supported. The latter will use upper case time identifiers `H,D,O,Y`. For example:
 
 ```yaml
 type: custom:history-explorer-card
 defaultTimeOffset: 1h       # Add 1 hour of empty space after the current time
 defaultTimeOffset: -1d      # Show the previous days' data
+defaultTimeOffset: 1D       # Show the current day from midnight to midnight
+defaultTimeOffset: 1O       # Show the entire current month, starting at the 1st
 ```
 
 ### Auto refresh
@@ -173,13 +175,26 @@ axisAddMarginMax: false
 
 ### Y axis scaling
 
-By default the min/max scales for the Y axis are adjusted automatically to the data you are currently viewing. You can override the automatic range with your own values for both fixed graphs defined in the YAML, as well as for dynamically added entities or device classes. See the customizing dynamic line graphs section and the advanced YAML example below.
+By default the min/max scales for the Y axis are adjusted automatically to the data you are currently viewing.
 
 Pressing the axis lock icon will temporarily disable autoscaling and lock the Y axis to the currently active range. Pressing it again will revert back to the defaults for the graph:
 
 ![image](https://user-images.githubusercontent.com/60828821/221268643-735e4b1a-81da-4709-aff8-913b9b8f95a8.png)
 
 The Y axis can also be interactively modified. Pressing and holding the `SHIFT` key will unlock interactive zooming and panning of the graph in vertical direction. Pressing your mouse button while holding `SHIFT` over a graph will allow you to drag the graph into both horizontal and vertical directions. Using the mousewheel while holding `SHIFT` will change the Y axis scale. When interacting with the Y axis, the axis lock icon will automatically be enabled. Click the icon to go back to the default scale at any time.
+
+You can override the automatic y axis range with your own values for both fixed graphs defined in the YAML, as well as for dynamically added entities or device classes. The minimum and maximum Y values, as well as the tick step size can be manually overridden. Each setting works independently. You can, for example override the step size only, but leave the range on automatic.
+
+```yaml
+graphs:
+  - type: line
+    options:
+      ymin: 0       # Minimum Y locked to 0
+      ymax: 40      # Maximum Y locked to 40
+      ystepSize: 5  # Step size is fixed at 5
+```
+
+See the customizing dynamic line graphs section and the advanced YAML example below for more examples.
 
 ### Rounding
 
