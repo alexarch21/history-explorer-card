@@ -3277,15 +3277,15 @@ class HistoryExplorerCard extends HTMLElement
         this.instance.pconfig.tooltipSize =            config.tooltip?.size ?? config.tooltipSize ?? 'auto';
         this.instance.pconfig.tooltipShowDuration =    config.tooltip?.showDuration ?? config.tooltipShowDuration ?? false;
         this.instance.pconfig.tooltipShowLabel =       config.tooltip?.showLabel ?? true;
-        this.instance.pconfig.tooltipStateTextMode =   config.tooltip?.stateTextMode ?? config.stateTextMode ?? 'raw';
+        this.instance.pconfig.tooltipStateTextMode =   config.tooltip?.stateTextMode ?? config.stateTextMode ?? 'auto';
         this.instance.pconfig.colorSeed =              config.stateColorSeed ?? 137;
-        this.instance.pconfig.stateTextMode =          config.stateTextMode ?? 'raw';
+        this.instance.pconfig.stateTextMode =          config.stateTextMode ?? 'auto';
         this.instance.pconfig.decimation =             config.decimation;
         this.instance.pconfig.roundingPrecision =      config.rounding || 2;
         this.instance.pconfig.defaultLineMode =        config.lineMode;
         this.instance.pconfig.defaultLineWidth =       config.lineWidth ?? 2.0;
         this.instance.pconfig.showUnavailable =        config.showUnavailable ?? false;
-        this.instance.pconfig.showCurrentValues =      config.showCurrentValues ?? false;
+        this.instance.pconfig.showCurrentValues =      config.showCurrentValues ?? true;
         this.instance.pconfig.axisAddMarginMin =     ( config.axisAddMarginMin !== undefined ) ? config.axisAddMarginMin : false;
         this.instance.pconfig.axisAddMarginMax =     ( config.axisAddMarginMax !== undefined ) ? config.axisAddMarginMax : false;
         this.instance.pconfig.recordedEntitiesOnly =   config.recordedEntitiesOnly ?? false;
