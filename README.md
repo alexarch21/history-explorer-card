@@ -645,6 +645,34 @@ tooltip:
   stateTextMode: raw      # Show raw state names in the tooltip even if timelines show translated states
 ```
 
+### Changing the horizontal time tick density
+
+By default, time tick density is automatic and adjusts to the width of your screen. That’s always a compromise between looking good (no clipping), being readable at all screensizes from mobile to wall sized 8k TV and subjective preferences over tick densities. In most cases, the default automatic selection will yield good results. But if needed, the density can be customized using the `timeTicks` setting.
+
+```yaml
+timeTicks:
+
+  # If present, this will skip the auto-density and force the use of your selected density.
+  densityOverride: 'highest'  # Options are: low, medium, high, higher, highest.
+
+  # optional, this can be used to shorten the date representation on the time ticks, to make more space if you want high tick densities.
+  dateFormat: 'short'         # Options are normal and short. Default is normal.
+```
+
+Example with no `timeTicks` and everything set to automatic defaults:
+
+![image](https://github.com/alexarch21/history-explorer-card/assets/60828821/01b7578f-92fd-4685-bc53-d4daaa3e9b91)
+
+Using `densityOverride` at `higher`, leaving the date format at normal:
+
+![image](https://github.com/alexarch21/history-explorer-card/assets/60828821/5a68ec53-ed86-467f-a3b8-71b15c9d8c2b)
+
+And same as above but settings the dateFormat to short:
+
+![image](https://github.com/alexarch21/history-explorer-card/assets/60828821/3d85757a-c87d-46aa-9915-fa4df7ae62bd)
+
+Overriding the density will disable automatic density calculations depending on card or screen width. So you can easily end up in situations where the labels will overlap.
+
 ### Multiple cards
 
 You can have multiple history explorer cards on the same view or over several views and dashboards. Each card has its own configuration. For the cards to be able to manage their respective configurations, each card needs its own unique name. When adding the card over the UI, a random name is assigned by default. You can adjust the name if needed. If you add the card manually over YAML, you will have to provide your own unique name for each card. 
