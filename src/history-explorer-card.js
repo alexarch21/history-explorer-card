@@ -3129,6 +3129,7 @@ class HistoryCardState {
         const testEntityExclusionList = function(entity, excludes) { for( let i of excludes ) if( i.test(entity) ) return true; return false; };
 
         for( let i = 0; i < graphs.length; i++ ) {
+            if( !graphs[i].entities ) continue;
             let l = { ...graphs[i], 'entities' : [] };
             for( let e of graphs[i].entities ) {
                 if( e.entity.indexOf('*') >= 0 ) {
