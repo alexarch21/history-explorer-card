@@ -87,6 +87,8 @@ Dynamically added entities can be individually removed by clicking the `x` close
 
 ![image](https://user-images.githubusercontent.com/60828821/186549959-cd3705b6-229a-46c5-abcf-6a9f3b675f0b.png)
 
+### Default view and time ranges
+
 When the dashboard is opened, the card will show the last 24 hours by default. You can select a different default time range in the YAML. Use m, h, d, and w to denote minutes, hours, days and weeks respectively. For longer time scale, o and y denote months and year. Currently the maximum range is one year. If no postfix is given, hours are assumed.
 
 ```yaml
@@ -99,12 +101,14 @@ defaultTimeRange: 6o     # or 6 months
 defaultTimeRange: 1y     # or 1 year
 ```
 
-By default the card will open the graphs with the current date and time aligned to the right of the chart. You can define a custom time offset using the `defaultTimeOffset` setting which will be applied when you open the card or click the date button.
+By default the card will open the graphs with the current date and time aligned to the right of the chart. You can define a custom time offset using the `defaultTimeOffset` setting which will be applied when you open the card or click the date button. Both relative time offsets (denoted by lower case time identifiers such as `h,d,w,o,y`) and offsets snapped to the current hour, day, month or year are supported. The latter will use upper case time identifiers `H,D,O,Y`. For example:
 
 ```yaml
 type: custom:history-explorer-card
 defaultTimeOffset: 1h       # Add 1 hour of empty space after the current time
 defaultTimeOffset: -1d      # Show the previous days' data
+defaultTimeOffset: 1D       # Show the current day from midnight to midnight
+defaultTimeOffset: 1O       # Show the entire current month, starting at the 1st
 ```
 
 ### Auto refresh
@@ -173,13 +177,26 @@ axisAddMarginMax: false
 
 ### Y axis scaling
 
-By default the min/max scales for the Y axis are adjusted automatically to the data you are currently viewing. You can override the automatic range with your own values for both fixed graphs defined in the YAML, as well as for dynamically added entities or device classes. See the customizing dynamic line graphs section and the advanced YAML example below.
+By default the min/max scales for the Y axis are adjusted automatically to the data you are currently viewing.
 
 Pressing the axis lock icon will temporarily disable autoscaling and lock the Y axis to the currently active range. Pressing it again will revert back to the defaults for the graph:
 
 ![image](https://user-images.githubusercontent.com/60828821/221268643-735e4b1a-81da-4709-aff8-913b9b8f95a8.png)
 
 The Y axis can also be interactively modified. Pressing and holding the `SHIFT` key will unlock interactive zooming and panning of the graph in vertical direction. Pressing your mouse button while holding `SHIFT` over a graph will allow you to drag the graph into both horizontal and vertical directions. Using the mousewheel while holding `SHIFT` will change the Y axis scale. When interacting with the Y axis, the axis lock icon will automatically be enabled. Click the icon to go back to the default scale at any time.
+
+You can override the automatic y axis range with your own values for both fixed graphs defined in the YAML, as well as for dynamically added entities or device classes. The minimum and maximum Y values, as well as the tick step size can be manually overridden. Each setting works independently. You can, for example override the step size only, but leave the range on automatic.
+
+```yaml
+graphs:
+  - type: line
+    options:
+      ymin: 0       # Minimum Y locked to 0
+      ymax: 40      # Maximum Y locked to 40
+      ystepSize: 5  # Step size is fixed at 5
+```
+
+See the customizing dynamic line graphs section and the advanced YAML example below for more examples.
 
 ### Rounding
 
@@ -281,11 +298,16 @@ graphs:
     title: Rainfall
     options:
       interval: daily
+      stacked: false
     entities:
       - entity: sensor.rain_amount
         scale: 0.5
       - entity: sensor.rain_amount
 ```
+
+Set the `stacked` option to `true` to display the bars on top of each other rather than side by side:
+
+![image](https://github.com/alexarch21/history-explorer-card/assets/60828821/715f0416-6b4f-4b0d-869b-c732e7f2dd8d)
 
 #### Color ranges
 
@@ -436,7 +458,7 @@ When this setting is enabled, the card will try to pull in long term statistics 
 
 In the screenshot above, the blue graph is the outdoor temperature, the red graph is the temperature of a barn. The outdoor temperature has statistics available, the barn temperature does not. So you see the red line stopping where the history database retention period ends (Oct 11th). The outdoor temperature continues way past this point, as the card will turn to long term statistics. Note that the card will always prefer history data over long term statistics data if available, because it’s more precise.
 
-Long term statistics support is enabled by default and is configured to use average values and hourly intervals. You can optionally configure the feature (or turn it off) by adding the following to the card YAML:
+Long term statistics support is enabled by default and is configured to use average values and hourly intervals. You can optionally configure the feature (or turn it off) or even force the use of statistics only, effectively turning off the use of the short term history state DB, by adding the following to the card YAML:
 
 ```yaml
 type: custom:history-explorer-card
@@ -444,6 +466,7 @@ statistics:
   enabled: true    # true is the default, use false to turn LTS support off.
   mode: mean
   period: hour     # reporting period. hour, day or month. Default is hour.
+  force: false     # set to true if you want to use long term statistics only
 ```
 
 The (optional) mode parameter controls how the statistics data is processed before being integrated into the history stream. `mean` = use the average value, `min` = minimum value, `max` = max value. The default if the option is not present is mean. This setting does not apply to total_increasing values like energy sensors, which are calculated differently.
@@ -486,6 +509,7 @@ csv:
   timeFormat: 'DD/MM/YYYY'  # Customize the date/time format used in the CSV. The default is 'YYYY-MM-DD HH:mm:ss'.
   statisticsPeriod: hour    # Period used for statistics export. Hour, day or month is supported. Default is hour.
   exportAttributes: true    # Export all entity attributes along with their state, in separate columns. Default if off (no attrbutes).
+  numberLocale: 'en-US'     # Format numbers using the given locale. If this settings is not defined, the raw DB values will be written (no formatting).
 ```
 
 ### Configuring the UI 
@@ -621,6 +645,34 @@ The way state names are shown on the tooltip (raw or translated / device class d
 tooltip:
   stateTextMode: raw      # Show raw state names in the tooltip even if timelines show translated states
 ```
+
+### Changing the horizontal time tick density
+
+By default, time tick density is automatic and adjusts to the width of your screen. That’s always a compromise between looking good (no clipping), being readable at all screensizes from mobile to wall sized 8k TV and subjective preferences over tick densities. In most cases, the default automatic selection will yield good results. But if needed, the density can be customized using the `timeTicks` setting.
+
+```yaml
+timeTicks:
+
+  # If present, this will skip the auto-density and force the use of your selected density.
+  densityOverride: 'highest'  # Options are: low, medium, high, higher, highest.
+
+  # optional, this can be used to shorten the date representation on the time ticks, to make more space if you want high tick densities.
+  dateFormat: 'short'         # Options are normal and short. Default is normal.
+```
+
+Example with no `timeTicks` and everything set to automatic defaults:
+
+![image](https://github.com/alexarch21/history-explorer-card/assets/60828821/01b7578f-92fd-4685-bc53-d4daaa3e9b91)
+
+Using `densityOverride` at `higher`, leaving the date format at normal:
+
+![image](https://github.com/alexarch21/history-explorer-card/assets/60828821/5a68ec53-ed86-467f-a3b8-71b15c9d8c2b)
+
+And same as above but settings the dateFormat to short:
+
+![image](https://github.com/alexarch21/history-explorer-card/assets/60828821/3d85757a-c87d-46aa-9915-fa4df7ae62bd)
+
+Overriding the density will disable automatic density calculations depending on card or screen width. So you can easily end up in situations where the labels will overlap.
 
 ### Multiple cards
 
