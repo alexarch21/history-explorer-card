@@ -157,6 +157,8 @@ function hecHookInfoPanel()
             instance.pconfig.entityOptions = config.entityOptions;
 
             instance.pconfig.labelsVisible =          false;
+            instance.pconfig.cursorMode =             config.cursor?.mode ?? 'hide';
+            instance.pconfig.cursorTypes =            config.cursor?.types ?? ['all'];
             instance.pconfig.showTooltipColors[0] =   config.tooltip?.showColorsLine ?? config.showTooltipColorsLine ?? true;
             instance.pconfig.showTooltipColors[1] =   config.tooltip?.showColorsTimeline ?? config.showTooltipColorsTimeline ?? true;
             instance.pconfig.tooltipSize =            config.tooltip?.size ?? config.tooltipSize ?? 'auto';
@@ -201,6 +203,7 @@ function hecHookInfoPanel()
 
             instance.pconfig.graphLabelColor = parseColor(config.uiColors?.labels ?? (instance.ui.darkMode ? '#9b9b9b' : '#333'));
             instance.pconfig.graphGridColor  = parseColor(config.uiColors?.gridlines ?? (instance.ui.darkMode ? "rgba(255, 255, 255, 0.1)" : "rgba(0, 0, 0, 0.1)"));
+            instance.pconfig.cursorLineColor = parseColor(config.uiColors?.cursorline ?? instance.pconfig.graphGridColor);
 
             this._setEntityOptions(instance);
 

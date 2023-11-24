@@ -84,12 +84,15 @@ class HistoryCardState {
         this.pconfig = {};
         this.pconfig.graphLabelColor      = '#333';
         this.pconfig.graphGridColor       = '#00000000';
+        this.pconfig.cursorLineColor      = '#00000000';
         this.pconfig.lineGraphHeight      = 250;
         this.pconfig.barGraphHeight       = 150;
         this.pconfig.timelineBarHeight    = 24;
         this.pconfig.timelineBarSpacing   = 40;
         this.pconfig.labelAreaWidth       = 65;
         this.pconfig.labelsVisible        = true;
+        this.pconfig.cursorMode           = 'auto';
+        this.pconfig.cursorTypes          = ['all'];
         this.pconfig.showTooltipColors    = [true, true];
         this.pconfig.tooltipSize          = 'auto';
         this.pconfig.tooltipShowDuration  = false;
@@ -1637,9 +1640,19 @@ class HistoryCardState {
                     arrowColor: getComputedStyle(document.body).getPropertyValue('--primary-text-color')
                 },
                 responsive: true,
-                maintainAspectRatio: false
-            }
+                maintainAspectRatio: false,
+                plugins: {
+                    vertline: {
+                        color: this.pconfig.cursorLineColor
+                    }
+                }
+            },
+
+            plugins: [vertline_plugin]
+
         });
+
+        chart.callerInstance = this;
 
         return chart;
     }
@@ -2639,6 +2652,7 @@ class HistoryCardState {
 
             this.pconfig.graphLabelColor = parseColor(this._this.config.uiColors?.labels ?? (this.ui.darkMode ? '#9b9b9b' : '#333'));
             this.pconfig.graphGridColor  = parseColor(this._this.config.uiColors?.gridlines ?? (this.ui.darkMode ? "rgba(255, 255, 255, 0.1)" : "rgba(0, 0, 0, 0.1)"));
+            this.pconfig.cursorLineColor = parseColor(this._this.config.uiColors?.cursorline ?? this.pconfig.graphGridColor);
 
             this.pconfig.nextDefaultColor = 0;
 
@@ -3252,6 +3266,8 @@ class HistoryExplorerCard extends HTMLElement
         this.instance.pconfig.labelAreaWidth =         config.labelAreaWidth ?? 65;
         this.instance.pconfig.labelsVisible =          config.labelsVisible ?? true;
         this.instance.pconfig.hideLegend =           ( config.legendVisible == false ) ? true : undefined;
+        this.instance.pconfig.cursorMode =             config.cursor?.mode ?? 'auto';
+        this.instance.pconfig.cursorTypes =            config.cursor?.types ?? ['timeline'];
         this.instance.pconfig.showTooltipColors[0] =   config.tooltip?.showColorsLine ?? config.showTooltipColorsLine ?? true;
         this.instance.pconfig.showTooltipColors[1] =   config.tooltip?.showColorsTimeline ?? config.showTooltipColorsTimeline ?? true;
         this.instance.pconfig.tooltipSize =            config.tooltip?.size ?? config.tooltipSize ?? 'auto';
