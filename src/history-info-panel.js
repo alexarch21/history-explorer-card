@@ -170,6 +170,7 @@ function hecHookInfoPanel()
             instance.pconfig.decimation =             config.decimation;
             instance.pconfig.roundingPrecision =      config.rounding || 2;
             instance.pconfig.defaultLineMode =        config.lineMode ?? 'lines';
+            instance.pconfig.defaultLineWidth =       config.lineWidth ?? 2.0;
             instance.pconfig.showUnavailable =        config.showUnavailable ?? false;
             instance.pconfig.showCurrentValues =      false;
             instance.pconfig.axisAddMarginMin =     ( config.axisAddMarginMin !== undefined ) ? config.axisAddMarginMin : false;

@@ -111,6 +111,7 @@ class HistoryCardState {
         this.pconfig.decimation           = 'fast';
         this.pconfig.roundingPrecision    = 2;
         this.pconfig.defaultLineMode      = undefined;
+        this.pconfig.defaultLineWidth     = undefined;
         this.pconfig.nextDefaultColor     = 0;
         this.pconfig.showUnavailable      = true;
         this.pconfig.showCurrentValues    = false;
@@ -2414,7 +2415,7 @@ class HistoryCardState {
                 "fillColor": parseColor(d.fill), 
                 "dashMode": d.dashMode,
                 "mode": d.lineMode || this.pconfig.defaultLineMode, 
-                "width": d.width || 2.0,
+                "width": d.width || this.pconfig.defaultLineWidth,
                 "unit": this.getUnitOfMeasure(d.entity, d.unit),
                 "domain": this.getDomainForEntity(d.entity),
                 "device_class": this.getDeviceClass(d.entity),
@@ -3280,6 +3281,7 @@ class HistoryExplorerCard extends HTMLElement
         this.instance.pconfig.decimation =             config.decimation;
         this.instance.pconfig.roundingPrecision =      config.rounding || 2;
         this.instance.pconfig.defaultLineMode =        config.lineMode;
+        this.instance.pconfig.defaultLineWidth =       config.lineWidth ?? 2.0;
         this.instance.pconfig.showUnavailable =        config.showUnavailable ?? false;
         this.instance.pconfig.showCurrentValues =      config.showCurrentValues ?? false;
         this.instance.pconfig.axisAddMarginMin =     ( config.axisAddMarginMin !== undefined ) ? config.axisAddMarginMin : false;
