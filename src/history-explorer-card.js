@@ -309,9 +309,11 @@ class HistoryCardState {
                     case 'd': endTime = endTime.add(s, 'day'); break;
                     case 'w': endTime = endTime.add(s, 'week'); break;
                     case 'o': endTime = endTime.add(s, 'month'); break;
+                    case 'y': endTime = endTime.add(s, 'year'); break;
                     case 'H': endTime = moment(endTime.format('YYYY-MM-DDTHH:00:00')).add(s, 'hour'); break;
                     case 'D': endTime = moment(endTime.format('YYYY-MM-DDT00:00:00')).add(s, 'day'); break;
                     case 'O': endTime = moment(endTime.format('YYYY-MM-01T00:00:00')).add(s, 'month'); break;
+                    case 'Y': endTime = moment(endTime.format('YYYY-01-01T00:00:00')).add(s, 'year'); break;
                 }
             }
 
