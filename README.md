@@ -458,7 +458,7 @@ When this setting is enabled, the card will try to pull in long term statistics 
 
 In the screenshot above, the blue graph is the outdoor temperature, the red graph is the temperature of a barn. The outdoor temperature has statistics available, the barn temperature does not. So you see the red line stopping where the history database retention period ends (Oct 11th). The outdoor temperature continues way past this point, as the card will turn to long term statistics. Note that the card will always prefer history data over long term statistics data if available, because it’s more precise.
 
-Long term statistics support is enabled by default and is configured to use average values and hourly intervals. You can optionally configure the feature (or turn it off) by adding the following to the card YAML:
+Long term statistics support is enabled by default and is configured to use average values and hourly intervals. You can optionally configure the feature (or turn it off) or even force the use of statistics only, effectively turning off the use of the short term history state DB, by adding the following to the card YAML:
 
 ```yaml
 type: custom:history-explorer-card
@@ -466,6 +466,7 @@ statistics:
   enabled: true    # true is the default, use false to turn LTS support off.
   mode: mean
   period: hour     # reporting period. hour, day or month. Default is hour.
+  force: false     # set to true if you want to use long term statistics only
 ```
 
 The (optional) mode parameter controls how the statistics data is processed before being integrated into the history stream. `mean` = use the average value, `min` = minimum value, `max` = max value. The default if the option is not present is mean. This setting does not apply to total_increasing values like energy sensors, which are calculated differently.
