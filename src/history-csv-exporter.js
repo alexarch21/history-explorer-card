@@ -1,5 +1,26 @@
 
 // --------------------------------------------------------------------------------------
+// Helper functions
+// --------------------------------------------------------------------------------------
+
+function isNumber(n) { return !isNaN(parseFloat(n)) && !isNaN(n-0); }
+
+function localizeNumber(state, nf) 
+{
+    if( !nf || state === undefined || state === null || state === '' || !isNumber(state) ) return state;
+    return nf.format(+state);
+}
+
+function escapeSeperator(sep, state)
+{
+    if( state !== undefined && state !== null && String(state).indexOf(sep) >= 0 ) 
+        return `"${state}"`;
+    else 
+        return state;
+}
+
+
+// --------------------------------------------------------------------------------------
 // Export CSV : history DB
 // --------------------------------------------------------------------------------------
 
@@ -18,6 +39,10 @@ class HistoryCSVExporter {
     { 
         let data = [];
         let attributes = [];
+        let nf = null;
+
+        if( this.numberLocale ) 
+            nf = new Intl.NumberFormat(this.numberLocale, { maximumSignificantDigits: 20 });
 
         data.push(`Time stamp${this.separator}State\r\n`);
 
@@ -45,10 +70,12 @@ class HistoryCSVExporter {
 
             for( let e of r ) {
                 const t = moment(e.lu * 1000).format(this.timeFormat);
-                let v = t + this.separator + e.s;
+                let state = localizeNumber(e.s, nf);
+                let v = t + this.separator + escapeSeperator(this.separator, state);
                 if( this.saveAttributes ) {
                     for( let a of attributes ) {
-                        v += this.separator + (e.a ? e.a[a] : '');
+                        state = e.a ? localizeNumber(e.a[a], nf) : '';
+                        v += this.separator + escapeSeperator(this.separator, state);
                     }
                 }
                 data.push(v + "\r\n");
@@ -75,6 +102,7 @@ class HistoryCSVExporter {
         this.separator = cardstate.pconfig.exportSeparator ?? ',';
         this.timeFormat = cardstate.pconfig.exportTimeFormat ?? 'YYYY-MM-DD HH:mm:ss';
         this.saveAttributes = cardstate.pconfig.exportAttributes;
+        this.numberLocale = cardstate.pconfig.exportNumberLocale;
 
         this._hass = cardstate._hass;
 
@@ -128,6 +156,10 @@ class StatisticsCSVExporter {
     exportCallback(result)
     { 
         let data = [];
+        let nf = null;
+
+        if( this.numberLocale ) 
+            nf = new Intl.NumberFormat(this.numberLocale, { maximumSignificantDigits: 20 });
 
         data.push(`Time stamp${this.separator}State${this.separator}Mean${this.separator}Min${this.separator}Max\r\n`);
 
@@ -137,7 +169,18 @@ class StatisticsCSVExporter {
             data.push(entity + "\r\n");
             for( let e of r ) {
                 const t = moment(e.start).format(this.timeFormat);
-                data.push(t + this.separator + (e.state ?? '') + this.separator + (e['mean'] ?? '') + this.separator + (e['min'] ?? '') + this.separator + (e['max'] ?? '') + "\r\n");
+
+                let state = e.state ? localizeNumber(e.state, nf) : '';
+                let smean = e['mean'] ? localizeNumber(e['mean'], nf) : '';
+                let smin = e['min'] ? localizeNumber(e['min'], nf) : '';
+                let smax = e['max'] ? localizeNumber(e['max'], nf) : '';
+
+                state = escapeSeperator(this.separator, state);
+                smean = escapeSeperator(this.separator, smean);
+                smin = escapeSeperator(this.separator, smin);
+                smax = escapeSeperator(this.separator, smax);
+
+                data.push(t + this.separator + state + this.separator + smean + this.separator + smin + this.separator + smax + "\r\n");
             }
         }
 
@@ -159,6 +202,7 @@ class StatisticsCSVExporter {
     {
         this.separator = cardstate.pconfig.exportSeparator ?? ',';
         this.timeFormat = cardstate.pconfig.exportTimeFormat ?? 'YYYY-MM-DD HH:mm:ss';
+        this.numberLocale = cardstate.pconfig.exportNumberLocale;
 
         let n = 0;
 
