@@ -87,6 +87,8 @@ Dynamically added entities can be individually removed by clicking the `x` close
 
 ![image](https://user-images.githubusercontent.com/60828821/186549959-cd3705b6-229a-46c5-abcf-6a9f3b675f0b.png)
 
+### Default view and time ranges
+
 When the dashboard is opened, the card will show the last 24 hours by default. You can select a different default time range in the YAML. Use m, h, d, and w to denote minutes, hours, days and weeks respectively. For longer time scale, o and y denote months and year. Currently the maximum range is one year. If no postfix is given, hours are assumed.
 
 ```yaml
@@ -296,11 +298,16 @@ graphs:
     title: Rainfall
     options:
       interval: daily
+      stacked: false
     entities:
       - entity: sensor.rain_amount
         scale: 0.5
       - entity: sensor.rain_amount
 ```
+
+Set the `stacked` option to `true` to display the bars on top of each other rather than side by side:
+
+![image](https://github.com/alexarch21/history-explorer-card/assets/60828821/715f0416-6b4f-4b0d-869b-c732e7f2dd8d)
 
 #### Color ranges
 
@@ -501,6 +508,7 @@ csv:
   timeFormat: 'DD/MM/YYYY'  # Customize the date/time format used in the CSV. The default is 'YYYY-MM-DD HH:mm:ss'.
   statisticsPeriod: hour    # Period used for statistics export. Hour, day or month is supported. Default is hour.
   exportAttributes: true    # Export all entity attributes along with their state, in separate columns. Default if off (no attrbutes).
+  numberLocale: 'en-US'     # Format numbers using the given locale. If this settings is not defined, the raw DB values will be written (no formatting).
 ```
 
 ### Configuring the UI 
