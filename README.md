@@ -1,3 +1,10 @@
+
+# This custom card was declared end-of-life and is not maintained anymore.
+
+
+----
+
+
 [![hacs_badge](https://img.shields.io/badge/HACS-Default-41BDF5.svg?style=for-the-badge)](https://github.com/hacs/integration)  
 [![bymecoffee](https://user-images.githubusercontent.com/60828821/212549591-950f90de-6884-4bc2-bb66-d2cd1d6f00b6.png)](https://www.buymeacoffee.com/alexarch)
 
